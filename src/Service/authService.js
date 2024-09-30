@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const AUTH_TOKEN_KEY = 'auth_token';
+const AUTH_TOKEN_KEY = 'access_token';
 
 const authService = {
   async login(username, password) {
