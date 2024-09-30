@@ -181,8 +181,8 @@ export default {
         })
 
         const TAKING = 1
-        const APPROVED = 3
-        const CANCELLED = 4
+        const APPROVED = 200
+        const CANCELLED = 2000
 
         const tableHeaders = [
             { key: 'TakingNo', label: 'TakingNO', width: '120px' },

@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import Detail from '../components/Detail.vue'
-import List from '../components/List.vue'
+import Detail from '../components/StockTaking/Detail.vue'
+import List from '../components/StockTaking/List.vue'
+import Maintain from '../components/StockTaking/Maintain.vue'
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -12,10 +13,16 @@ const router = createRouter({
         },
         {
             path: '/StockTaking/Detail/:id',
-            name: 'Employees',
+            name: 'StockTakingDetail',
             component: Detail,
             props: true,
-        }
+        },
+        {
+            path: '/StockTaking/Maintain/:id',
+            name: 'StockTakingMaintain',
+            component: Maintain,
+            props: true,
+        },
     ]
 });
 

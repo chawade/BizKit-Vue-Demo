@@ -1,58 +1,3 @@
-<script setup lang="ts">
-import { ref, onMounted, } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { StockTakingService } from '@/Service/stockTakingService.js'
-
-const stockTakingData = ref();
-const loading = ref(true);
-const error = ref(null);
-const route = useRoute();
-const router = useRouter();
-
-const fetchStockTakingData = async () => {
-  try {
-    const TakingId = route.params.id;
-    const response = await StockTakingService.get(TakingId);
-    stockTakingData.value = response.Data;
-  } catch (err) {
-    error.value = `Failed to fetch stock taking data: ${err.message}`;
-  } finally {
-    loading.value = false;
-  }
-};
-
-const savePlan = () => {
-  console.log('บันทึกแผน');
-};
-const startTaking = () => {
-  console.log('เริ่มตรวจนับ');
-};
-const approveStock = () => {
-  console.log('อนุมัติ');
-};
-const editStock = () => {
-  console.log('แก้ไขข้อมูล');
-};
-
-// const getStatusStyle = computed(() => {
-//             if (stockTakingData.value && stockTakingData.value.Status) {
-//             return {
-//             backgroundColor: stockTakingData.value.Status.StatusBgColor,
-//             color: stockTakingData.value.Status.StatusFontColor,
-//             borderColor: stockTakingData.value.Status.StatusBorderColor,
-//             fontSize: `${stockTakingData.value.Status.StatusFontSize}px`,
-//             padding: '3px 8px',
-//             borderRadius: '4px',
-//             display: 'inline-block'
-//             };
-//             }
-//             return {};
-//             }); 
-
-onMounted(fetchStockTakingData);
-
-</script>
-
 <template>
   <h1>StockTaking Details</h1>
   <div v-if="loading">Loading...</div>
@@ -103,6 +48,62 @@ onMounted(fetchStockTakingData);
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, onMounted, } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { StockTakingService } from '@/Service/stockTakingService.js'
+
+const stockTakingData = ref();
+const loading = ref(true);
+const error = ref(null);
+const route = useRoute();
+const router = useRouter();
+
+const fetchStockTakingData = async () => {
+  try {
+    const TakingId = route.params.id;
+    const response = await StockTakingService.get(TakingId);
+    stockTakingData.value = response.Data;
+  } catch (err) {
+    error.value = `Failed to fetch stock taking data: ${err.message}`;
+  } finally {
+    loading.value = false;
+  }
+};
+
+const savePlan = () => {
+  console.log('บันทึกแผน');
+};
+const startTaking = () => {
+  console.log('เริ่มตรวจนับ');
+};
+const approveStock = () => {
+  console.log('อนุมัติ');
+};
+const editStock = () => {
+  console.log('แก้ไขข้อมูล');
+  
+};
+
+// const getStatusStyle = computed(() => {
+//             if (stockTakingData.value && stockTakingData.value.Status) {
+//             return {
+//             backgroundColor: stockTakingData.value.Status.StatusBgColor,
+//             color: stockTakingData.value.Status.StatusFontColor,
+//             borderColor: stockTakingData.value.Status.StatusBorderColor,
+//             fontSize: `${stockTakingData.value.Status.StatusFontSize}px`,
+//             padding: '3px 8px',
+//             borderRadius: '4px',
+//             display: 'inline-block'
+//             };
+//             }
+//             return {};
+//             }); 
+
+onMounted(fetchStockTakingData);
+
+</script>
 
 <style scoped>
 .tabhwtbg {
