@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import Detail from './components/Detail.vue'
-import List from './components/List.vue';
 </script>
 
 <template>
