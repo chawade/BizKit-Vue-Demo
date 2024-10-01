@@ -72,20 +72,20 @@
                                     </a>
                                     <ul class="dropdown-menu" role="menu" aria-labelledby="btnActions">
                                         <li @click="view(item.TakingId)"><a><img class="bz-icon"
-                                                    src="../Images/005-search.png"> {{ ('StockTaking.Detail') }}</a>
+                                                    > {{ ('StockTaking.Detail') }}</a>
                                         </li>
                                         <li v-if="permission.MODIFY && item.StatusCode !== TAKING && item.StatusCode < APPROVED"
                                             @click="edit(item.TakingId)">
-                                            <a><img class="bz-icon" src="../Images/004-edit.png"> {{
+                                            <a><img class="bz-icon"> {{
                                                 ('StockTaking.Edit') }}</a>
                                         </li>
                                         <li v-if="permission.MODIFY" @click="copy(item.TakingId)">
-                                            <a><img class="bz-icon" src="../Images/001-copy.png"> {{
+                                            <a><img class="bz-icon"> {{
                                                 ('StockTaking.Copy') }}</a>
                                         </li>
                                         <li v-if="permission.PRINT && item.StatusCode !== CANCELLED"
                                             @click="print(item.TakingId)">
-                                            <a target="_blank"><img class="bz-icon" src="../Images/003-printer.png"> {{
+                                            <a target="_blank"><img class="bz-icon"> {{
                                                 ('PurchaseRequest.btnPrint') }}</a>
                                         </li>
                                         <li v-if="permission.MODIFY && item.StatusCode < APPROVED" class="divider"></li>
