@@ -1,5 +1,5 @@
-<script setup lang="ts">
-  import List from './components/StockTaking/List.vue';
+<script setup>
+  import List from '@/components/StockTaking/List.vue';
 </script>
 
 <template>
