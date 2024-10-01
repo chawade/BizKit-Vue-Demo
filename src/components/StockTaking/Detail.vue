@@ -49,7 +49,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted, } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { StockTakingService } from '@/Service/stockTakingService.js'
