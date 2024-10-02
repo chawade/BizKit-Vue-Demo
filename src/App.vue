@@ -1,10 +1,10 @@
 <script setup>
-  import List from '@/components/StockTaking/List.vue';
+  // import List from '@/components/StockTaking/List.vue';
 </script>
 
 <template>
   <!-- <Detail/> -->
-  <List/>
+  <!-- <List/> -->
   <router-view></router-view>
 </template>
 

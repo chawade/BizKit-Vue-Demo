@@ -3,8 +3,10 @@ import axios from 'axios';
 const AUTH_TOKEN_KEY = 'access_token';
 
 const authService = {
-  async login(username, password) {
+  async login(username: string, password: string) {
     try {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      
       const response = await axios.post('http://localhost:3692/oauth/token', new URLSearchParams({
         grant_type: 'password',
         UserName: username,
@@ -29,16 +31,24 @@ const authService = {
     return localStorage.getItem(AUTH_TOKEN_KEY);
   },
 
+  isTokenExpired(token) {
+    if (!token) return true;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const exp = payload.exp * 1000;
+    return Date.now() >= exp;
+  },
+
   isAuthenticated() {
-    return !!this.getToken();
+    const token = this.getToken();
+    return !!token && !this.isTokenExpired(token); // เช็คว่ามี token และไม่หมดอายุ
   },
 
   async getAuthenticatedAxiosInstance() {
     let token = this.getToken();
-    if (!token) {
+    if (!token || this.isTokenExpired(token)) {
       token = await this.login('suchawadee.y@ku.th', 'Abc12345');
     }
-    // console.log('Token:', token);
+    console.log('Token:', token);
     return axios.create({
       headers: {
         'Authorization': `Bearer ${token}`

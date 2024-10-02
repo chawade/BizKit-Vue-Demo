@@ -1,26 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import Detail from '../components/StockTaking/Detail.vue'
-import List from '../components/StockTaking/List.vue'
-import Maintain from '../components/StockTaking/Maintain.vue'
 const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
+            path: '/',
+            name: 'List',
+            component: () => import('../components/StockTaking/List.vue')
+        },
+        {
             path: '/StockTaking/List',
             name: 'StockTakingList',
-            component: List
+            component: () => import('../components/StockTaking/List.vue')
         },
         {
             path: '/StockTaking/Detail/:id',
             name: 'StockTakingDetail',
-            component: Detail,
+            component: () => import('../components/StockTaking/Detail.vue'),
             props: true,
         },
         {
             path: '/StockTaking/Maintain/:id',
             name: 'StockTakingMaintain',
-            component: Maintain,
+            component: () => import('../components/StockTaking/Maintain.vue'),
             props: true,
         },
     ]

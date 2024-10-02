@@ -103,7 +103,8 @@
                             </td>
                             <td v-for="header in tableHeaders" :key="header.key" style="text-align:center">
                                 <template v-if="header.key === 'TakingNo'">
-                                    <a :href="`/StockTaking/Detail/${item.TakingId}`" class="docno-link">{{ item[header.key] }}</a>
+                                    <a :href="`/StockTaking/Detail/${item.TakingId}`" class="docno-link">{{
+                                        item[header.key] }}</a>
                                 </template>
                                 <template v-else-if="header.key === 'StatusName'">
                                     <span class="status label label-sm" :style="{
@@ -148,129 +149,95 @@
     </div>
 </template>
 
-<script>
+<script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
-// import {authService} from '@/Service/authService.js';
-import { StockTakingService } from '@/Service/stockTakingService.js'
+import { StockTakingService } from '@/Service/stockTakingService'
 
-// import { useI18n } from 'vue-i18n'
-import axios from 'axios'
+const items = ref([])
+const currentPage = ref(1)
+const totalPages = ref(1)
+const pageSize = ref(10)
+const searchString = ref('')
+const sortKey = ref('TakingNo')
+const sortOrder = ref('DESC')
+const isPanelOpen = ref(false)
+const selectAll = ref(false)
+const totalRecords = ref(0)
 
-export default {
-    name: 'StockTakingList',
-    setup() {
-        // const { t } = useI18n()
+const permission = ref({
+    APPROVE: true,
+    EXPORT: true,
+    MODIFY: true,
+    PRINT: true
+})
 
-        const items = ref([])
-        const currentPage = ref(1)
-        const totalPages = ref(1)
-        const pageSize = ref(10)
-        const searchString = ref('')
-        const sortKey = ref('TakingNo')
-        const sortOrder = ref('DESC')
-        const isPanelOpen = ref(false)
-        const selectAll = ref(false)
-        const totalRecords = ref(0)
+const TAKING = 1
+const APPROVED = 200
+const CANCELLED = 2000
 
-        const permission = ref({
-            APPROVE: true,
-            EXPORT: true,
-            MODIFY: true,
-            PRINT: true
-        })
+const tableHeaders = [
+    { key: 'TakingNo', label: 'TakingNO', width: '120px' },
+    { key: 'TakingDate', label: 'TakingDate', width: '120px' },
+    { key: 'WarehouseName', label: 'Warehouse', width: '120px' },
+    { key: 'LocationName', label: 'Location', width: '120px' },
+    { key: 'PersonInCharge', label: 'PIC', width: '120px' },
+    { key: 'StatusName', label: 'Status', width: '60px' }
+]
 
-        const TAKING = 1
-        const APPROVED = 200
-        const CANCELLED = 2000
+const sortedItems = computed(() => {
+    return items.value
+})
 
-        const tableHeaders = [
-            { key: 'TakingNo', label: 'TakingNO', width: '120px' },
-            { key: 'TakingDate', label: 'TakingDate', width: '120px' },
-            { key: 'WarehouseName', label: 'Warehouse', width: '120px' },
-            { key: 'LocationName', label: 'Location', width: '120px' },
-            { key: 'PersonInCharge', label: 'PIC', width: '120px' },
-            { key: 'StatusName', label: 'Status', width: '60px' }
-        ]
-
-        const sortedItems = computed(() => {
-            return items.value
-        })
-
-        const fetchData = async () => {
-            try {
-                const response = await StockTakingService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
-                // console.log('Search result:', response);
-                items.value = response.Data
-                totalRecords.value = response.Pagination.TotalRecords
-                totalPages.value = response.Pagination.TotalPages
-            } catch (error) {
-                console.error('Error fetching data:', error)
-            }
-        }
-
-        const sortBy = (key) => {
-            if (key === sortKey.value) {
-                sortOrder.value = sortOrder.value === 'ASC' ? 'DESC' : 'ASC'
-            } else {
-                sortKey.value = key
-                sortOrder.value = 'DESC'
-            }
-            fetchData()
-        }
-
-        const goToPage = (page) => {
-            if (page >= 1 && page <= totalPages.value) {
-                currentPage.value = page
-                fetchData()
-            }
-        }
-
-        const search = () => {
-            currentPage.value = 1
-            fetchData()
-        }
-
-        const toggleSearchPanel = () => {
-            isPanelOpen.value = !isPanelOpen.value
-        }
-
-        const toggleAll = () => {
-            items.value.forEach(item => item.selected = selectAll.value)
-        }
-
-        onMounted(() => {
-            fetchData()
-        })
-
-        watch(searchString, () => {
-            search()
-        })
-
-        return {
-            items,
-            sortedItems,
-            currentPage,
-            totalPages,
-            pageSize,
-            searchString,
-            sortKey,
-            sortOrder,
-            isPanelOpen,
-            selectAll,
-            totalRecords,
-            permission,
-            TAKING,
-            APPROVED,
-            CANCELLED,
-            tableHeaders,
-            sortBy,
-            goToPage,
-            search,
-            toggleSearchPanel,
-            toggleAll,
-        }
+const fetchData = async () => {
+    try {
+        const response = await StockTakingService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
+        // console.log('Search result:', response);
+        items.value = response.Data
+        totalRecords.value = response.Pagination.TotalRecords
+        totalPages.value = response.Pagination.TotalPages
+    } catch (error) {
+        console.error('Error fetching data:', error)
     }
 }
+
+const sortBy = (key) => {
+    if (key === sortKey.value) {
+        sortOrder.value = sortOrder.value === 'ASC' ? 'DESC' : 'ASC'
+    } else {
+        sortKey.value = key
+        sortOrder.value = 'DESC'
+    }
+    fetchData()
+}
+
+const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page
+        fetchData()
+    }
+}
+
+const search = () => {
+    currentPage.value = 1
+    fetchData()
+}
+
+const toggleSearchPanel = () => {
+    isPanelOpen.value = !isPanelOpen.value
+}
+
+const toggleAll = () => {
+    items.value.forEach(item => item.selected = selectAll.value)
+}
+
+onMounted(() => {
+    fetchData()
+})
+
+watch(searchString, () => {
+    search()
+})
+
 </script>
 
 <style scoped>
