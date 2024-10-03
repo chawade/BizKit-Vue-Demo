@@ -2,8 +2,26 @@
   <div v-if="loading">Loading...</div>
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
-    <div class="row">
-      <!-- <div class="col-sm-8">
+    <div>
+      <h3 class="font-bold text-xl mb-8">Stock Taking Detail</h3>
+    </div>
+    <Breadcrumb :model="path" class="card">
+      <template #item="{ item, props }">
+        <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+          <a :href="href" v-bind="props.action" @click="navigate">
+            <span :class="[item.icon, 'text-color']" />
+            <span class="text-primary font-semibold">{{ item.label }}</span>
+          </a>
+        </router-link>
+        <a v-else :href="item.url" :target="item.target" v-bind="props.action">
+          <span class="text-surface-700 dark:text-surface-0">{{ item.label }}</span>
+        </a>
+      </template>
+    </Breadcrumb>
+    <div class="card">
+      <div class="row mb-8">
+        <div class="col-sm-8">
+          <!-- <div class="col-sm-8">
         <button v-if="stockTakingData.Permission.MODIFY && stockTakingData.Status < 2" class="btn btn-warning btn-outline" @click="savePlan">
           <i class="fa fa-check-circle"></i> Save Plan
         </button>
@@ -43,127 +61,137 @@
           <i class="fa fa-plus-circle"></i> Create Stock Taking
         </a>
       </div> -->
-      <button @click="goBackToList">BACK</button>
-      <button @click="savePlan">Save Plan</button>
-      <button @click="approve">Adjust Stock</button>
-      <button @click="cancel">Cancel</button>
-      <button @click="cancelApprove">Cancel Approve</button>
-      <button @click="editStock">Edit</button>
-    </div>
-
-    <div class="row invoice-head">
-      <div class="col-sm-7">
-        <div class="invoice-logo">
-          <h1 class="uppercase text-left">
+          <Button label="Save Plan" severity="warn" @click="savePlan" />
+          <Button label="Adjust Stock" severity="info" @click="approve" />
+          <Button label="Cancel" severity="info" @click="cancel" />
+          <Button label="Cancel Approve" severity="info" @click="cancelApprove" />
+          <Button label="Edit" severity="info" @click="editStock" />
+          <Button label="BACK" severity="info" @click="goBackToList" />
+        </div>
+        <div class="col-sm-4 text-right">
+          <router-link to="/StockTaking/Maintain/0">
+            <Button label=" Create Stock Taking" severity="success" />
+          </router-link>
+        </div>
+      </div>
+      <div class="detail-head">
+        <div>
+          <h1 class="uppercase font-semibold text-l text-left" style="bottom: 0;">
             <span>Stock Taking Detail</span>
           </h1>
         </div>
+        <div class="text-l text-right">
+          <h4>{{ stockTakingData.TakingNo }}</h4>
+          <span class="status" :style="{
+            // display: 'inline-block',
+            backgroundColor: stockTakingData.Status.StatusBgColor,
+            borderColor: stockTakingData.Status.StatusBorderColor,
+            fontSize: stockTakingData.Status.StatusFontSize + 'px',
+            color: stockTakingData.Status.StatusFontColor
+          }">{{ stockTakingData.Status.StatusName }}</span>
+        </div>
       </div>
-      <div class="col-sm-5 text-right">
-        <h4>{{ stockTakingData.TakingNo }}</h4>
-        <span :style="{
-          display: 'inline-block',
-          backgroundColor: stockTakingData.Status.StatusBgColor,
-          borderColor: stockTakingData.Status.StatusBorderColor,
-          fontSize: stockTakingData.Status.StatusFontSize + 'px',
-          color: stockTakingData.Status.StatusFontColor
-        }">{{ stockTakingData.Status.StatusName }}</span>
-      </div>
-    </div>
 
-    <div class="row invoice-cust-add">
-      <div class="col-sm-5">
-        <div class="portlet bz-default box">
-          <div class="portlet-title">
-            <div class="caption">
-              <span class="invoice-title uppercase">Stock Taking Info</span>
+      <div class="row invoice-cust-add mb-8">
+        <div class="col-sm-5">
+          <div class="portlet bz-default box">
+            <div class="portlet-title">
+              <div class="caption">
+                <span class="invoice-title uppercase">Stock Taking Info</span>
+              </div>
             </div>
-          </div>
-          <div class="portlet-body">
-            <div class="row stattic-info">
-              <span class="invoice-desc col-sm-6">Warehouse Name</span>
-              <span class="col-sm-6 font-normal">{{ stockTakingData.WarehouseName }}</span>
-            </div>
-            <div class="row stattic-info">
-              <span class="invoice-desc col-sm-6">Location</span>
-              <span class="col-sm-6 font-normal">{{ stockTakingData.LocationName }}</span>
-            </div>
-            <div class="row stattic-info">
-              <span class="invoice-desc col-sm-6">Taking Date</span>
-              <span class="col-sm-6 font-normal">{{ stockTakingData.TakingDate }}</span>
-            </div>
-            <div class="row stattic-info">
-              <span class="invoice-desc col-sm-6">PIC</span>
-              <span class="col-sm-6 font-normal">{{ stockTakingData.PersonInCharge }}</span>
+            <div class="portlet-body">
+              <div class="row stattic-info">
+                <span class="invoice-desc col-sm-6">Warehouse Name</span>
+                <span class="col-sm-6 font-normal">{{ stockTakingData.WarehouseName }}</span>
+              </div>
+              <div class="row stattic-info">
+                <span class="invoice-desc col-sm-6">Location</span>
+                <span class="col-sm-6 font-normal">{{ stockTakingData.LocationName }}</span>
+              </div>
+              <div class="row stattic-info">
+                <span class="invoice-desc col-sm-6">Taking Date</span>
+                <span class="col-sm-6 font-normal">{{ stockTakingData.TakingDate }}</span>
+              </div>
+              <div class="row stattic-info">
+                <span class="invoice-desc col-sm-6">PIC</span>
+                <span class="col-sm-6 font-normal">{{ stockTakingData.PersonInCharge }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="row invoice-body">
-      <div class="col-xs-12 table-wrapper">
-        <table class="table table-hover table-striped bz-table-fix-header" id="prList">
-          <thead style="background-color:#fcfcfc">
-            <tr role="row">
-              <th width="10%" class="text-left">Item Code</th>
-              <th width="12%" class="text-left">Item Name</th>
-              <th width="8%" class="text-left">Lot No</th>
-              <th width="8%" class="text-center">Expiry Date</th>
-              <th width="5%" class="text-right">Stock Qty</th>
-              <th width="5%" class="text-right">Actual Qty</th>
-              <th width="5%" class="text-right">Difference</th>
-              <th width="4%" class="text-center">UOM</th>
-              <th width="10%" class="text-left">Remark</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in stockTakingData.StockTakingItems" :key="item.TakingItemId" style="height:50px">
-              <td class="text-left">{{ item.ItemCode }}</td>
-              <td class="text-left">{{ item.ItemName }}</td>
-              <td class="text-left">{{ item.LotNo }}</td>
-              <td class="text-center">{{ item.ExpiryDate }}</td>
-              <td class="text-right">{{ item.StockQuantity }}</td>
-              <td class="text-right">{{ item.ActualQuantity }}</td>
-              <td class="text-right">{{ item.DiffQuantity }}</td>
-              <td class="text-center">{{ item.Unit }}</td>
-              <td class="text-left">{{ item.Notes }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="row invoice-body mb-8">
+        <div class="col-xs-12 table-wrapper">
+          <DataTable :value="stockTakingData.StockTakingItems" tableStyle="min-width: 50rem">
+            <Column field="ItemCode" header="Item Code"></Column>
+            <Column field="ItemName" header="Item Name"></Column>
+            <Column field="LotNo" header="Lot/Serial No."></Column>
+            <Column field="ExpiryDate" header="Expiry Date"></Column>
+            <Column field="StockQuantity" header="Stock Quantity"></Column>
+            <Column field="ActualQuantity" header="Actual Quantity"></Column>
+            <Column field="DiffQuantity" header="Difference"></Column>
+            <Column field="Unit" header="Unit"></Column>
+            <Column field="Remark" header="Remark"></Column>
+          </DataTable>
+        </div>
       </div>
-    </div>
 
-    <div class="row">
-      <div class="col-sm-5">
-        <div class="portlet bz-default box">
-          <div class="portlet-title">
-            <div class="caption">
-              <span class="invoice-title uppercase">Remark</span>
+      <div class="row">
+        <div class="col-sm-5">
+          <div class="portlet bz-default box">
+            <div class="portlet-title">
+              <div class="caption">
+                <span class="invoice-title uppercase">Remark</span>
+              </div>
             </div>
-          </div>
-          <div class="portlet-body">
-            {{ stockTakingData.Remark }}
+            <div class="portlet-body">
+              {{ stockTakingData.Remark }}
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Activity History section can be added here -->
+
     </div>
-
-    <!-- Activity History section can be added here -->
-
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { StockTakingService } from '@/Service/stockTakingService'
+
+import Breadcrumb from 'primevue/breadcrumb';
+import InputText from 'primevue/inputtext';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Button from 'primevue/button';
 
 const stockTakingData = ref();
 const loading = ref(true);
 const error = ref(null);
 const route = useRoute();
 const router = useRouter();
+
+const path = computed(() => {
+  const breadcrumbItems: any[] = [];
+
+  breadcrumbItems.push({ icon: 'pi pi-home', route: '/' });
+  breadcrumbItems.push({ label: 'Stock Taking', url: '/StockTaking/List' });
+  route.matched.forEach((matchedRoute) => {
+    if (matchedRoute.meta.breadcrumb) {
+      breadcrumbItems.push({
+        label: matchedRoute.meta.breadcrumb,
+        route: matchedRoute.path
+      });
+    }
+  });
+
+  return breadcrumbItems;
+});
 
 const fetchStockTakingData = async () => {
   try {

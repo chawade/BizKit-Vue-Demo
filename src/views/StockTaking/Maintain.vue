@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="card">
     <div id="alertmsg" class="alert alert-danger" v-if="showAlert">
       <button type="button" @click="hideDivMSG" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>

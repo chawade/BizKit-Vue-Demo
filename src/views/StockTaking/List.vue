@@ -1,158 +1,145 @@
 <template>
     <div>
+        <h3 class="font-bold text-xl mb-8">Stock Taking</h3>
+    </div>
+    <Breadcrumb :model="path" class="card">
+        <template #item="{ item, props }">
+            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+                <a :href="href" v-bind="props.action" @click="navigate">
+                    <span :class="[item.icon, 'text-color']" />
+                    <span class="text-primary font-semibold">{{ item.label }}</span>
+                </a>
+            </router-link>
+            <a v-else :href="item.url" :target="item.target" v-bind="props.action">
+                <span class="text-surface-700 dark:text-surface-0">{{ item.label }}</span>
+            </a>
+        </template>
+    </Breadcrumb>
+    <div class="card">
         <div class="row">
             <div class="col-sm-8">
-                <a v-if="permission.APPROVE" @click="approve" id="btnApprove"
-                    class="btn btn-transparent blue btn-outline">
-                    <i class="fa fa-check-circle"></i> {{ ('Approve') }}
-                </a>
-                <div v-if="permission.EXPORT" class="btn-group" role="group">
-                    <a id="btnExpToCsv" title="Export to csv file" class="btn btn-transparent blue btn-outline"
-                        @click="exportToCSV">
-                        <i class="fa fa-file-text"></i> {{ ('ExportCSV') }}
-                    </a>
-                    <a id="btnExpToExcel" title="Export to Excel file" class="btn btn-transparent blue btn-outline"
-                        @click="exportToExcel">
-                        <i class="fa fa-file-excel-o"></i> {{ ('ExportExcel') }}
-                    </a>
-                </div>
+                <span>Stock Taking</span>
+            </div>
+            <div class="col-sm-4 text-right">
+                <router-link to="/StockTaking/Maintain/0">
+                    <Button label=" Create Stock Taking" severity="success" />
+                </router-link>
+            </div>
+            <div class="col-sm-8">
+                <Button label="Approve" severity="info" @click="approves" />
+                <Button label="ExportCSV" severity="info" />
+                <!-- <Button label="ExportExcel" severity="info" /> -->
             </div>
             <div class="col-sm-4 text-right">
                 <div class="table-group-actions pull-right">
                     <span class="input-group-btn" style="display: inline-table; margin-left: 3px">
-                        <input type="text" style="font-size:12px;" :placeholder="('StockTaking.StockTaking')"
+                        <InputText type="text" style="font-size:12px;" :placeholder="('Stock Taking')"
                             class="form-control input-inline" v-model="searchString" @click="collapsed"
                             maxlength="100" />
                         <span class="input-group-btn">
-                            <a class="btn btn-transparent blue btn-outline" @click="search" id="btnSearch">
-                                <i class="fa fa-search"></i>
-                            </a>
+                            <Button icon="pi pi-search" severity="info" @click="search" />
                         </span>
-                        <a id="lblSearch" style="font-weight:bold;color:#1c9dd8" @click="toggleSearchPanel">
+                        <!-- <a id="lblSearch" style="font-weight:bold;color:#1c9dd8" @click="toggleSearchPanel">
                             <i class="fa fa-bars" :class="{ 'rotate': isPanelOpen }"></i>
-                        </a>
+                        </a> -->
                     </span>
                 </div>
             </div>
         </div>
-
         <div id="pnlsearch" class="collapse row border border-default" v-show="isPanelOpen">
             <!-- Search panel fields go here -->
         </div>
 
-        <div class="row">
-            <div class="table-scrollable table-list">
-                <table class="table table-hover table-striped" id="tableTakingList" cellspacing="0" border="0">
-                    <thead>
-                        <tr>
-                            <th width="5px">&nbsp;</th>
-                            <th class="text-center" width="5px" style="color:#5b9bd1;">
-                                <input type="checkbox" id="checkAll" v-model="selectAll" @change="toggleAll" />
-                            </th>
-                            <th v-for="header in tableHeaders" :key="header.key" :width="header.width"
-                                style="text-align:center;color:#5b9bd1;">
-                                <a @click="sortBy(header.key)">
-                                    {{ (`${header.label}`) }}
-                                    <span v-if="sortKey === header.key"
-                                        :class="sortOrder === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"></span>
-                                </a>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in sortedItems" :key="item.TakingId"
-                            style="height:50px;border-bottom: 1px solid #F6F6F6;">
-                            <td style="width:5px">
-                                <input type="hidden" class="TakingDate" :value="item.TakingDateEn" />
-                                <div class="dropdown list-action">
-                                    <a class="btn dropdown-toggle" style="font-size: 18px; color: #666"
-                                        href="javascript:;" data-toggle="dropdown" data-hover="dropdown"
-                                        data-close-others="true">
-                                        <i class="fa fa-cog"></i>
-                                    </a>
-                                    <ul class="dropdown-menu" role="menu" aria-labelledby="btnActions">
-                                        <li @click="view(item.TakingId)"><a> {{ ('StockTaking.Detail') }}</a>
-                                        </li>
-                                        <li v-if="permission.MODIFY && item.StatusCode !== TAKING && item.StatusCode < APPROVED"
-                                            @click="edit(item.TakingId)">
-                                            <a> {{
-                                                ('StockTaking.Edit') }}</a>
-                                        </li>
-                                        <li v-if="permission.MODIFY" @click="copy(item.TakingId)">
-                                            <a>{{
-                                                ('StockTaking.Copy') }}</a>
-                                        </li>
-                                        <li v-if="permission.PRINT && item.StatusCode !== CANCELLED"
-                                            @click="print(item.TakingId)">
-                                            <a target="_blank"> {{
-                                                ('PurchaseRequest.btnPrint') }}</a>
-                                        </li>
-                                        <li v-if="permission.MODIFY && item.StatusCode < APPROVED" class="divider"></li>
-                                        <li v-if="permission.MODIFY && item.StatusCode < APPROVED"
-                                            @click="cancel(item.TakingId, item.TakingDateEn)">
-                                            <a><span class="text-danger"><i class="fa fa-trash-o"
-                                                        style="font-size:20px"></i> {{ ('StockTaking.Cancel')
-                                                    }}</span></a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <input type="checkbox" class="check" v-model="item.selected" />
-                                <input type="hidden" class="tkId" :value="item.TakingId" />
-                            </td>
-                            <td v-for="header in tableHeaders" :key="header.key" style="text-align:center">
-                                <template v-if="header.key === 'TakingNo'">
-                                    <a :href="`/StockTaking/Detail/${item.TakingId}`" class="docno-link">{{
-                                        item[header.key] }}</a>
-                                </template>
-                                <template v-else-if="header.key === 'StatusName'">
-                                    <span class="status label label-sm" :style="{
-                                        display: 'inline-block',
-                                        backgroundColor: item.Status.StatusBgColor,
-                                        borderColor: item.Status.StatusBorderColor,
-                                        fontSize: item.Status.StatusFontSize + 'px',
-                                        color: item.Status.StatusFontColor
-                                    }">
-                                        {{ item.Status.StatusName }}
-                                    </span>
-                                </template>
-                                <template v-else>
-                                    {{ item[header.key] }}
-                                </template>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-12 col-sm-12">
-                <div class="dataTables_wrapper dataTables_paginate paging_bootstrap_extended pull-right">
-                    <div class="pagination">
-                        <div id="Pagging">
-                            <a @click="goToPage(1)" :class="{ 'disabled': currentPage === 1 }"
-                                class="btn default prev">&lt;&lt;</a>
-                            <a @click="goToPage(currentPage - 1)" :class="{ 'disabled': currentPage === 1 }"
-                                class="btn default prev">&lt;</a>
-                            <span class="page">{{ currentPage }} / {{ totalPages }}</span>
-                            <a @click="goToPage(currentPage + 1)" :class="{ 'disabled': currentPage === totalPages }"
-                                class="btn default next">&gt;</a>
-                            <a @click="goToPage(totalPages)" :class="{ 'disabled': currentPage === totalPages }"
-                                class="btn default next">&gt;&gt;</a>
+        <DataTable v-model:selection="selected" :value="sortedItems" :rows="10" dataKey="id" :paginator="true"
+            :filters="sortedItems"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            :rowsPerPageOptions="[5, 10, 25]" scrollable scrollHeight="400px" tableStyle="min-width: 50rem"
+            >
+            <Column header="">
+                <template #body="{ data }">
+                    <div class="dropdown" @mouseleave="closeDropdown(data)">
+                        <Button icon="pi pi-cog" class="p-button-text" @click="toggleDropdown(data)"
+                            aria-label="Menu" />
+                        <div v-if="dropdownVisible[data.TakingId]" class="dropdown-menu">
+                            <ul class="dropdown-list">
+                                <li @click="handleAction(data, 'view')">{{ 'Detail' }}</li>
+                                <li v-if="permission.MODIFY && data.StatusCode !== TAKING && data.StatusCode < APPROVED"
+                                    @click="handleAction(data, 'edit')">{{ 'Edit' }}</li>
+                                <li v-if="permission.MODIFY" @click="handleAction(data, 'copy')">{{ 'Copy' }}</li>
+                                <li v-if="permission.PRINT && data.StatusCode !== CANCELLED"
+                                    @click="handleAction(data, 'print')">{{ 'Print' }}</li>
+                                <li v-if="permission.MODIFY && data.StatusCode < APPROVED"
+                                    @click="handleAction(data, 'cancel')" class="text-danger">
+                                    <span><i class="fa fa-trash-o"></i> {{ 'Cancel' }}</span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </template>
+            </Column>
+            <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+            <Column field="TakingNo" header="TakingNo" sortable style="width: 25%">
+                <template #body="{ data }">
+                    <a :href="`/StockTaking/Detail/${data.TakingId}`" class="docno-link">{{ data.TakingNo }}</a>
+                </template>
+            </Column>
+            <Column field="TakingDate" header="TakingDate" sortable style="width: 25%">
+                <template #body="{ data }">
+                    {{ formatDate(data.TakingDate) }}
+                </template>
+            </Column>
+            <Column field="WarehouseName" header="WarehouseName" sortable style="width: 25%"></Column>
+            <Column field="LocationName" header="LocationName" sortable style="width: 25%"></Column>
+            <Column field="PersonInCharge" header="PersonInCharge" sortable style="width: 25em;"></Column>
+            <Column field="Status.StatusName" header="Status" sortable>
+                <template #body="slotProps">
+                    <span class="status" :style="{
+                        display: 'inline-block',
+                        backgroundColor: slotProps.data.Status.StatusBgColor,
+                        borderColor: slotProps.data.Status.StatusBorderColor,
+                        fontSize: slotProps.data.Status.StatusFontSize + 'px',
+                        color: slotProps.data.Status.StatusFontColor
+                    }">
+                        {{ slotProps.data.Status.StatusName }}
+                    </span>
+                </template>
+            </Column>
+        </DataTable>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import type { Ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { StockTakingService } from '@/Service/stockTakingService'
 
+import Breadcrumb from 'primevue/breadcrumb';
+import InputText from 'primevue/inputtext';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Button from 'primevue/button';
+
+interface Status {
+    StatusId: number;
+    StatusName: string;
+    StatusBgColor: string;
+    StatusBorderColor: string;
+    StatusFontColor: string;
+    StatusFontSize: number;
+}
+
+interface Item {
+    TakingId: Number,
+    TakingNo: string;
+    WarehouseName: string;
+    PersonInCharge: string;
+    Status: Status;
+    TakingDate: string;
+    LocationName: string | null;
+}
+
+const route = useRoute();
 const items = ref([])
 const currentPage = ref(1)
 const totalPages = ref(1)
@@ -163,35 +150,106 @@ const sortOrder = ref('DESC')
 const isPanelOpen = ref(false)
 const selectAll = ref(false)
 const totalRecords = ref(0)
+const selected = ref();
+const dropdownVisible: Ref<Record<string, boolean>> = ref({});
 
 const permission = ref({
     APPROVE: true,
     EXPORT: true,
     MODIFY: true,
     PRINT: true
-})
+});
 
-const TAKING = 1
-const APPROVED = 200
-const CANCELLED = 2000
+const TAKING = 1;
+const APPROVED = 200;
+const CANCELLED = 2000;
 
-const tableHeaders = [
-    { key: 'TakingNo', label: 'TakingNO', width: '120px' },
-    { key: 'TakingDate', label: 'TakingDate', width: '120px' },
-    { key: 'WarehouseName', label: 'Warehouse', width: '120px' },
-    { key: 'LocationName', label: 'Location', width: '120px' },
-    { key: 'PersonInCharge', label: 'PIC', width: '120px' },
-    { key: 'StatusName', label: 'Status', width: '60px' }
-]
+const path = computed(() => {
+    const breadcrumbItems: any[] = [];
+
+    breadcrumbItems.push({ icon: 'pi pi-home', route: '/' });
+
+    route.matched.forEach((matchedRoute) => {
+        if (matchedRoute.meta.module) {
+            breadcrumbItems.push({
+                label: matchedRoute.meta.module
+            });
+        }
+        if (matchedRoute.meta.breadcrumb) {
+            breadcrumbItems.push({
+                label: matchedRoute.meta.breadcrumb,
+                route: matchedRoute.path
+            });
+        }
+    });
+
+    return breadcrumbItems;
+});
+
+const view = (takingId: number) => {
+    console.log('View', takingId);
+};
+
+const edit = (takingId: number) => {
+    console.log('Edit', takingId);
+};
+
+const copy = (takingId: number) => {
+    console.log('Copy', takingId);
+};
+
+const print = (takingId: number) => {
+    console.log('Print', takingId);
+};
+
+const cancel = (takingId: number, takingDateEn: any) => {
+    console.log('Cancel', takingId, takingDateEn);
+};
 
 const sortedItems = computed(() => {
     return items.value
 })
 
+const handleAction = (data: { TakingId: any; TakingDateEn: any; }, action: any) => {
+    switch (action) {
+        case 'view':
+            view(data.TakingId);
+            break;
+        case 'edit':
+            edit(data.TakingId);
+            break;
+        case 'copy':
+            copy(data.TakingId);
+            break;
+        case 'print':
+            print(data.TakingId);
+            break;
+        case 'cancel':
+            cancel(data.TakingId, data.TakingDateEn);
+            break;
+    }
+};
+
+const toggleDropdown = (data: { TakingId: number; }) => {
+    dropdownVisible.value[data.TakingId] = !dropdownVisible.value[data.TakingId];
+};
+
+const closeDropdown = (data: { TakingId: number; }) => {
+    dropdownVisible.value[data.TakingId] = false;
+};
+
+const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
+};
+
 const fetchData = async () => {
     try {
         const response = await StockTakingService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
-        // console.log('Search result:', response);
+        console.log(response.Data)
         items.value = response.Data
         totalRecords.value = response.Pagination.TotalRecords
         totalPages.value = response.Pagination.TotalPages
@@ -200,47 +258,90 @@ const fetchData = async () => {
     }
 }
 
-const sortBy = (key) => {
-    if (key === sortKey.value) {
-        sortOrder.value = sortOrder.value === 'ASC' ? 'DESC' : 'ASC'
-    } else {
-        sortKey.value = key
-        sortOrder.value = 'DESC'
-    }
-    fetchData()
-}
+// const sortBy = (key) => {
+//     if (key === sortKey.value) {
+//         sortOrder.value = sortOrder.value === 'ASC' ? 'DESC' : 'ASC'
+//     } else {
+//         sortKey.value = key
+//         sortOrder.value = 'DESC'
+//     }
+//     fetchData()
+// }
 
-const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page
-        fetchData()
-    }
-}
+// const goToPage = (page) => {
+//     if (page >= 1 && page <= totalPages.value) {
+//         currentPage.value = page
+//         fetchData()
+//     }
+// }
 
 const search = () => {
     currentPage.value = 1
+    
     fetchData()
 }
 
-const toggleSearchPanel = () => {
-    isPanelOpen.value = !isPanelOpen.value
-}
+// const toggleSearchPanel = () => {
+//     isPanelOpen.value = !isPanelOpen.value
+// }
 
-const toggleAll = () => {
-    items.value.forEach(item => item.selected = selectAll.value)
-}
+// const toggleAll = () => {
+//     items.value.forEach(item => item.selected = selectAll.value)
+// }
 
 onMounted(() => {
     fetchData()
 })
 
-watch(searchString, () => {
-    search()
-})
+// watch(searchString, () => {
+//     search()
+// })
 
 </script>
 
 <style scoped>
+.dropdown {
+    position: relative;
+    display: inline-block;
+    /* Align the dropdown */
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    /* Position below the button */
+    left: 0;
+    /* Align to the left of the button */
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    /* Ensure it is on top */
+}
+
+.dropdown-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dropdown-list li {
+    padding: 10px 15px;
+    /* Space around each item */
+    cursor: pointer;
+}
+
+.dropdown-list li:hover {
+    background-color: #f0f0f0;
+    /* Change background on hover */
+}
+
+.text-danger {
+    color: red;
+    /* Style for Cancel item */
+}
+
 .hoverTable {
     width: 100%;
     border-collapse: collapse;

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import AppLayout from '@/layout/AppLayout.vue'
+// import AppLayout from '@/layout/AppLayout.vue'
 </script>
 
 <template>
