@@ -29,7 +29,7 @@
     margin: 0.75rem 0;
 }
 
-.layout-root-menuitem > a {
+.layout-menu .layout-root-menuitem > a {
     display: none;
 }
 
