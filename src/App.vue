@@ -1,12 +1,10 @@
-<script setup>
-  // import List from '@/components/StockTaking/List.vue';
+<script lang="ts" setup>
+import AppLayout from '@/layout/AppLayout.vue'
 </script>
 
 <template>
-  <!-- <Detail/> -->
-  <!-- <List/> -->
   <router-view></router-view>
+  <!-- <AppLayout/> -->
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
