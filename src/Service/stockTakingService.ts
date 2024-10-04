@@ -1,10 +1,11 @@
 import authService from '@/Service/authService';
+import axios from 'axios';
 
 const baseURL = 'http://localhost:3692/api/v1/stocktaking';
 const axiosInstance = await authService.getAuthenticatedAxiosInstance();
 
 const resource = {
-  async updatestatus(docIds) {
+  async updatestatus(docIds:number[]) {
     return {
       DocId: docIds
     };
@@ -12,14 +13,14 @@ const resource = {
 };
 
 const StockTakingService = {
-  async search(endpoint) {
+  async search(endpoint:any) {
     try {
       const response = await axiosInstance.get(`${baseURL}/${endpoint}`);
       if (!response.data) {
         throw new Error('Network response was not ok');
       }
       return response.data;
-    } catch (error) {
+    } catch (error:any) {
       alert(error.message);
     }
   },
@@ -31,7 +32,7 @@ const StockTakingService = {
         throw new Error('Network response was not ok');
       }
       return response.data;
-    } catch (error) {
+    } catch (error:any) {
       alert(error.message);
     }
   },

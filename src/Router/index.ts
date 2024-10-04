@@ -6,13 +6,13 @@ const router = createRouter({
     routes: [
         {
             path: '/',
+            name: 'login',
+            component: () => import('@/pages/auth/Login.vue')
+        },
+        {
+            path: '/',
             component: AppLayout,
             children: [
-                {
-                    path: '/',
-                    name: 'List',
-                    component: () => import('@/views/StockTaking/List.vue')
-                },
                 {
                     path: '/StockTaking/List',
                     name: 'StockTakingList',

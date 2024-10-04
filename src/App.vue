@@ -5,6 +5,8 @@ import AppLayout from '@/layout/AppLayout.vue'
 <template>
   <router-view></router-view>
   <!-- <AppLayout/> -->
+  <Toast />
+  <ConfirmDialog></ConfirmDialog>
 </template>
 
 <style scoped></style>

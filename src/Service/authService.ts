@@ -43,13 +43,7 @@ const authService = {
   },
 
   async getAuthenticatedAxiosInstance() {
-    let token = this.getToken();
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    if (token == null || this.isTokenExpired(token)) {
-      console.log('Token is Expired!!');
-      await this.logout();
-      token = await this.login('suchawadee.y@ku.th', 'Abc12345');
-    }
+    let token = localStorage.getItem('authToken');
     console.log('Token:', token);
     return axios.create({
       headers: {

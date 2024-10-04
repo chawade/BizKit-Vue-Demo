@@ -1,2 +1,3 @@
-@import './layout/layout.css';
+@import '@/assets/layout/layout.css';
 @import 'primeicons/primeicons.css';
+@import '@/assets/demo/demo.scss';
