@@ -10,14 +10,14 @@ const router = createRouter({
             component: () => import('@/pages/auth/Login.vue')
         },
         {
-            path: '/',
+            path: '/Home',
             component: AppLayout,
             children: [
                 {
-                    path: '/Home',
-                    name: 'Home',
+                    path: '/dashboard',
+                    name: 'Dashboard',
                     meta: { breadcrumb: 'Home' },
-                    component: () => import('@/views/StockTaking/List.vue')
+                    component: () => import('@/views/Dashboard/Dashboard.vue')
                 },
                 {
                     path: '/StockTaking/List',
@@ -49,6 +49,21 @@ const router = createRouter({
             ]
         }
     ]
+});
+
+router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem('authToken');
+    if (to.matched.some((record) => record.meta.requiresAuth) && !token) {
+        next({ name: 'login' });
+    }
+    // If the user is trying to access the login page and they are already authenticated, redirect to dashboard
+    else if (to.name === 'login' && token) {
+        next({ name: 'Dashboard' });
+    }
+    // Otherwise, allow navigation
+    else {
+        next();
+    }
 });
 
 export default router;

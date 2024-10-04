@@ -121,12 +121,6 @@ import type { Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { StockTakingService } from '@/Service/stockTakingService'
 
-import Breadcrumb from 'primevue/breadcrumb';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import InputGroup from 'primevue/inputgroup';
 
 const items = ref([])
 const currentPage = ref(1)
