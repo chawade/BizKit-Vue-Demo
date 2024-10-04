@@ -19,10 +19,6 @@
     <div v-if="loading">Loading...</div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else>
-
-      <div class="page-bar">
-        <!-- ... (breadcrumb implementation) ... -->
-      </div>
       <div class="card">
         <div class="page-content-inner">
           <div class="row">

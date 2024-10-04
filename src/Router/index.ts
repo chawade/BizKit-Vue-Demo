@@ -14,7 +14,7 @@ const router = createRouter({
             component: AppLayout,
             children: [
                 {
-                    path: '/',
+                    path: '/Home',
                     name: 'Home',
                     meta: { breadcrumb: 'Home' },
                     component: () => import('@/views/StockTaking/List.vue')
@@ -39,6 +39,13 @@ const router = createRouter({
                     component: () => import('@/views/StockTaking/Maintain.vue'),
                     props: true,
                 },
+                {
+                    path: '/StockTaking/Maintain/',
+                    name: 'AddStockTaking',
+                    meta: { module: 'Inventory', breadcrumb: 'Add/Edit Stock Taking' },
+                    component: () => import('@/views/StockTaking/Maintain.vue'),
+                    props: true,
+                }
             ]
         }
     ]

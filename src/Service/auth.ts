@@ -40,35 +40,3 @@ const AuthService = {
 };
 
 export default AuthService;
-
-// // export const login = async (username: string, password: string) => {
-// //     const response = await axios.post(`${API_URL}/login`, { Username: username, Password: password });
-// //     if (response.data && response.data.token) {
-// //         // Save token to localStorage or Vuex
-// //         localStorage.setItem('authToken', response.data.token.access_token);
-// //     }
-// //     return response.data;
-// // };
-
-// export const logout = () => {
-//     localStorage.removeItem('authToken');
-//     router.push({ name: 'login' });
-// };
-
-// export const verifyToken = async () => {
-//     const token = localStorage.getItem('authToken');
-//     if (!token) {
-//         throw new Error('No token found');
-//     }
-
-//     try {
-//         const response = await axios.get(`${API_URL}/Verify`, {
-//             headers: { Authorization: `Bearer ${token}` }
-//         });
-//         return response.data; // This will be the result of ValidateToken(Token) from your backend
-//     } catch (error) {
-//         console.error('Token verification failed:', error);
-//         logout(); // Clear invalid token
-//         throw new Error('Invalid token');
-//     }
-// };

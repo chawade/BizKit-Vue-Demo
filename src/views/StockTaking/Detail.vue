@@ -75,7 +75,7 @@
         </div>
         <div class="col-sm-4 text-right">
           <router-link to="/StockTaking/Maintain/0">
-            <Button label=" Create Stock Taking" severity="success" />
+            <Button icon="pi pi-plus-circle" label="Create Stock Taking" severity="success" />
           </router-link>
         </div>
       </div>

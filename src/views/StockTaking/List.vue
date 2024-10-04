@@ -19,6 +19,12 @@
     <div v-else-if="error">{{ error }}</div>
     <div v-else>
         <div class="card">
+            <div class="col-sm-8 flex justify-between mb-8">
+                <h4 class="font-bold text-l flex gap-2 items-center"><span class="pi pi-cog"></span>Stock Taking</h4>
+                <router-link to="/StockTaking/Maintain/">
+                    <Button icon="pi pi-plus-circle" label="Create Stock Taking" severity="success" />
+                </router-link>
+            </div>
             <div class="row">
                 <div class="col-sm-8 mb-5">
                     <div v-if="permission.EXPORT" class="grid gap-2" role="group">
@@ -34,7 +40,7 @@
                                 <InputGroup>
                                     <InputText v-model="searchString" class="w-full" type="text" size="medium"
                                         placeholder="TakingNo, Warehouse" />
-                                    <Button icon="pi pi-search" severity="info" @click="search" />
+                                    <Button icon="pi pi-search" severity="info"  @click="search" />
                                 </InputGroup>
                             </span>
                         </div>
@@ -84,6 +90,7 @@
                             </router-link>
                         </template>
                     </Column>
+                    <Column field="TakingDate" header="TakingDate" style="width: 20%"></Column>
                     <Column field="WarehouseName" header="Warehouse" style="width: 20%"></Column>
                     <Column field="LocationName" header="Location" style="width: 20%"></Column>
                     <Column field="PersonInCharge" header="Person In Charge" style="width: 20%"></Column>
@@ -132,6 +139,8 @@ const totalRecords = ref(0)
 const selectedItems = ref([]);
 const selectedTakingIds = ref<number[]>([]);
 const dropdownVisible: Ref<Record<string, boolean>> = ref({});
+const loading = ref(false);
+const error = ref(false);
 // const isPanelOpen = ref(false)
 const route = useRoute();
 
@@ -173,7 +182,7 @@ const sortedItems = computed(() => {
 
 const fetchData = async () => {
     try {
-        const response = await StockTakingService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
+        const response = await StockTakingService.search(`${currentPage.value}/0/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
         console.log('Search result:', response);
         items.value = response.Data
         totalRecords.value = response.Pagination.TotalRecords
@@ -204,11 +213,8 @@ const cancel = (takingId: number, takingDateEn: any) => {
     console.log('Cancel', takingId, takingDateEn);
 };
 
-const handleAction = (data: { TakingId: any; TakingDateEn: any; StatusCode: number }, action: any) => {
+const handleAction = (data: { TakingId: number; TakingDateEn: any; StatusCode: number }, action: any) => {
     switch (action) {
-        case 'view':
-            view(data.TakingId);
-            break;
         case 'edit':
             edit(data.TakingId);
             break;

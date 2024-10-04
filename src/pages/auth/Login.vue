@@ -19,8 +19,7 @@ const errorMessage = ref('');
 const loginAuth = async () => {
     try {
         await AuthService.login(email.value, password.value);
-
-        router.push({ name: 'StockTakingList' });
+        router.push({ name: 'Home' });
     } catch (error:any) {
         errorMessage.value = error.response?.data?.message || 'Login failed';
     }
