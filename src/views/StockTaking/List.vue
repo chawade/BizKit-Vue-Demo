@@ -1,20 +1,4 @@
 <template>
-    <div>
-        <h3 class="font-bold text-xl mb-8">Stock Taking Detail</h3>
-    </div>
-    <Breadcrumb :model="breadcrumb" class="card">
-        <template #item="{ item, props }">
-            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-                <a :href="href" v-bind="props.action" @click="navigate">
-                    <span :class="[item.icon, 'text-color']" />
-                    <span class="text-primary font-semibold">{{ item.label }}</span>
-                </a>
-            </router-link>
-            <a v-else :href="item.url" :target="item.target" v-bind="props.action">
-                <span class="text-surface-700 dark:text-surface-0">{{ item.label }}</span>
-            </a>
-        </template>
-    </Breadcrumb>
     <div v-if="loading">Loading...</div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else>
@@ -29,7 +13,7 @@
                 <div class="col-sm-8 mb-5">
                     <div v-if="permission.EXPORT" class="grid gap-2" role="group">
                         <div class="col-span-full lg:col-span-8 flex flex-wrap gap-2">
-                            <Button label="Adjust Stock" severity="success" class="w-full sm:w-auto" />
+                            <Button label="Adjust Stock" severity="success" class="w-full sm:w-auto" @click="approves" />
                             <Button label="ExportCSV" severity="info" class="w-full sm:w-auto" @click="exportToCSV" />
                             <Button label="ExportExcel" severity="info" class="w-full sm:w-auto"
                                 @click="exportToExcel" />
@@ -40,7 +24,7 @@
                                 <InputGroup>
                                     <InputText v-model="searchString" class="w-full" type="text" size="medium"
                                         placeholder="TakingNo, Warehouse" />
-                                    <Button icon="pi pi-search" severity="info"  @click="search" />
+                                    <Button icon="pi pi-search" severity="info" @click="search" />
                                 </InputGroup>
                             </span>
                         </div>
@@ -53,11 +37,6 @@
                     :paginator="true" :filters="sortedItems" :rowsPerPageOptions="[5, 10, 25]" scrollable
                     scrollHeight="400px" tableStyle="min-width: 50rem" @row-select="onRowSelect"
                     @row-unselect="onRowUnselect">
-                    <!-- <Column header="No." style="width: 5%">
-                    <template #body="{ index }">
-                        {{ index + 1 }}
-                    </template>
-                </Column> -->
                     <Column header="">
                         <template #body="{ data }">
                             <div class="dropdown" @mouseleave="closeDropdown(data)">
@@ -83,18 +62,18 @@
                         </template>
                     </Column>
                     <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
-                    <Column field="TakingNo" header="TakingNo" style="width: 15%">
+                    <Column field="TakingNo" header="TakingNo" sortable style="width: 15%">
                         <template #body="{ data }">
                             <router-link :to="`/StockTaking/Detail/${data.TakingId}`" custom v-slot="{ navigate }">
                                 <Button :label="data.TakingNo" link @click="navigate" class="p-0" />
                             </router-link>
                         </template>
                     </Column>
-                    <Column field="TakingDate" header="TakingDate" style="width: 20%"></Column>
-                    <Column field="WarehouseName" header="Warehouse" style="width: 20%"></Column>
-                    <Column field="LocationName" header="Location" style="width: 20%"></Column>
-                    <Column field="PersonInCharge" header="Person In Charge" style="width: 20%"></Column>
-                    <Column field="Status" header="Status" style="width: 15%;">
+                    <Column field="TakingDate" header="TakingDate" sortable style="width: 20%"></Column>
+                    <Column field="WarehouseName" header="Warehouse" sortable style="width: 20%"></Column>
+                    <Column field="LocationName" header="Location" sortable style="width: 20%"></Column>
+                    <Column field="PersonInCharge" header="Person In Charge" sortable style="width: 20%"></Column>
+                    <Column field="Status" header="Status" sortable style="width: 15%;">
                         <template #body="{ data }">
                             <span :style="{
                                 backgroundColor: data.Status.StatusBgColor,
@@ -118,14 +97,18 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import type { Ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { StockTakingService } from '@/Service/stockTakingService'
+import StockTakingService from '@/service/stockTakingService'
 
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import InputGroup from 'primevue/inputgroup';
 
 const items = ref([])
 const currentPage = ref(1)
 const totalPages = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(0)
 const searchString = ref('')
 const sortKey = ref('TakingNo')
 const sortOrder = ref('DESC')
@@ -135,29 +118,6 @@ const selectedTakingIds = ref<number[]>([]);
 const dropdownVisible: Ref<Record<string, boolean>> = ref({});
 const loading = ref(false);
 const error = ref(false);
-// const isPanelOpen = ref(false)
-const route = useRoute();
-
-const breadcrumb = computed(() => {
-    const breadcrumbItems: any[] = [];
-
-    breadcrumbItems.push({ icon: 'pi pi-home', route: '/' });
-    route.matched.forEach((matchedRoute) => {
-        if (matchedRoute.meta.module) {
-            breadcrumbItems.push({
-                label: matchedRoute.meta.module,
-            });
-        }
-        if (matchedRoute.meta.breadcrumb) {
-            breadcrumbItems.push({
-                label: matchedRoute.meta.breadcrumb,
-                route: matchedRoute.path
-            });
-        }
-    });
-
-    return breadcrumbItems;
-});
 
 const permission = ref({
     APPROVE: true,
@@ -176,7 +136,7 @@ const sortedItems = computed(() => {
 
 const fetchData = async () => {
     try {
-        const response = await StockTakingService.search(`${currentPage.value}/0/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
+        const response = await StockTakingService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
         console.log('Search result:', response);
         items.value = response.Data
         totalRecords.value = response.Pagination.TotalRecords
@@ -184,6 +144,24 @@ const fetchData = async () => {
     } catch (error) {
         console.error('Error fetching data:', error)
     }
+}
+
+const approves = async () => {
+    try {
+        loading.value = true;
+        await StockTakingService.approves(selectedTakingIds.value);
+        fetchData();
+    } catch (error) {
+        console.error('Error fetching data:', error)
+    }
+};
+
+const exportToCSV = () => {
+    console.log('Export CSV');
+}
+
+const exportToExcel = () => {
+    console.log('Export Excel');
 }
 
 const search = () => {
@@ -237,7 +215,6 @@ const onRowSelect = (event: any) => {
     if (!selectedTakingIds.value.includes(takingId)) {
         selectedTakingIds.value.push(takingId);
     }
-    console.log('Selected TakingIds:', selectedTakingIds.value);
 };
 
 const onRowUnselect = (event: any) => {

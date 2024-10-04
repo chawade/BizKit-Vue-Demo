@@ -1,21 +1,4 @@
 <template>
-  <div class="stock-taking-form">
-    <div>
-      <h3 class="font-bold text-xl mb-8">Stock Taking Detail</h3>
-    </div>
-    <Breadcrumb :model="breadcrumb" class="card">
-      <template #item="{ item, props }">
-        <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-          <a :href="href" v-bind="props.action" @click="navigate">
-            <span :class="[item.icon, 'text-color']" />
-            <span class="text-primary font-semibold">{{ item.label }}</span>
-          </a>
-        </router-link>
-        <a v-else :href="item.url" :target="item.target" v-bind="props.action">
-          <span class="text-surface-700 dark:text-surface-0">{{ item.label }}</span>
-        </a>
-      </template>
-    </Breadcrumb>
     <div v-if="loading">Loading...</div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else>
@@ -136,17 +119,14 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 // import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import DatePicker from 'primevue/datepicker';
-import { useRoute } from 'vue-router';
-import Breadcrumb from 'primevue/breadcrumb';
 import InputText from 'primevue/inputtext';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -184,10 +164,7 @@ interface FormData {
   stockItems: StockItem[]
 }
 
-
-// const { t } = useI18n()
-const route = useRoute();
-const error = ref<string | null>(null)
+const error = ref<boolean | null>(null)
 const formData = reactive<FormData>({
   takingNo: '',
   takingDate: new Date(),
@@ -197,32 +174,12 @@ const formData = reactive<FormData>({
   stockItems: []
 })
 
-const breadcrumb = computed(() => {
-  const breadcrumbItems: any[] = [];
-
-  breadcrumbItems.push({ icon: 'pi pi-home', route: '/' });
-
-  route.matched.forEach((matchedRoute) => {
-    if (matchedRoute.meta.module) {
-      breadcrumbItems.push({
-        label: matchedRoute.meta.module
-      });
-    }
-    if (matchedRoute.meta.breadcrumb) {
-      breadcrumbItems.push({
-        label: matchedRoute.meta.breadcrumb,
-        route: matchedRoute.path
-      });
-    }
-  });
-
-  return breadcrumbItems;
-});
 const warehouseList = ref<Warehouse[]>([])
 const locationList = ref<Location[]>([])
 const dateFormat = 'dd/MM/yyyy'
 const qtyDecimalPlaces = 2
 const hasApprovePermission = ref(false)
+const title = ref<string>('');
 
 const fetchInitialData = async () => {
   try {

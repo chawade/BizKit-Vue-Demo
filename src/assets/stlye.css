@@ -1,6 +1,6 @@
 @import '@/assets/layout/layout.css';
 @import 'primeicons/primeicons.css';
-@import '@/assets/demo/demo.scss';
+/* @import '@/assets/demo/demo.scss'; */
 
 .dropdown {
     position: relative;

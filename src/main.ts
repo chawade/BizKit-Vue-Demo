@@ -4,7 +4,7 @@ import "@/assets/tailwind.css";
 import { createApp } from "vue";
 import type { App as VueApp } from 'vue';
 import App from "./App.vue";
-import router from "./Router/index";
+import router from "./router/index";
 
 import Aura from "@primevue/themes/aura";
 import PrimeVue from "primevue/config";

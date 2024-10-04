@@ -28,21 +28,21 @@ const router = createRouter({
                 {
                     path: '/StockTaking/Detail/:id',
                     name: 'StockTakingDetail',
-                    meta: { module: 'Inventory', breadcrumb: 'Stock Taking Detail' },
+                    meta: { parent: 'StockTakingList', breadcrumb: 'Stock Taking Detail' },
                     component: () => import('@/views/StockTaking/Detail.vue'),
                     props: true,
                 },
                 {
                     path: '/StockTaking/Maintain/:id',
                     name: 'StockTakingMaintain',
-                    meta: { module: 'Inventory', breadcrumb: 'Add/Edit Stock Taking' },
+                    meta: { parent: 'StockTakingList', breadcrumb: 'Add/Edit Stock Taking' },
                     component: () => import('@/views/StockTaking/Maintain.vue'),
                     props: true,
                 },
                 {
                     path: '/StockTaking/Maintain/',
                     name: 'AddStockTaking',
-                    meta: { module: 'Inventory', breadcrumb: 'Add/Edit Stock Taking' },
+                    meta: { parent: 'StockTakingList', breadcrumb: 'Add/Edit Stock Taking' },
                     component: () => import('@/views/StockTaking/Maintain.vue'),
                     props: true,
                 }
@@ -53,6 +53,10 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('authToken');
+    // If a module is equal to the breadcrumb, include the path of the list
+    if (to.meta.module === to.meta.breadcrumb && to.meta.parent) {
+        to.meta.breadcrumb = `${to.meta.module} > ${router.resolve({ name: String(to.meta.parent) }).href} > ${to.meta.breadcrumb}`;
+    }
     if (to.matched.some((record) => record.meta.requiresAuth) && !token) {
         next({ name: 'login' });
     }

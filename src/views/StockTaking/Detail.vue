@@ -1,21 +1,4 @@
 <template>
-  <div>
-    <h3 class="font-bold text-xl mb-8">Stock Taking Detail</h3>
-  </div>
-  <Breadcrumb :model="breadcrumb" class="card">
-    <template #item="{ item, props }">
-      <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-        <a :href="href" v-bind="props.action" @click="navigate">
-          <span :class="[item.icon, 'text-color']" />
-          <span class="text-primary font-semibold">{{ item.label }}</span>
-        </a>
-      </router-link>
-      <a v-else :href="item.url" :target="item.target" v-bind="props.action">
-        <span class="text-surface-700 dark:text-surface-0">{{ item.label }}</span>
-      </a>
-    </template>
-  </Breadcrumb>
-
   <div v-if="loading">Loading...</div>
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
@@ -74,7 +57,7 @@
           </router-link>
         </div>
         <div class="col-sm-4 text-right">
-          <router-link to="/StockTaking/Maintain/0">
+          <router-link to="/StockTaking/Maintain/">
             <Button icon="pi pi-plus-circle" label="Create Stock Taking" severity="success" />
           </router-link>
         </div>
@@ -168,42 +151,24 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { StockTakingService } from '@/Service/stockTakingService'
+import StockTakingService from '@/service/stockTakingService'
 
-import Breadcrumb from 'primevue/breadcrumb';
-import InputText from 'primevue/inputtext';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 
 const stockTakingData = ref();
 const loading = ref(true);
-const error = ref(null);
+const error = ref(false);
 const route = useRoute();
 const router = useRouter();
+const TakingId: number = Number(route.params.id);
 
-const breadcrumb = computed(() => {
-  const breadcrumbItems: any[] = [];
 
-  breadcrumbItems.push({ icon: 'pi pi-home', route: '/' });
-  breadcrumbItems.push({ label: 'Stock Taking', url: '/StockTaking/List' });
-  route.matched.forEach((matchedRoute) => {
-    if (matchedRoute.meta.breadcrumb) {
-      breadcrumbItems.push({
-        label: matchedRoute.meta.breadcrumb,
-        route: matchedRoute.path
-      });
-    }
-  });
-
-  return breadcrumbItems;
-});
-
-const fetchStockTakingData = async () => {
+const fetchData = async () => {
   try {
-    const TakingId = route.params.id;
     const response = await StockTakingService.get(TakingId);
     stockTakingData.value = response.Data;
   } catch (err) {
@@ -221,11 +186,11 @@ const approve = async () => {
   console.log('Approved');
   try {
     loading.value = true;
-    const TakingId = [route.params.id];
-    await StockTakingService.approve(route.params.id, TakingId);
-    fetchStockTakingData();
+    await StockTakingService.approve(`/${TakingId}`, [TakingId]);
+    fetchData();
   } catch (err) {
     error.value = `Failed to fetch stock taking data: ${err.message}`;
+    loading.value = false;
   }
 };
 
@@ -233,9 +198,8 @@ const cancelApprove = async () => {
   console.log("Cancel approve!");
   try {
     loading.value = true;
-    const TakingId = [route.params.id];
-    await StockTakingService.cancelApprove(route.params.id, TakingId);
-    fetchStockTakingData();
+    await StockTakingService.cancelApprove(`/${TakingId}`, [TakingId]);
+    fetchData();
   } catch (err) {
     error.value = `Failed to fetch stock taking data: ${err.message}`;
   }
@@ -245,9 +209,8 @@ const cancel = async () => {
   console.log("Cancel!");
   try {
     loading.value = true;
-    const TakingId = [route.params.id];
-    await StockTakingService.cancel(route.params.id, TakingId);
-    fetchStockTakingData();
+    await StockTakingService.cancel(`/${TakingId}`, [TakingId]);
+    fetchData();
   } catch (err) {
     error.value = `Failed to fetch stock taking data: ${err.message}`;
   }
@@ -255,8 +218,7 @@ const cancel = async () => {
 
 const editStock = () => {
   console.log('Edit');
-  const id = route.params.id;
-  router.push(`/StockTaking/Maintain/${id}`);
+  router.push(`/StockTaking/Maintain/${TakingId}`);
 };
 
 const goBackToList = () => {
@@ -278,7 +240,7 @@ const newStockTaking = () => {
   console.log('New Stock Taking');
 };
 
-onMounted(fetchStockTakingData);
+onMounted(fetchData);
 </script>
 
 <style scoped>
