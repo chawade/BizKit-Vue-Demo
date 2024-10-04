@@ -1,110 +1,310 @@
 <template>
-  <div class="card">
-    <div id="alertmsg" class="alert alert-danger" v-if="showAlert">
-      <button type="button" @click="hideDivMSG" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-      <span id="lblMsg">{{ alertMsg }}</span>
+  <div class="stock-taking-form">
+    <div>
+      <h3 class="font-bold text-xl mb-8">Stock Taking Detail</h3>
     </div>
+    <Breadcrumb :model="breadcrumb" class="card">
+      <template #item="{ item, props }">
+        <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+          <a :href="href" v-bind="props.action" @click="navigate">
+            <span :class="[item.icon, 'text-color']" />
+            <span class="text-primary font-semibold">{{ item.label }}</span>
+          </a>
+        </router-link>
+        <a v-else :href="item.url" :target="item.target" v-bind="props.action">
+          <span class="text-surface-700 dark:text-surface-0">{{ item.label }}</span>
+        </a>
+      </template>
+    </Breadcrumb>
+    <div v-if="loading">Loading...</div>
+    <div v-else-if="error">{{ error }}</div>
+    <div v-else>
 
-    <table>
-      <tbody id="prList">
-        <tr v-for="(item, index) in stockItems" :key="index">
-          <td style="text-align:center">
-            <input v-model="item.actualQty" @change="onActualQtyChange(item)" type="number" class="txtActualQty" />
-          </td>
-          <td>
-            <span>{{ formatNumber(item.diff, '.', ',', qtyDecPlaces) }}</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+      <div class="page-bar">
+        <!-- ... (breadcrumb implementation) ... -->
+      </div>
+      <div class="card">
+        <div class="page-content-inner">
+          <div class="row">
+            <div class="col-md-12">
+              <div class=" light bordered">
+                <!-- portlet -->
+                <div class="portlet-title">
+                  <div class="caption">
+                    <span class="caption-subject font-green bold uppercase">
+                      {{ ('Add/Edit Stock Taking') }}
+                    </span>
+                  </div>
+                </div>
+                <div class="portlet-body form">
+                  <div class="form-horizontal">
+                    <div class="form-body">
+                      <!-- Alert Message -->
+                      <div v-if="error" class="alert alert-danger">
+                        <button @click="hideError" type="button" class="close" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                        <span>{{ error }}</span>
+                      </div>
 
-    <button @click="saveStockTaking('DRAFT')" id="btnSave">Save</button>
-    <button @click="saveStockTaking('PLANNED')" id="btnSavePlan">Save Plan</button>
-    <button @click="saveStockTaking('APPROVED')" id="btnSaveAndApprove">Save and Approve</button>
+                      <!-- Form Fields -->
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="control-label col-sm-4">{{ ('Taking No') }}</label>
+                            <div class="col-sm-7">
+                              <input v-model="formData.takingNo" class="form-control" readonly />
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="control-label col-sm-4 require">{{ ('Taking Date') }}</label>
+                            <div class="col-sm-7">
+                              <DatePicker v-model="formData.takingDate" :format="dateFormat" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="control-label col-sm-4 require">{{ ('Warehouse') }}</label>
+                            <div class="col-sm-7">
+                              <Select v-model="formData.warehouseId" class="form-control" @change="onWarehouseChange">
+                                <option v-for="warehouse in warehouseList" :key="warehouse.id" :value="warehouse.id">
+                                  {{ warehouse.name }}
+                                </option>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="control-label col-sm-4">{{ ('Location') }}</label>
+                            <div class="col-sm-7">
+                              <Select v-model="formData.locationId" class="form-control" @change="onLocationChange">
+                                <option v-for="location in locationList" :key="location.id" :value="location.id">
+                                  {{ location.name }}
+                                </option>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Stock Items Table -->
+                      <div class="row">
+                        <div class="table-responsive">
+                          <DataTable :value="formData" tableStyle="min-width: 50rem">
+                            <Column field="ItemCode" header="Item Code"></Column>
+                            <Column field="ItemName" header="Item Name"></Column>
+                            <Column field="LotNo" header="Lot/Serial No."></Column>
+                            <Column field="ExpiryDate" header="Expiry Date"></Column>
+                            <Column field="StockQuantity" header="Stock Quantity"></Column>
+                            <Column field="ActualQuantity" header="Actual Quantity"></Column>
+                            <Column field="DiffQuantity" header="Difference"></Column>
+                            <Column field="Unit" header="Unit"></Column>
+                            <Column field="Remark" header="Remark"></Column>
+                          </DataTable>
+                        </div>
+                      </div>
+
+                      <!-- Remarks -->
+                      <div class="row">
+                        <div class="col-sm-5">
+                          <label class="control-label">{{ ('stockTaking.remark') }}</label>
+                          <textarea v-model="formData.remark" class="form-control" rows="8"></textarea>
+                        </div>
+                      </div>
+
+                      <!-- Action Buttons -->
+                      <div class="row">
+                        <div class="col-sm-12 text-right savebuttons">
+                          <button @click="saveStockTaking('DRAFT')" class="bz-btn btn-warning">{{ ('stockTaking.save')
+                            }}</button>
+                          <button @click="saveStockTaking('PLANNED')" class="bz-btn btn-success">{{
+                            ('stockTaking.savePlan') }}</button>
+                          <button v-if="hasApprovePermission" @click="saveStockTaking('APPROVED')"
+                            class="bz-btn blue">{{
+                              ('stockTaking.saveAndApprove') }}</button>
+                          <button @click="cancel" class="bz-btn grey">{{ ('stockTaking.cancel') }}</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, computed, reactive, onMounted } from 'vue'
+// import { useI18n } from 'vue-i18n'
+import axios from 'axios'
+import DatePicker from 'primevue/datepicker';
+import { useRoute } from 'vue-router';
+import Breadcrumb from 'primevue/breadcrumb';
+import InputText from 'primevue/inputtext';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Button from 'primevue/button';
 
-const showAlert = ref(false);
-const alertMsg = ref('');
-const qtyDecPlaces = ref(2);
-const stockItems = ref<any[]>([]);
-const oldWarehouseId = ref(0);
-const oldLocationId = ref(0);
-const warehouseId = ref(0);
-const locationId = ref(0);
-const takingDate = ref('');
-const status = ref<'DRAFT' | 'PLANNED' | 'APPROVED'>('DRAFT');
+interface Warehouse {
+  id: number
+  name: string
+}
 
-// Methods
-const hideDivMSG = () => {
-  showAlert.value = false;
-};
+interface Location {
+  id: number
+  name: string
+}
 
-const formatNumber = (number: number, decimalSeparator: string, thousandSeparator: string, decimalPlaces: number) => {
-  return number
-    .toFixed(decimalPlaces)
-    .replace(/\d(?=(\d{3})+\.)/g, `$&${thousandSeparator}`);
-};
+interface StockItem {
+  itemCode: string
+  itemName: string
+  shelfCode: string
+  lotNo: string
+  expiryDate: string
+  onHandQty: number
+  actualQty: number
+  difference: number
+  uom: string
+  notes: string
+}
 
-const onActualQtyChange = (item: any) => {
-  item.diff = item.actualQty - item.onHandQty;
-};
+interface FormData {
+  takingNo: string
+  takingDate: Date
+  warehouseId: number | null
+  locationId: number | null
+  remark: string
+  stockItems: StockItem[]
+}
 
-const saveStockTaking = (newStatus: 'DRAFT' | 'PLANNED' | 'APPROVED') => {
-  if (validateStockTaking()) {
-    if (validateTable()) {
-      status.value = newStatus;
-      submitStockTaking();
-    } else {
-      showAlert.value = true;
-      alertMsg.value = 'Please fill required fields.';
+
+// const { t } = useI18n()
+const route = useRoute();
+const error = ref<string | null>(null)
+const formData = reactive<FormData>({
+  takingNo: '',
+  takingDate: new Date(),
+  warehouseId: null,
+  locationId: null,
+  remark: '',
+  stockItems: []
+})
+
+const breadcrumb = computed(() => {
+  const breadcrumbItems: any[] = [];
+
+  breadcrumbItems.push({ icon: 'pi pi-home', route: '/' });
+
+  route.matched.forEach((matchedRoute) => {
+    if (matchedRoute.meta.module) {
+      breadcrumbItems.push({
+        label: matchedRoute.meta.module
+      });
     }
-  }
-};
+    if (matchedRoute.meta.breadcrumb) {
+      breadcrumbItems.push({
+        label: matchedRoute.meta.breadcrumb,
+        route: matchedRoute.path
+      });
+    }
+  });
 
-const validateStockTaking = () => {
-  let isValid = true;
-  if (!takingDate.value) {
-    alertMsg.value = 'Stock Taking Date is required.';
-    isValid = false;
-  }
-  if (warehouseId.value === 0) {
-    alertMsg.value = 'Warehouse is required.';
-    isValid = false;
-  }
-  return isValid;
-};
-
-const validateTable = () => {
-  return stockItems.value.every((item) => item.actualQty !== null && item.actualQty !== '');
-};
-
-const submitStockTaking = () => {
-  console.log('Stock-taking submitted with status:', status.value);
-};
-
-const getStockItems = async (warehouseId: number, locationId: number) => {
-  try {
-    const response = await axios.post('/StockTaking/GetStockItemForTaking', {
-      warehouseId,
-      locationId,
-    });
-    stockItems.value = response.data.items;
-  } catch (error) {
-    console.error('Error fetching stock items:', error);
-  }
-};
-
-onMounted(() => {
-  getStockItems(warehouseId.value, locationId.value);
+  return breadcrumbItems;
 });
+const warehouseList = ref<Warehouse[]>([])
+const locationList = ref<Location[]>([])
+const dateFormat = 'dd/MM/yyyy'
+const qtyDecimalPlaces = 2
+const hasApprovePermission = ref(false)
+
+const fetchInitialData = async () => {
+  try {
+    const response = await axios.get('/api/stock-taking/initial-data')
+    warehouseList.value = response.data.warehouseList
+    hasApprovePermission.value = response.data.hasApprovePermission
+    // Set other initial data as needed
+  } catch (err) {
+    error.value = 'Failed to fetch initial data'
+  }
+}
+
+const onWarehouseChange = async () => {
+  try {
+    const response = await axios.get(`/api/stock-taking/locations/${formData.warehouseId}`)
+    locationList.value = response.data.locationList
+    formData.locationId = null
+    await fetchStockItems()
+  } catch (err) {
+    error.value = 'Failed to fetch locations'
+  }
+}
+
+const onLocationChange = async () => {
+  await fetchStockItems()
+}
+
+const fetchStockItems = async () => {
+  try {
+    const response = await axios.get('/api/stock-taking/stock-items', {
+      params: {
+        warehouseId: formData.warehouseId,
+        locationId: formData.locationId
+      }
+    })
+    formData.stockItems = response.data.stockItems.map((item: StockItem) => ({
+      ...item,
+      actualQty: item.onHandQty,
+      difference: 0
+    }))
+  } catch (err) {
+    error.value = 'Failed to fetch stock items'
+  }
+}
+
+const updateDifference = (index: number) => {
+  const item = formData.stockItems[index]
+  item.difference = item.actualQty - item.onHandQty
+}
+
+const formatNumber = (value: number): string => {
+  return value.toFixed(qtyDecimalPlaces)
+}
+
+const saveStockTaking = async (status: 'DRAFT' | 'PLANNED' | 'APPROVED') => {
+  try {
+    const response = await axios.post('/api/stock-taking/save', {
+      ...formData,
+      status
+    })
+    // Handle successful save
+    console.log('Stock taking saved:', response.data)
+  } catch (err) {
+    error.value = 'Failed to save stock taking'
+  }
+}
+
+const cancel = () => {
+  // Implement cancel logic (e.g., redirect to list page)
+}
+
+const hideError = () => {
+  error.value = null
+}
+
+onMounted(fetchInitialData)
 </script>
 
 <style scoped>
+/* Add any component-specific styles here */
 </style>

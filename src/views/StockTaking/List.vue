@@ -1,96 +1,120 @@
 <template>
     <div>
-        <div class="row">
-            <div class="col-sm-8">
-                <!-- <a v-if="permission.APPROVE" @click="approve" id="btnApprove"
-                    class="btn btn-transparent blue btn-outline">
-                    
-                </a>-->
-                <div v-if="permission.EXPORT" class="grid gap-2" role="group">
-                    <div class="col-span-full lg:col-span-8 flex flex-wrap gap-2">
-                        <Button label="Approve" severity="success" class="w-full sm:w-auto" />
-                        <Button label="ExportCSV" severity="info" class="w-full sm:w-auto" @click="exportToCSV" />
-                        <Button label="ExportExcel" severity="info" class="w-full sm:w-auto" @click="exportToExcel" />
-                    </div>
+        <h3 class="font-bold text-xl mb-8">Stock Taking Detail</h3>
+    </div>
+    <Breadcrumb :model="breadcrumb" class="card">
+        <template #item="{ item, props }">
+            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+                <a :href="href" v-bind="props.action" @click="navigate">
+                    <span :class="[item.icon, 'text-color']" />
+                    <span class="text-primary font-semibold">{{ item.label }}</span>
+                </a>
+            </router-link>
+            <a v-else :href="item.url" :target="item.target" v-bind="props.action">
+                <span class="text-surface-700 dark:text-surface-0">{{ item.label }}</span>
+            </a>
+        </template>
+    </Breadcrumb>
+    <div v-if="loading">Loading...</div>
+    <div v-else-if="error">{{ error }}</div>
+    <div v-else>
+        <div class="card">
+            <div class="row">
+                <div class="col-sm-8 mb-5">
+                    <div v-if="permission.EXPORT" class="grid gap-2" role="group">
+                        <div class="col-span-full lg:col-span-8 flex flex-wrap gap-2">
+                            <Button label="Adjust Stock" severity="success" class="w-full sm:w-auto" />
+                            <Button label="ExportCSV" severity="info" class="w-full sm:w-auto" @click="exportToCSV" />
+                            <Button label="ExportExcel" severity="info" class="w-full sm:w-auto"
+                                @click="exportToExcel" />
+                        </div>
 
-                    <div class="col-span-full lg:col-span-2 mt-2 lg:mt-0 lg:col-start-9">
-                        <span class="p-input-icon-right w-full">
-                            <InputGroup>
-                                <InputText v-model="searchString" class="w-full" type="text" size="medium"
-                                    placeholder="TakingNo, Warehouse" />
-                                <Button icon="pi pi-search" severity="warn" />
-                            </InputGroup>
-                        </span>
+                        <div class="col-span-full lg:col-span-2 mt-2 lg:mt-0 lg:col-start-9">
+                            <span class="p-input-icon-right w-full">
+                                <InputGroup>
+                                    <InputText v-model="searchString" class="w-full" type="text" size="medium"
+                                        placeholder="TakingNo, Warehouse" />
+                                    <Button icon="pi pi-search" severity="info" @click="search" />
+                                </InputGroup>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-sm-4 text-right">
-                <div class="table-group-actions pull-right">
-                    <span class="input-group-btn" style="display: inline-table; margin-left: 3px">
-                        <!-- <input type="text" style="font-size:12px;" :placeholder="('StockTaking.StockTaking')"
-                            class="form-control input-inline" v-model="searchString" @click="collapsed"
-                            maxlength="100" /> -->
 
-
-                        <span class="input-group-btn">
-                            <a class="btn btn-transparent blue btn-outline" @click="search" id="btnSearch">
-                                <i class="fa fa-search"></i>
-                            </a>
-                        </span>
-                        <a id="lblSearch" style="font-weight:bold;color:#1c9dd8" @click="toggleSearchPanel">
-                            <i class="fa fa-bars" :class="{ 'rotate': isPanelOpen }"></i>
-                        </a>
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div id="pnlsearch" class="collapse row border border-default" v-show="isPanelOpen">
-            <!-- Search panel fields go here -->
-        </div>
-
-        <div class="table-scrollable table-list">
-            <DataTable v-model:selection="selectedProduct" :value="items" paginator :rows="5"
-                :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem">
-                <Column header="No." style="width: 5%">
+            <div class="table-scrollable table-list">
+                <DataTable v-model:selection="selectedItems" :value="sortedItems" :rows="10" dataKey="TakingId"
+                    :paginator="true" :filters="sortedItems" :rowsPerPageOptions="[5, 10, 25]" scrollable
+                    scrollHeight="400px" tableStyle="min-width: 50rem" @row-select="onRowSelect"
+                    @row-unselect="onRowUnselect">
+                    <!-- <Column header="No." style="width: 5%">
                     <template #body="{ index }">
                         {{ index + 1 }}
                     </template>
-                </Column>
-                <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
-                <Column field="TakingNo" header="TakingNo" style="width: 15%">
-                    <template #body="{ data }">
-                        <router-link :to="`/StockTaking/Detail/${data.TakingId}`" custom v-slot="{ navigate }">
-                            <Button :label="data.TakingNo" link @click="navigate" class="p-0" />
-                        </router-link>
-                    </template>
-                </Column>
-                <Column field="WarehouseName" header="Warehouse" style="width: 20%"></Column>
-                <Column field="LocationName" header="Location" style="width: 20%"></Column>
-                <Column field="PersonInCharge" header="Person In Charge" style="width: 20%"></Column>
-                <Column field="Status" header="Status" style="width: 15%;">
-                    <template #body="{ data }">
-                        <span :style="{
-                            backgroundColor: data.Status.StatusBgColor,
-                            color: data.Status.StatusFontColor,
-                            border: `1px solid ${data.Status.StatusBorderColor}`,
-                            fontSize: `${data.Status.StatusFontSize}px`,
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '4px',
-                            display: 'inline-block'
-                        }">
-                            {{ data.Status.StatusName }}
-                        </span>
-                    </template>
-                </Column>
-            </DataTable>
+                </Column> -->
+                    <Column header="">
+                        <template #body="{ data }">
+                            <div class="dropdown" @mouseleave="closeDropdown(data)">
+                                <Button icon="pi pi-cog" class="p-button-text" @click="toggleDropdown(data)"
+                                    aria-label="Menu" />
+                                <div v-if="dropdownVisible[data.TakingId]" class="dropdown-menu">
+                                    <ul class="dropdown-list">
+                                        <li><router-link :to="`/StockTaking/Detail/${data.TakingId}`">{{ 'Detail'
+                                                }}</router-link></li>
+                                        <li v-if="permission.MODIFY && data.StatusCode !== TAKING && data.StatusCode < APPROVED"
+                                            @click="handleAction(data, 'edit')">{{ 'Edit' }}</li>
+                                        <li v-if="permission.MODIFY" @click="handleAction(data, 'copy')">{{ 'Copy' }}
+                                        </li>
+                                        <li v-if="permission.PRINT && data.StatusCode !== CANCELLED"
+                                            @click="handleAction(data, 'print')">{{ 'Print' }}</li>
+                                        <li v-if="permission.MODIFY && data.StatusCode < APPROVED"
+                                            @click="handleAction(data, 'cancel')" class="text-danger">
+                                            <span><i class="fa fa-trash-o"></i> {{ 'Cancel' }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </template>
+                    </Column>
+                    <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
+                    <Column field="TakingNo" header="TakingNo" style="width: 15%">
+                        <template #body="{ data }">
+                            <router-link :to="`/StockTaking/Detail/${data.TakingId}`" custom v-slot="{ navigate }">
+                                <Button :label="data.TakingNo" link @click="navigate" class="p-0" />
+                            </router-link>
+                        </template>
+                    </Column>
+                    <Column field="WarehouseName" header="Warehouse" style="width: 20%"></Column>
+                    <Column field="LocationName" header="Location" style="width: 20%"></Column>
+                    <Column field="PersonInCharge" header="Person In Charge" style="width: 20%"></Column>
+                    <Column field="Status" header="Status" style="width: 15%;">
+                        <template #body="{ data }">
+                            <span :style="{
+                                backgroundColor: data.Status.StatusBgColor,
+                                color: data.Status.StatusFontColor,
+                                border: `1px solid ${data.Status.StatusBorderColor}`,
+                                fontSize: `${data.Status.StatusFontSize}px`,
+                                padding: '0.25rem 0.5rem',
+                                borderRadius: '4px',
+                                display: 'inline-block'
+                            }">
+                                {{ data.Status.StatusName }}
+                            </span>
+                        </template>
+                    </Column>
+                </DataTable>
+            </div>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import type { Ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { StockTakingService } from '@/Service/stockTakingService'
+
+import Breadcrumb from 'primevue/breadcrumb';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
@@ -104,29 +128,44 @@ const pageSize = ref(10)
 const searchString = ref('')
 const sortKey = ref('TakingNo')
 const sortOrder = ref('DESC')
-const isPanelOpen = ref(false)
-const selectAll = ref(false)
 const totalRecords = ref(0)
-const selectedProduct = ref();
+const selectedItems = ref([]);
+const selectedTakingIds = ref<number[]>([]);
+const dropdownVisible: Ref<Record<string, boolean>> = ref({});
+// const isPanelOpen = ref(false)
+const route = useRoute();
+
+const breadcrumb = computed(() => {
+    const breadcrumbItems: any[] = [];
+
+    breadcrumbItems.push({ icon: 'pi pi-home', route: '/' });
+    route.matched.forEach((matchedRoute) => {
+        if (matchedRoute.meta.module) {
+            breadcrumbItems.push({
+                label: matchedRoute.meta.module,
+            });
+        }
+        if (matchedRoute.meta.breadcrumb) {
+            breadcrumbItems.push({
+                label: matchedRoute.meta.breadcrumb,
+                route: matchedRoute.path
+            });
+        }
+    });
+
+    return breadcrumbItems;
+});
+
 const permission = ref({
     APPROVE: true,
     EXPORT: true,
     MODIFY: true,
     PRINT: true
-})
+});
 
-const TAKING = 1
-const APPROVED = 200
-const CANCELLED = 2000
-
-const tableHeaders = [
-    { key: 'TakingNo', label: 'TakingNO', width: '120px' },
-    { key: 'TakingDate', label: 'TakingDate', width: '120px' },
-    { key: 'WarehouseName', label: 'Warehouse', width: '120px' },
-    { key: 'LocationName', label: 'Location', width: '120px' },
-    { key: 'PersonInCharge', label: 'PIC', width: '120px' },
-    { key: 'StatusName', label: 'Status', width: '60px' }
-]
+const TAKING = 1;
+const APPROVED = 200;
+const CANCELLED = 2000;
 
 const sortedItems = computed(() => {
     return items.value
@@ -144,43 +183,81 @@ const fetchData = async () => {
     }
 }
 
-const sortBy = (key: any) => {
-    if (key === sortKey.value) {
-        sortOrder.value = sortOrder.value === 'ASC' ? 'DESC' : 'ASC'
-    } else {
-        sortKey.value = key
-        sortOrder.value = 'DESC'
-    }
-    fetchData()
-}
-
-const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page
-        fetchData()
-    }
-}
-
 const search = () => {
     currentPage.value = 1
     fetchData()
 }
 
-const toggleSearchPanel = () => {
-    isPanelOpen.value = !isPanelOpen.value
-}
+const edit = (takingId: number) => {
+    console.log('Edit', takingId);
+};
 
-const toggleAll = () => {
-    items.value.forEach(item => item.selected = selectAll.value)
-}
+const copy = (takingId: number) => {
+    console.log('Copy', takingId);
+};
+
+const print = (takingId: number) => {
+    console.log('Print', takingId);
+};
+
+const cancel = (takingId: number, takingDateEn: any) => {
+    console.log('Cancel', takingId, takingDateEn);
+};
+
+const handleAction = (data: { TakingId: any; TakingDateEn: any; StatusCode: number }, action: any) => {
+    switch (action) {
+        case 'view':
+            view(data.TakingId);
+            break;
+        case 'edit':
+            edit(data.TakingId);
+            break;
+        case 'copy':
+            copy(data.TakingId);
+            break;
+        case 'print':
+            print(data.TakingId);
+            break;
+        case 'cancel':
+            cancel(data.TakingId, data.TakingDateEn);
+            break;
+    }
+};
+
+const toggleDropdown = (data: { TakingId: number; }) => {
+    dropdownVisible.value[data.TakingId] = !dropdownVisible.value[data.TakingId];
+};
+
+const closeDropdown = (data: { TakingId: number; }) => {
+    dropdownVisible.value[data.TakingId] = false;
+};
+
+const onRowSelect = (event: any) => {
+    const takingId = event.data.TakingId;
+    if (!selectedTakingIds.value.includes(takingId)) {
+        selectedTakingIds.value.push(takingId);
+    }
+    console.log('Selected TakingIds:', selectedTakingIds.value);
+};
+
+const onRowUnselect = (event: any) => {
+    const takingId = event.data.TakingId;
+    const index = selectedTakingIds.value.indexOf(takingId);
+    if (index > -1) {
+        selectedTakingIds.value.splice(index, 1);
+    }
+    console.log('Selected TakingIds:', selectedTakingIds.value);
+    return selectedTakingIds.value;
+};
 
 onMounted(() => {
     fetchData()
 })
 
-watch(searchString, () => {
-    search()
-})
+watch(selectedItems, (newSelectedItems) => {
+    selectedTakingIds.value = newSelectedItems.map((item: any) => item.TakingId);
+    console.log('Updated Selected TakingIds:', selectedTakingIds.value);
+});
 
 </script>
 
@@ -195,12 +272,10 @@ watch(searchString, () => {
     /*border: #4e95f4 1px solid;*/
 }
 
-/* Define the default color for all the table rows */
 .hoverTable tbody tr {
     background: white;
 }
 
-/* Define the hover highlight color for the table row */
 .hoverTable tbody tr:hover {
     background-color: #f6f6f6;
 }
@@ -209,7 +284,6 @@ watch(searchString, () => {
     display: inline-block;
     cursor: pointer;
 }
-
 
 .pagination a {
     color: black;

@@ -1,26 +1,27 @@
 <template>
+  <div>
+    <h3 class="font-bold text-xl mb-8">Stock Taking Detail</h3>
+  </div>
+  <Breadcrumb :model="breadcrumb" class="card">
+    <template #item="{ item, props }">
+      <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+        <a :href="href" v-bind="props.action" @click="navigate">
+          <span :class="[item.icon, 'text-color']" />
+          <span class="text-primary font-semibold">{{ item.label }}</span>
+        </a>
+      </router-link>
+      <a v-else :href="item.url" :target="item.target" v-bind="props.action">
+        <span class="text-surface-700 dark:text-surface-0">{{ item.label }}</span>
+      </a>
+    </template>
+  </Breadcrumb>
+
   <div v-if="loading">Loading...</div>
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
-    <div>
-      <h3 class="font-bold text-xl mb-8">Stock Taking Detail</h3>
-    </div>
-    <Breadcrumb :model="path" class="card">
-      <template #item="{ item, props }">
-        <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-          <a :href="href" v-bind="props.action" @click="navigate">
-            <span :class="[item.icon, 'text-color']" />
-            <span class="text-primary font-semibold">{{ item.label }}</span>
-          </a>
-        </router-link>
-        <a v-else :href="item.url" :target="item.target" v-bind="props.action">
-          <span class="text-surface-700 dark:text-surface-0">{{ item.label }}</span>
-        </a>
-      </template>
-    </Breadcrumb>
     <div class="card">
-      <div class="row mb-8">
-        <div class="col-sm-8">
+      <div class="row mb-8 flex justify-between">
+        <div class="col-sm-8 flex gap-2">
           <!-- <div class="col-sm-8">
         <button v-if="stockTakingData.Permission.MODIFY && stockTakingData.Status < 2" class="btn btn-warning btn-outline" @click="savePlan">
           <i class="fa fa-check-circle"></i> Save Plan
@@ -65,8 +66,12 @@
           <Button label="Adjust Stock" severity="info" @click="approve" />
           <Button label="Cancel" severity="info" @click="cancel" />
           <Button label="Cancel Approve" severity="info" @click="cancelApprove" />
-          <Button label="Edit" severity="info" @click="editStock" />
-          <Button label="BACK" severity="info" @click="goBackToList" />
+          <router-link :to="`/StockTaking/Maintain/${stockTakingData.TakingId}`" custom v-slot="{ navigate }">
+            <Button label="Edit" severity="info" @click="navigate" />
+          </router-link>
+          <router-link :to="`/StockTaking/List`" custom v-slot="{ navigate }">
+            <Button label="BACK" severity="info" @click="navigate" />
+          </router-link>
         </div>
         <div class="col-sm-4 text-right">
           <router-link to="/StockTaking/Maintain/0">
@@ -74,20 +79,23 @@
           </router-link>
         </div>
       </div>
-      <div class="detail-head">
+      <div class="detail-head flex justify-between items-end mb-8">
         <div>
           <h1 class="uppercase font-semibold text-l text-left" style="bottom: 0;">
             <span>Stock Taking Detail</span>
           </h1>
         </div>
-        <div class="text-l text-right">
+
+        <div class="text-right">
           <h4>{{ stockTakingData.TakingNo }}</h4>
           <span class="status" :style="{
-            // display: 'inline-block',
             backgroundColor: stockTakingData.Status.StatusBgColor,
-            borderColor: stockTakingData.Status.StatusBorderColor,
-            fontSize: stockTakingData.Status.StatusFontSize + 'px',
-            color: stockTakingData.Status.StatusFontColor
+            color: stockTakingData.Status.StatusFontColor,
+            border: `1px solid ${stockTakingData.Status.StatusBorderColor}`,
+            fontSize: `${stockTakingData.Status.StatusFontSize}px`,
+            padding: '0.25rem 0.5rem',
+            borderRadius: '4px',
+            display: 'inline-block'
           }">{{ stockTakingData.Status.StatusName }}</span>
         </div>
       </div>
@@ -176,7 +184,7 @@ const error = ref(null);
 const route = useRoute();
 const router = useRouter();
 
-const path = computed(() => {
+const breadcrumb = computed(() => {
   const breadcrumbItems: any[] = [];
 
   breadcrumbItems.push({ icon: 'pi pi-home', route: '/' });
