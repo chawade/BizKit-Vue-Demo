@@ -1,10 +1,10 @@
 import authService from '@/Service/AuthService';
 const apiUrl = import.meta.env.VITE_API_URL;
 
-const baseURL = `${apiUrl}/v1/stocktaking`;
+const baseURL = `${apiUrl}/v1/salesorder`;
 
-class StockTakingService {
-  private axiosInstance : any | undefined ;
+class SalesOrderService {
+  private axiosInstance: any | undefined;
 
   constructor() {
     this.initializeAxiosInstance();
@@ -71,4 +71,4 @@ class StockTakingService {
   }
 }
 
-export default new StockTakingService();
+export default new SalesOrderService();

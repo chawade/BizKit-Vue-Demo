@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue';
 
 import AppMenuItem from './AppMenuItem.vue';
@@ -15,6 +15,16 @@ const model = ref([
                 label: 'Stock Taking',
                 icon: 'pi pi-fw pi-inbox',
                 to: '/StockTaking/List'
+            }
+        ]
+    },
+    {
+        label: 'Sales',
+        items: [
+            {
+                label: 'Sales Order',
+                icon: 'pi pi-fw pi-inbox',
+                to: '/SalesOrder/List'
             }
         ]
     }

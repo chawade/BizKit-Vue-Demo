@@ -45,7 +45,14 @@ const router = createRouter({
                     meta: { parent: 'StockTakingList', breadcrumb: 'Add/Edit Stock Taking' },
                     component: () => import('@/views/StockTaking/Maintain.vue'),
                     props: true,
-                }
+                },
+                {
+                    path: '/SalesOrder/List',
+                    name: 'SalesOrder',
+                    meta: { module: 'SalesOrder', breadcrumb: 'Sales Order' },
+                    component: () => import('@/views/SalesOrder/List.vue'),
+                    props: true,
+                },
             ]
         }
     ]

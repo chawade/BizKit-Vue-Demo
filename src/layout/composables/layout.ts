@@ -58,14 +58,18 @@ export function useLayout() {
     };
 
     const toggleDarkMode = () => {
-        if (!document.startViewTransition) {
+        const documentWithTransition = document as Document & {
+            startViewTransition?: (callback: () => void) => void;
+        };
+    
+        if (!documentWithTransition.startViewTransition) {
             executeDarkModeToggle();
-
             return;
         }
-
-        document.startViewTransition(() => executeDarkModeToggle());
+    
+        documentWithTransition.startViewTransition(() => executeDarkModeToggle());
     };
+    
 
     const executeDarkModeToggle = () => {
         layoutConfig.darkTheme = !layoutConfig.darkTheme;

@@ -95,11 +95,6 @@ const toggleMenu = (event: Event) => {
                 </div>
             </div>
 
-            <button class="layout-topbar-menu-button layout-topbar-action"
-                v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }">
-                <i class="pi pi-ellipsis-v"></i>
-            </button>
-
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
                     <button type="button" class="layout-topbar-action">
@@ -119,6 +114,4 @@ const toggleMenu = (event: Event) => {
             </div>
         </div>
     </div>
-    <Toast />
-  <ConfirmDialog></ConfirmDialog>
 </template>
