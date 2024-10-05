@@ -19,6 +19,10 @@ import InputGroup from "primevue/inputgroup";
 import Menu from "primevue/panelmenu";
 import Checkbox from 'primevue/checkbox';
 import Password from 'primevue/password';
+import DatePicker from 'primevue/datepicker';
+import Select from 'primevue/select';
+import InputNumber from "primevue/inputnumber";
+import Textarea from "primevue/textarea";
 const app: VueApp = createApp(App);
 
 app.use(router);
@@ -44,7 +48,11 @@ const components = {
   DataTable,
   Breadcrumb,
   Checkbox,
-  Password
+  Password,
+  DatePicker,
+  Select,
+  InputNumber,
+  Textarea
 };
 
 Object.entries(components).forEach(([name, component]) => {

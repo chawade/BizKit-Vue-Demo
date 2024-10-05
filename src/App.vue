@@ -1,11 +1,13 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue';
-import AuthService from './Service/auth';
+import AuthService from './service/auth';
 import { useRouter } from 'vue-router';
 import ConfirmDialog from 'primevue/confirmdialog';
 import Toast from 'primevue/toast';
 
 // import AppLayout from '@/layout/AppLayout.vue'
+
+// import test from './test.vue'
 
 const router = useRouter();
 onMounted(async () => {
@@ -22,6 +24,7 @@ onMounted(async () => {
   <Toast />
   <ConfirmDialog></ConfirmDialog>
   <router-view></router-view>
+  <!-- <test /> -->
   <!-- <AppLayout/> -->
 
 </template>

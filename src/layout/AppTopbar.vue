@@ -73,10 +73,7 @@ const toggleMenu = (event: Event) => {
                 <i class="pi pi-bars"></i>
             </button>
             <router-link to="/" class="layout-topbar-logo">
-                <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- SVG path data omitted for brevity -->
-                </svg>
-                <span>SAKAI</span>
+                <img src="../assets/1032-CompanyLogoImage-bzlogo-removebg-preview.png" style="width: 100px;">
             </router-link>
         </div>
 
