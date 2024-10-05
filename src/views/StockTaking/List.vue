@@ -99,12 +99,6 @@ import { ref, computed, onMounted, watch } from 'vue'
 import type { Ref } from 'vue';
 import StockTakingService from '@/service/stockTakingService'
 
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import InputGroup from 'primevue/inputgroup';
-
 const items = ref([])
 const currentPage = ref(1)
 const totalPages = ref(1)

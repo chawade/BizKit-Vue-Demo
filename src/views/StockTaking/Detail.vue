@@ -155,10 +155,6 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import StockTakingService from '@/service/stockTakingService'
 
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button';
-
 const stockTakingData = ref();
 const loading = ref(true);
 const error = ref(false);

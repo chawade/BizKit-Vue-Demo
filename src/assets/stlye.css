@@ -11,15 +11,12 @@
 .dropdown-menu {
     position: absolute;
     top: 100%;
-    /* Position below the button */
     left: 0;
-    /* Align to the left of the button */
-    background-color: white;
-    border: 1px solid #ccc;
+    background-color: var(--surface-ground);
+    border: 1px solid var(--surface-border);
     border-radius: 4px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000;
-    /* Ensure it is on top */
 }
 
 .dropdown-list {
@@ -30,20 +27,19 @@
 
 .dropdown-list li {
     padding: 10px 15px;
-    /* Space around each item */
     cursor: pointer;
 }
 
 .dropdown-list li:hover {
-    background-color: #f0f0f0;
-    /* Change background on hover */
+    background-color: var(--surface-hover);
+    border-radius: 4px;
 }
 
 .portlet {
     display: block;
     width: fit-content;
     padding: 18px;
-    border: 1px solid #eee;
+    border: 1px solid var(--surface-border);
     border-radius: 3px;
 }
 
@@ -55,12 +51,8 @@
     color: #9EA8B7;
 }
 
-.portlet.bz-default, .portlet.box.bz-default > .portlet-title, .portlet > .portlet-body.bz-default {
-    background-color: #FCFCFC;
-}
-
-.portlet>.portlet-title {
-    border-bottom: 1px solid #eee;
+.portlet-title {
+    border-bottom: 1px solid var(--surface-border);
     padding-bottom: 10px;
     -webkit-border-radius: 4px 4px 0 0;
     -moz-border-radius: 4px 4px 0 0;
@@ -68,6 +60,7 @@
     -o-border-radius: 4px 4px 0 0;
     border-radius: 4px 4px 0 0;
 }
+
 .portlet-body {
     padding-top: 10px;
 }
@@ -81,4 +74,48 @@
 
 .invoice-desc {
     font-weight: bold;
+}
+
+.form-fields {
+    display: grid;
+    gap: 12rem;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 14px;
+}
+
+.form-group {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.control-label {
+    display: grid;
+    width: fit-content;
+}
+
+.savebuttons {
+    position: fixed;
+    background: var(--surface-card);
+    padding: 12px;
+    bottom: 2rem;
+    border-radius: var(--content-border-radius);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    right: 2rem;
+    transition: 
+        transform var(--layout-section-transition-duration),
+        all var(--layout-section-transition-duration);
+    width: calc(100% - 26rem);
+}
+
+.layout-sidebar-open .savebuttons {
+    width: calc(100% - 26rem);
+}
+
+.layout-sidebar-closed .savebuttons {
+    width: calc(100% - 4rem);
 }
