@@ -31,6 +31,13 @@ import Panel from "primevue/panel";
 import InputGroupAddon from "primevue/inputgroupaddon";
 import DatePicker from "primevue/datepicker";
 import Select from "primevue/select";
+import Menubar from "primevue/menubar";
+import Card from "primevue/card";
+import Tabs from "primevue/tabs";
+import Tab from "primevue/tab";
+import TabPanel from "primevue/tabpanel";
+import TabPanels from "primevue/tabpanels";
+import TabList from "primevue/tablist";
 
 const app: VueApp = createApp(App);
 
@@ -68,7 +75,14 @@ const components = {
   Panel,
   InputGroupAddon,
   DatePicker,
-  Select 
+  Select,
+  Menubar,
+  Card,
+  Tabs,
+  TabPanel,
+  TabPanels,
+  TabList,
+  Tab
 };
 
 Object.entries(components).forEach(([name, component]) => {

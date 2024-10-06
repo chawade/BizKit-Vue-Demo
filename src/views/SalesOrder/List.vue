@@ -9,8 +9,8 @@
         <div class="card">
             <div class="col-sm-8 flex justify-between mb-8">
                 <h4 class="font-bold text-l flex gap-2 items-center"><span class="pi pi-cog"></span>Sales Order</h4>
-                <router-link to="/StockTaking/Maintain/">
-                    <Button icon="pi pi-plus-circle" label="Create Stock Taking" severity="success" />
+                <router-link to="/SalesOrder/Maintain/">
+                    <Button icon="pi pi-plus-circle" label="Create Sales Order" severity="success" />
                 </router-link>
             </div>
             <div class="row">
@@ -144,7 +144,7 @@
                     <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
                     <Column field="SalesOrderNumber" header="SalesOrder No." sortable style="width: 15%">
                         <template #body="{ data }">
-                            <router-link :to="`/StockTaking/Detail/${data.TakingId}`" custom v-slot="{ navigate }">
+                            <router-link :to="`/SalesOrder/Detail/${data.SalesOrderNumber}`" custom v-slot="{ navigate }">
                                 <Button :label="data.SalesOrderNumber" link @click="navigate" class="p-0" />
                             </router-link>
                         </template>
@@ -170,14 +170,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import SalesOrderService from '@/service/SalesOrderService'
+import { ref, computed, onMounted, watch, type Ref } from 'vue'
+import SalesOrderService from '@/Service/salesorderService'
+import type Menu from 'primevue/menu';
+import { useToast } from 'primevue/usetoast';
 
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import InputGroup from 'primevue/inputgroup';
 
 const items = ref([])
 const currentPage = ref(1)
@@ -195,6 +192,7 @@ const fetchLoading = ref(true);
 const error = ref(false);
 const menu = ref<InstanceType<typeof Menu> | null>(null);
 const isPanelVisible = ref(false);
+const toast = useToast();
 const permission = ref({
     APPROVE: true,
     EXPORT: true,
@@ -237,7 +235,7 @@ const toggleMenu = (event: Event) => {
 
 const onPageChange = (event: { first: number, rows: number, page: number }) => {
     // Update state   
-    currentPage.value = event.page;
+    currentPage.value = event.page + 1;
     pageSize.value = event.rows;
     // Handle data loading for the new page (pagination)
     fetchData();
@@ -251,10 +249,14 @@ const fetchData = async () => {
     try {
         fetchLoading.value = true;
         const response = await SalesOrderService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
-        console.log('Search result:', response);
-        items.value = response.Data
-        totalRecords.value = response.Pagination.TotalRecords
-        totalPages.value = response.Pagination.TotalPages
+        if (!response.Code) {
+            fetchLoading.value = false;
+            toast.add({ severity: 'warn', summary: 'Data not found', detail: 'Data not found', life: 3000 });      
+            return;   
+        }
+        items.value = response.Data.Data
+        totalRecords.value = response.Data.Pagination.TotalRecords
+        totalPages.value = response.Data.Pagination.TotalPages
         fetchLoading.value = false;
     } catch (error) {
         console.error('Error fetching data:', error)
@@ -343,11 +345,7 @@ const onRowUnselect = (event: any) => {
 };
 
 onMounted(() => {
-
-    loading.value = true;
     fetchData()
-
-    loading.value = false;
 })
 
 watch(selectedItems, (newSelectedItems) => {

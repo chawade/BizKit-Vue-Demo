@@ -1,5 +1,6 @@
 import AppLayout from '@/layout/AppLayout.vue'
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, useRoute, type RouteLocationNormalized } from 'vue-router';
+
 
 const router = createRouter({
     history: createWebHistory(),
@@ -53,6 +54,22 @@ const router = createRouter({
                     component: () => import('@/views/SalesOrder/List.vue'),
                     props: true,
                 },
+                {
+                    path: '/SalesOrder/Detail/:id',
+                    name: 'SalesOrderDetail',
+                    meta: { parent: 'SalesOrder', breadcrumb: 'Sales Order Detail' },
+                    component: () => import('@/views/SalesOrder/Detail.vue'),
+                    props: true,
+                },
+                {
+                    path: '/SalesOrder/Maintain/:id?',
+                    name: 'SalesOrderMaintain',
+                    meta: { 
+                        parent: 'SalesOrder',  breadcrumb: 'Add/Edit Sales Order'
+                      },
+                    component: () => import('@/views/StockTaking/Maintain.vue'),
+                    props: true,
+                  }
             ]
         }
     ]
