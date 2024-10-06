@@ -78,8 +78,8 @@
 
 .form-fields {
     display: grid;
-    gap: 12rem;
-    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    grid-template-columns: 2fr 1fr 2fr;
     margin-bottom: 14px;
 }
 
@@ -96,7 +96,7 @@
     width: fit-content;
 }
 
-.savebuttons {
+.save-buttons {
     position: fixed;
     background: var(--surface-card);
     padding: 12px;
@@ -112,10 +112,10 @@
     width: calc(100% - 26rem);
 }
 
-.layout-sidebar-open .savebuttons {
+.layout-sidebar-open .save-buttons {
     width: calc(100% - 26rem);
 }
 
-.layout-sidebar-closed .savebuttons {
+.layout-sidebar-closed .save-buttons {
     width: calc(100% - 4rem);
 }

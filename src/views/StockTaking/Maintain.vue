@@ -45,7 +45,7 @@
                           </div>
                         </div>
                       </div>
-
+                      <div></div>
                       <div class="row">
                         <div class="col-md-6">
                           <div class="form-group">
@@ -109,8 +109,9 @@
         </div>
       </div>
     </div>
-    <div :class="{ 'layout-sidebar-open': !layoutState.staticMenuDesktopInactive, 'layout-sidebar-closed': layoutState.staticMenuDesktopInactive }">
-      <div class="savebuttons">
+    <div
+      :class="{ 'layout-sidebar-open': !layoutState.staticMenuDesktopInactive, 'layout-sidebar-closed': layoutState.staticMenuDesktopInactive }">
+      <div class="save-buttons">
         <Button severity="warn" @click="saveStockTaking('DRAFT')">{{ ('Save Draft') }}</Button>
         <Button @click="saveStockTaking('PLANNED')">{{
           ('Save Plan') }}</Button>
