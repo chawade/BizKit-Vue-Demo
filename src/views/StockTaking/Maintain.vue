@@ -126,7 +126,7 @@
 </template>
 
 <script lang="ts" setup>
-import StockTakingService from '@/service/stockTakingService'
+import StockTakingService from '@/Service/stockTakingService'
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router';
 import axios from 'axios'

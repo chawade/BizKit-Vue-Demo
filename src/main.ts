@@ -33,8 +33,6 @@ import Tag from "primevue/tag";
 import ProgressSpinner from "primevue/progressspinner";
 import Panel from "primevue/panel";
 import InputGroupAddon from "primevue/inputgroupaddon";
-import DatePicker from "primevue/datepicker";
-import Select from "primevue/select";
 
 const app: VueApp = createApp(App);
 
