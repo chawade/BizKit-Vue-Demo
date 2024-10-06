@@ -4,7 +4,6 @@ import "@/assets/tailwind.css";
 import { createApp } from "vue";
 import type { App as VueApp } from 'vue';
 import App from "./App.vue";
-import router from "./router/index";
 
 import Aura from "@primevue/themes/aura";
 import PrimeVue from "primevue/config";
@@ -16,13 +15,27 @@ import Column from "primevue/column";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import InputGroup from "primevue/inputgroup";
-import Menu from "primevue/panelmenu";
+import Menu from "primevue/menu";
 import Checkbox from 'primevue/checkbox';
 import Password from 'primevue/password';
 import DatePicker from 'primevue/datepicker';
 import Select from 'primevue/select';
 import InputNumber from "primevue/inputnumber";
 import Textarea from "primevue/textarea";
+import StyleClass from 'primevue/styleclass';
+import SelectButton from "primevue/selectbutton";
+import router from "./Router";
+import ConfirmDialog from 'primevue/confirmdialog';
+import Toast from 'primevue/toast';
+import Chart from 'primevue/chart'; 
+import Paginator from "primevue/paginator";
+import Tag from "primevue/tag";
+import ProgressSpinner from "primevue/progressspinner";
+import Panel from "primevue/panel";
+import InputGroupAddon from "primevue/inputgroupaddon";
+import DatePicker from "primevue/datepicker";
+import Select from "primevue/select";
+
 const app: VueApp = createApp(App);
 
 app.use(router);
@@ -34,7 +47,7 @@ app.use(PrimeVue, {
     },
   },
 });
-
+app.directive('styleclass', StyleClass);
 app.use(ToastService);
 app.use(ConfirmationService);
 
@@ -49,6 +62,15 @@ const components = {
   Breadcrumb,
   Checkbox,
   Password,
+  SelectButton,
+  ConfirmDialog,
+  Toast,
+  Chart,
+  Paginator,
+  Tag,
+  ProgressSpinner,
+  Panel,
+  InputGroupAddon,
   DatePicker,
   Select,
   InputNumber,

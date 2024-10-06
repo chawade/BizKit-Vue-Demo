@@ -1,10 +1,10 @@
 import authService from '@/Service/AuthService';
 const apiUrl = import.meta.env.VITE_API_URL;
 
-const baseURL = `${apiUrl}/v1/stocktaking`;
+const baseURL = `${apiUrl}/v1/salesorder`;
 
-class StockTakingService {
-  private axiosInstance : any | undefined ;
+class SalesOrderService {
+  private axiosInstance: any | undefined;
 
   constructor() {
     this.initializeAxiosInstance();
@@ -49,30 +49,26 @@ class StockTakingService {
     return this.request('get', `${id}`);
   }
 
-  private async put(action: string, endpoint?: string, docIds?: number[], status?: number) {
-    const data = { DocId: docIds, Status: status };
+  private async updateStatus(action: string, endpoint: string, docIds: number[]) {
+    const data = { DocId: docIds };
     return this.request('put', `${action}${endpoint}`, data);
   }
 
-  async updateStatus(docId: number[], status?: number ) {
-    return this.put('status', '', docId, status);
-  }
-
   async approve(endpoint: string, docId: number[]) {
-    return this.put('approve', endpoint, docId, undefined);
+    return this.updateStatus('approve', endpoint, docId);
   }
   
   async approves(docId: number[]) {
-    return this.put('approves', '', docId, undefined);
+    return this.updateStatus('approves', '', docId);
   }
 
   async cancelApprove(endpoint: string, docId: number[]) {
-    return this.put('cancelApprove', endpoint, docId, undefined);
+    return this.updateStatus('cancelApprove', endpoint, docId);
   }
 
   async cancel(endpoint: string, docId: number[]) {
-    return this.put('cancel', endpoint, docId, undefined);
+    return this.updateStatus('cancel', endpoint, docId);
   }
 }
 
-export default new StockTakingService();
+export default new SalesOrderService();
