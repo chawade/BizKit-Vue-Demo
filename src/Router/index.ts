@@ -1,4 +1,5 @@
 import AppLayout from '@/layout/AppLayout.vue'
+import authService from '@/Service/authService';
 import { createRouter, createWebHistory, useRoute, type RouteLocationNormalized } from 'vue-router';
 
 
@@ -75,9 +76,13 @@ const router = createRouter({
     ]
 });
 
+
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('authToken');
     // If a module is equal to the breadcrumb, include the path of the list
+
+    const validToken = authService.verifyToken();
+
     if (to.meta.module === to.meta.breadcrumb && to.meta.parent) {
         to.meta.breadcrumb = `${to.meta.module} > ${router.resolve({ name: String(to.meta.parent) }).href} > ${to.meta.breadcrumb}`;
     }

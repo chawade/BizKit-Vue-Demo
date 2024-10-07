@@ -81,3 +81,17 @@ export interface SalesOrderItemResource {
     freeItemFlag: boolean;
     trackStock: boolean;
 }
+
+export interface SalesOrderSearch {
+    salesOrderNo: string
+    customer: string
+    status: number
+    warehouse: number
+    pickingNo: string
+    personInCharge: string
+    itemCode: string
+    itemName: string
+    purchaseOrderDate: Date | null
+    dateRange: [Date, Date] | null
+    remark: string
+  }

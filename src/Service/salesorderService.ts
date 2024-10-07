@@ -1,4 +1,4 @@
-import authService from '@/Service/AuthService';
+import authService from '@/Service/authService';
 import type { AxiosInstance } from 'axios';
 import type { PikcingSearch } from '@/Model/Picking';
 import type { Result } from '@/Model/Result';
@@ -22,8 +22,12 @@ class SalesOrderService {
     this.axiosInstance = await authService.getAuthenticatedAxiosInstance();
   }
 
-  private async request(method: string, endpoint: string, data?: any): Promise<Result> {
-    debugger
+  private async request(
+    method: string,
+    endpoint: string,
+    data?: any
+  ): Promise<Result> {
+    debugger;
     try {
       const url = `${baseURL}/${endpoint}`;
       let response;
@@ -41,7 +45,7 @@ class SalesOrderService {
       }
 
       // Successful result
-      return this.createResult(true, "Request succeeded", response.data);
+      return response.data as Result;
     } catch (error: any) {
       // Handle error using handleError
       return this.handleError(error);
@@ -58,15 +62,25 @@ class SalesOrderService {
 
   async getPikcing(search: PikcingSearch): Promise<Result> {
     const url = `${baseURL}/picking/list`;
-  
+
     try {
       const response = await this.axiosInstance.post(url, search, config);
-      return this.createResult(true, 'Picking data retrieved', response.data);
+      return response.data as Result;
     } catch (error: any) {
       return this.handleError(error);
     }
   }
-  
+
+  async getPickShipHistory(soNo: string): Promise<Result> {
+    const url = `${baseURL}/history/${soNo}`;
+
+    try {
+      const response = await this.axiosInstance.get(url, config);
+      return response.data as Result;
+    } catch (error: any) {
+      return this.handleError(error);
+    }
+  }
 
   private async updateStatus(
     action: string,
@@ -104,7 +118,8 @@ class SalesOrderService {
   private handleError(error: any): Result {
     console.error(error); // Log error to the console
 
-    const errorMessage = error?.response?.data?.message || error.message || 'An error occurred';
+    const errorMessage =
+      error?.response?.data?.message || error.message || "An error occurred";
     return this.createResult(false, errorMessage, null);
   }
 

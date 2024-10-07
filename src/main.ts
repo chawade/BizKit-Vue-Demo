@@ -38,6 +38,13 @@ import Tab from "primevue/tab";
 import TabPanel from "primevue/tabpanel";
 import TabPanels from "primevue/tabpanels";
 import TabList from "primevue/tablist";
+import MegaMenu from "primevue/megamenu";
+import ColumnGroup from "primevue/columngroup";
+import Row from "primevue/row";
+import Badge from "primevue/badge";
+import InputIcon from "primevue/inputicon";
+import IconField from "primevue/iconfield";
+import MultiSelect from "primevue/multiselect";
 
 const app: VueApp = createApp(App);
 
@@ -82,7 +89,14 @@ const components = {
   TabPanel,
   TabPanels,
   TabList,
-  Tab
+  Tab,
+  MegaMenu,
+  ColumnGroup,
+  Row,
+  Badge,
+  InputIcon,
+  IconField,
+  MultiSelect
 };
 
 Object.entries(components).forEach(([name, component]) => {

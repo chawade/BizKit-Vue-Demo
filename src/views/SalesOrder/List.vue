@@ -26,114 +26,115 @@
 
                         <div class="col-span-full lg:col-span-2 mt-2 lg:mt-0 lg:col-start-9">
                             <span class="p-input-icon-right w-full">
-                                <InputGroup>
-                                    <InputText v-model="searchString" class="w-full" type="text" size="medium"
-                                        placeholder="SalesOrder No., Customer" />
-                                    <Button icon="pi pi-search" severity="info" @click="search" />
-                                    <Button icon="pi pi-bars" class="p-button-text" severity="info"
-                                        v-styleclass="{ selector: '#searchDetail', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }" />
-                                </InputGroup>
+
                             </span>
                         </div>
                     </div>
                 </div>
-                <div id="searchDetail"
-                    class="config-panel hidden right-0 w-full p-4 bg-surface-0 dark:bg-surface-900 border border-surface rounded-border origin-top shadow-[0px_3px_5px_rgba(0,0,0,0.02),0px_0px_2px_rgba(0,0,0,0.05),0px_1px_4px_rgba(0,0,0,0.08)]">
-                    <div class="lg:w-3/3 border-b-1 rounded-md shadow p-5">
-                        <form @submit.prevent="submitForm">
-                            <!-- First row -->
-                            <div class="flex flex-col lg:flex-row lg:justify-center">
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">     
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">SalesOrder No.</label>
-                                        <InputText id="username" v-model="value" aria-describedby="username-help" />
-                                    </div>
-                                </div>
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Customer</label>
-                                        <InputText id="username" v-model="value" aria-describedby="username-help" />
-                                    </div>
-                                </div>
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Status</label>
-                                        <Select v-model="selectedCity" :options="cities" optionLabel="name" placeholder="Select a City" class="w-full" />
-                                    </div>
-                                </div>
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Warehouse</label>
-                                        <Select v-model="selectedCity" :options="cities" optionLabel="name" placeholder="Select a City" class="w-full" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Second row -->
-                            <div class="flex flex-col mt-4 lg:flex-row lg:justify-center">
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">     
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Picking No.</label>
-                                        <InputText id="username" v-model="value" aria-describedby="username-help" />
-                                    </div>
-                                </div>
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Person in charge</label>
-                                        <InputText id="username" v-model="value" aria-describedby="username-help" />
-                                    </div>
-                                </div>
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Item code</label>
-                                        <InputText id="username" v-model="value" aria-describedby="username-help" />
-                                    </div>
-                                </div>
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Item name</label>
-                                        <InputText id="username" v-model="value" aria-describedby="username-help" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Third row -->
-                            <div class="flex flex-col mt-4 lg:flex-row lg:justify-center">
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">     
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Purchase order date</label>
-                                        <Select v-model="selectedCity" :options="cities" optionLabel="name" placeholder="Select a City" class="w-full" />
-                                    </div>
-                                </div>
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Date</label>
-                                        <DatePicker v-model="dates" selectionMode="range" :manualInput="false" showButtonBar />
-                                    </div>
-                                </div>
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold" for="SONo">Remark</label>
-                                        <InputText id="username" v-model="value" aria-describedby="username-help" />
-                                    </div>
-                                </div>     
-                                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                                    <Button label="search" severity="info" />
-                                </div>
-                            </div>                        
-                        </form>
-
-                    </div>
-                </div>
-
 
             </div>
 
             <div class="table-scrollable table-list">
-                <DataTable v-model:selection="selectedItems" :value="sortedItems" :rows="10" dataKey="SalesOrderID"
-                    :loading="fetchLoading" :lazy="true" :rowsPerPageOptions="[5, 10, 25]" scrollable :paginator="true"
-                    :totalRecords="totalRecords" scrollHeight="400px" tableStyle="min-width: 50rem"
-                    @row-select="onRowSelect" @row-unselect="onRowUnselect" @page="onPageChange">
+                <DataTable v-model:filters="filters" :value="sortedItems" :rows="10" dataKey="SalesOrderID"
+                    filterDisplay="menu" :loading="fetchLoading" :lazy="true" :rowsPerPageOptions="[5, 10, 25]"
+                    scrollable :paginator="true" :totalRecords="totalRecords" scrollHeight="400px"
+                    tableStyle="min-width: 50rem" @row-select="onRowSelect" @row-unselect="onRowUnselect"
+                    @page="onPageChange"
+                    :globalFilterFields="['SalesOrderNumber', 'CustomerName', 'DeliveryDate', 'balance', 'Status']">
+                    <template #header>
+                        <div class="flex justify-between">
+                            <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined
+                                @click="clearFilter()" />
+                            <IconField>
+                                <InputGroup>
+                                    <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
+                                    <Button icon="pi pi-search" severity="info" @click="search" />
+                                    <Button icon="pi pi-bars" class="p-button-text" severity="info"
+                                        v-styleclass="{ selector: '#searchDetail', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }" />
+                                </InputGroup>
+                            </IconField>
+
+                        </div>
+                        <div id="searchDetail"
+                            class="config-panel hidden w-full p-4 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                            <div class="w-full">
+                                <form @submit.prevent="">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <!-- First row -->
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="SONo">SalesOrder No.</label>
+                                            <InputText id="SONo" v-model="searchSo.salesOrderNo" type="text"
+                                                class="form-input rounded-md shadow-sm" />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="customer">Customer</label>
+                                            <InputText id="customer" v-model="searchSo.customer" type="text"
+                                                class="form-input rounded-md shadow-sm" />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="status">Status</label>
+                                            <Select v-model="searchSo.status" id="status"></Select>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="warehouse">Warehouse</label>
+                                            <Select v-model="searchSo.warehouse" id="warehouse"
+                                                class="form-select rounded-md shadow-sm">
+                                            </Select>
+                                        </div>
+
+                                        <!-- Second row -->
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="pickingNo">Picking No.</label>
+                                            <InputText id="pickingNo" v-model="searchSo.pickingNo" type="text"
+                                                class="form-input rounded-md shadow-sm" />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="personInCharge">Person in
+                                                charge</label>
+                                            <InputText id="personInCharge" v-model="searchSo.personInCharge" type="text"
+                                                class="form-input rounded-md shadow-sm" />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="itemCode">Item code</label>
+                                            <InputText id="itemCode" v-model="searchSo.itemCode" type="text"
+                                                class="form-input rounded-md shadow-sm" />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="itemName">Item name</label>
+                                            <InputText id="itemName" v-model="searchSo.itemName" type="text"
+                                                class="form-input rounded-md shadow-sm" />
+                                        </div>
+
+                                        <!-- Third row -->
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="purchaseOrderDate">Purchase order
+                                                date</label>
+                                            <Select v-model="searchSo.purchaseOrderDate" id="purchaseOrderDate"
+                                                class="form-select rounded-md shadow-sm">
+                                            </Select>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="dateRange">Date Range</label>
+                                            <DatePicker v-model="searchSo.dateRange" selectionMode="range"
+                                                :manual-input="false" id="dateRange" showButtonBar
+                                                class="form-input rounded-md shadow-sm" />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <label class="font-bold mb-1" for="remark">Remark</label>
+                                            <InputText id="remark" v-model="searchSo.remark" type="text"
+                                                class="form-input rounded-md shadow-sm" />
+                                        </div>
+                                        <div class="flex items-end">
+                                            <Button type="submit"
+                                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">
+                                                Search
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </template>
                     <Column header="" style="width: 5%">
                         <template #body="{ data }">
                             <Button type="button" icon="pi pi-cog" class="p-button-text" @click="toggleMenu"
@@ -144,7 +145,8 @@
                     <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
                     <Column field="SalesOrderNumber" header="SalesOrder No." sortable style="width: 15%">
                         <template #body="{ data }">
-                            <router-link :to="`/SalesOrder/Detail/${data.SalesOrderNumber}`" custom v-slot="{ navigate }">
+                            <router-link :to="`/SalesOrder/Detail/${data.SalesOrderNumber}`" custom
+                                v-slot="{ navigate }">
                                 <Button :label="data.SalesOrderNumber" link @click="navigate" class="p-0" />
                             </router-link>
                         </template>
@@ -163,6 +165,13 @@
                     <Column field="ShipQuantity" header="Ship Qty" sortable style="width: 10%"></Column>
                     <Column field="PickQuantity - ShipQuantity" header="Balance" sortable style="width: 10%"></Column>
                     <Column field="TotalAmount" header="Total Amount" sortable style="width: 15%"></Column>
+                    <template #empty>
+                        <div class="p-text-center p-m-4">
+                            <Tag style="width: 100%; min-height: 70px" severity="secondary"
+                                value="No records available">
+                            </Tag>
+                        </div>
+                    </template>
                 </DataTable>
             </div>
         </div>
@@ -170,12 +179,26 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch, type Ref } from 'vue'
+import { ref, computed, onMounted, watch, type Ref, reactive } from 'vue'
 import SalesOrderService from '@/Service/salesorderService'
 import type Menu from 'primevue/menu';
 import { useToast } from 'primevue/usetoast';
+import type { SalesOrderSearch } from '@/Model/SalesOrder';
+import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
 
-
+const searchSo = reactive<SalesOrderSearch>({
+    salesOrderNo: '',
+    customer: '',
+    status: 0,
+    warehouse: 0,
+    pickingNo: '',
+    personInCharge: '',
+    itemCode: '',
+    itemName: '',
+    purchaseOrderDate: null,
+    dateRange: null,
+    remark: ''
+})
 const items = ref([])
 const currentPage = ref(1)
 const totalPages = ref(1)
@@ -186,13 +209,10 @@ const sortOrder = ref('DESC')
 const totalRecords = ref(0)
 const selectedItems = ref([]);
 const selectedTakingIds = ref<number[]>([]);
-const dropdownVisible: Ref<Record<string, boolean>> = ref({});
 const loading = ref(false);
 const fetchLoading = ref(true);
 const error = ref(false);
 const menu = ref<InstanceType<typeof Menu> | null>(null);
-const isPanelVisible = ref(false);
-const toast = useToast();
 const permission = ref({
     APPROVE: true,
     EXPORT: true,
@@ -220,15 +240,31 @@ const menuaa = ref([
         ]
     }
 ]);
-
-const TAKING = 1;
-const APPROVED = 200;
-const CANCELLED = 2000;
+const filters = ref<Record<string, any>>({}); // Store filter values
+// const filters = ref();
 
 const sortedItems = computed(() => {
     return items.value
 })
 
+const initFilters = () => {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        SalesOrderNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+        // CustomerName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+        // representative: { value: null, matchMode: FilterMatchMode.IN },
+        // date: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
+        // balance: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+        // status: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+        // activity: { value: [0, 100], matchMode: FilterMatchMode.BETWEEN },
+        // verified: { value: null, matchMode: FilterMatchMode.EQUALS }
+    };
+};
+
+const clearFilter = () => {
+    initFilters();
+};
+initFilters();
 const toggleMenu = (event: Event) => {
     menu.value?.toggle(event);
 };
@@ -241,25 +277,20 @@ const onPageChange = (event: { first: number, rows: number, page: number }) => {
     fetchData();
 }
 
-const togglePanel = () => {
-    isPanelVisible.value = !isPanelVisible.value; // Toggle the visibility
-}
 
 const fetchData = async () => {
     try {
         fetchLoading.value = true;
         const response = await SalesOrderService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
-        if (!response.Code) {
-            fetchLoading.value = false;
-            toast.add({ severity: 'warn', summary: 'Data not found', detail: 'Data not found', life: 3000 });      
-            return;   
-        }
-        items.value = response.Data.Data
-        totalRecords.value = response.Data.Pagination.TotalRecords
-        totalPages.value = response.Data.Pagination.TotalPages
-        fetchLoading.value = false;
+
+        items.value = response.Data
+        totalRecords.value = response.Pagination?.TotalRecords ?? 0
+        totalPages.value = response.Pagination?.TotalPages ?? 0
     } catch (error) {
         console.error('Error fetching data:', error)
+    }
+    finally {
+        fetchLoading.value = false;
     }
 }
 
@@ -319,14 +350,6 @@ const handleAction = (data: { TakingId: number; TakingDateEn: any; StatusCode: n
     }
 };
 
-const toggleDropdown = (data: { SalesOrderID: number; }) => {
-    dropdownVisible.value[data.SalesOrderID] = !dropdownVisible.value[data.SalesOrderID];
-};
-
-const closeDropdown = (data: { SalesOrderID: number; }) => {
-    dropdownVisible.value[data.SalesOrderID] = false;
-};
-
 const onRowSelect = (event: any) => {
     const takingId = event.data.TakingId;
     if (!selectedTakingIds.value.includes(takingId)) {
@@ -346,6 +369,7 @@ const onRowUnselect = (event: any) => {
 
 onMounted(() => {
     fetchData()
+    initFilters()
 })
 
 watch(selectedItems, (newSelectedItems) => {

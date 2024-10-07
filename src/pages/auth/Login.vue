@@ -2,7 +2,7 @@
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import AuthService from '@/service/AuthService';
+import AuthService from '@/Service/AuthService';
 import Checkbox from 'primevue/checkbox';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';

@@ -1,19 +1,5 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
-import AuthService from './Service/AuthService';
-import { useRouter } from 'vue-router';
 
-// import AppLayout from '@/layout/AppLayout.vue'
-
-const router = useRouter();
-onMounted(async () => {
-    try {
-        await AuthService.verifyToken();
-    } catch (error:any) {
-        console.error('Token verification failed:', error);
-        router.push({ name: 'login' });
-    }
-});
 </script>
 
 <template>
