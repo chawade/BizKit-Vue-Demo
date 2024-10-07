@@ -39,6 +39,34 @@ const router = createRouter({
                     component: () => import('@/views/StockTaking/Maintain.vue'),
                     props: true,
                 },
+                {
+                    path: '/PurchaseRequest/PRList/',
+                    name: 'PurchaseRequestList',
+                    meta: { module: 'Purchase', breadcrumb: 'PRList' },
+                    component: () => import('@/views/PurchaseRequest/PRList.vue'),
+                    props: true,
+                },
+                {
+                    path: '/PurchaseRequest/PRDetail/',
+                    name: 'PurchaseRequestDetail',
+                    meta: { module: 'Purchase', breadcrumb: 'PRDetail' },
+                    component: () => import('@/views/PurchaseRequest/PRDetail.vue'),
+                    props: true,
+                },
+                {
+                    path: '/PurchaseRequest/PRMaintain/',
+                    name: 'PurchaseRequestSetting',
+                    meta: { module: 'Purchase', breadcrumb: 'PRSetting' },
+                    component: () => import('@/views/PurchaseRequest/PRMaintain.vue'),
+                    props: true,
+                },
+                {
+                    path: '/PurchaseRequest/PRListtest/',
+                    name: 'PurchaseRequestListTest',
+                    meta: { module: 'Purchase', breadcrumb: 'PRListtest' },
+                    component: () => import('@/views/PurchaseRequest/PRListtest.vue'),
+                    props: true,
+                }
             ]
         }
     ]

@@ -17,6 +17,31 @@ const model = ref([
                 to: '/StockTaking/List'
             }
         ]
+    },
+    {
+        label: 'Purchase',
+        items: [
+            {
+                label: 'PurchaseRequest',
+                icon: 'pi pi-fw pi-book',
+                to: '/PurchaseRequest/PRList'
+            },
+            {
+                label: 'PRDetails',
+                icon: 'pi pi-fw pi-book',
+                to: '/PurchaseRequest/PRDetail'
+            },
+            {
+                label: 'PRSettings',
+                icon: 'pi pi-fw pi-book',
+                to: '/PurchaseRequest/PRMaintain'
+            },
+            {
+                label: 'PRListtest',
+                icon: 'pi pi-fw pi-book',
+                to: '/PurchaseRequest/PRListtest'
+            }
+        ]
     }
 ]);
 </script>
