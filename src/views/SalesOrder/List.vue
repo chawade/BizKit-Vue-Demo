@@ -35,19 +35,16 @@
             </div>
 
             <div class="table-scrollable table-list">
-                <DataTable v-model:filters="filters" :value="sortedItems" :rows="10" dataKey="SalesOrderID"
-                    filterDisplay="menu" :loading="fetchLoading" :lazy="true" :rowsPerPageOptions="[5, 10, 25]"
-                    scrollable :paginator="true" :totalRecords="totalRecords" scrollHeight="400px"
-                    tableStyle="min-width: 50rem" @row-select="onRowSelect" @row-unselect="onRowUnselect"
-                    @page="onPageChange"
-                    :globalFilterFields="['SalesOrderNumber', 'CustomerName', 'DeliveryDate', 'balance', 'Status']">
+                <DataTable v-model:selection="selectedItems" :value="sortedItems" :rows="10" dataKey="SalesOrderID"
+                    :loading="fetchLoading" :rowsPerPageOptions="[5, 10, 25]" :paginator="true":lazy="true" 
+                    :totalRecords="totalRecords" scrollHeight="400px" tableStyle="min-width: 50rem" @page="onPageChange" @sort="onSort"
+                    @row-select="onRowSelect" @row-unselect="onRowUnselect">
                     <template #header>
                         <div class="flex justify-between">
-                            <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined
-                                @click="clearFilter()" />
+                            <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined @click="" />
                             <IconField>
                                 <InputGroup>
-                                    <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
+                                    <InputText v-model="searchString" placeholder="Keyword Search" />
                                     <Button icon="pi pi-search" severity="info" @click="search" />
                                     <Button icon="pi pi-bars" class="p-button-text" severity="info"
                                         v-styleclass="{ selector: '#searchDetail', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }" />
@@ -154,16 +151,16 @@
                     <Column field="SalesOrderDate" header="Order Date" sortable style="width: 15%"></Column>
                     <Column field="CustomerName" header="Customer" sortable style="width: 15%"></Column>
                     <Column field="DeliveryDate" header="Delivery Date" sortable style="width: 15%;"></Column>
-                    <Column field="Status" header="Status" sortable style="width: 20%;  text-align: center;">
+                    <Column field="Status.StatusName" header="Status" sortable style="width: 20%;  text-align: center;">
                         <template #body="{ data }">
                             <Tag :value="data.Status.StatusName"
                                 :style="{ border: data.Status.StatusBorderColor, backgroundColor: data.Status.StatusBgColor, color: data.Status.StatusFontColor, fontSize: data.Status.StatusFontSize }" />
                         </template>
                     </Column>
                     <Column field="OrderQuantity" header="Order Qty" sortable style="width: 1%"></Column>
-                    <Column field="PickQuantity" header="Pick Qty" sortable style="width: 10%"></Column>
-                    <Column field="ShipQuantity" header="Ship Qty" sortable style="width: 10%"></Column>
-                    <Column field="PickQuantity - ShipQuantity" header="Balance" sortable style="width: 10%"></Column>
+                    <Column field="PickQuantity" header="Pick Qty" style="width: 10%"></Column>
+                    <Column field="ShipQuantity" header="Ship Qty" style="width: 10%"></Column>
+                    <Column field="PickQuantity - ShipQuantity" header="Balance" style="width: 10%"></Column>
                     <Column field="TotalAmount" header="Total Amount" sortable style="width: 15%"></Column>
                     <template #empty>
                         <div class="p-text-center p-m-4">
@@ -184,7 +181,6 @@ import SalesOrderService from '@/Service/salesorderService'
 import type Menu from 'primevue/menu';
 import { useToast } from 'primevue/usetoast';
 import type { SalesOrderSearch } from '@/Model/SalesOrder';
-import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
 
 const searchSo = reactive<SalesOrderSearch>({
     salesOrderNo: '',
@@ -219,7 +215,6 @@ const permission = ref({
     MODIFY: true,
     PRINT: true
 });
-const dates = ref();
 
 const menuaa = ref([
     {
@@ -240,31 +235,52 @@ const menuaa = ref([
         ]
     }
 ]);
-const filters = ref<Record<string, any>>({}); // Store filter values
-// const filters = ref();
 
+const onSort = (event: any) => {
+    debugger
+    const sortField:string = event.sortField;
+    const Key:number = event.sortOrder;
+    switch (Key) {
+        case 1:
+            sortOrder.value = 'ASC';
+            break;
+        default:
+            sortOrder.value = 'DESC';
+            break;
+    }
+
+    switch (sortField) {
+        case 'SalesOrderNumber':
+            sortKey.value = 'SONo';
+            break;
+        case 'SalesOrderDate':
+            sortKey.value = 'SODate';
+            break;
+        case 'CustomerName':
+            sortKey.value = 'CustomerName';
+            break;
+        case 'DeliveryDate':
+            sortKey.value = 'DeliveryDate';
+            break;
+        case 'Status':
+            sortKey.value = 'Status';
+            break;
+        case 'OrderQuantity':
+            sortKey.value = 'OrderQty';
+            break;
+        case 'TotalAmount':
+            sortKey.value = 'TotalAmount';
+            break;
+        default:
+            sortKey.value = 'SODate';
+            break;
+    }
+    fetchData();
+};
 const sortedItems = computed(() => {
     return items.value
 })
 
-const initFilters = () => {
-    filters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        SalesOrderNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        // CustomerName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
-        // representative: { value: null, matchMode: FilterMatchMode.IN },
-        // date: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
-        // balance: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
-        // status: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
-        // activity: { value: [0, 100], matchMode: FilterMatchMode.BETWEEN },
-        // verified: { value: null, matchMode: FilterMatchMode.EQUALS }
-    };
-};
-
-const clearFilter = () => {
-    initFilters();
-};
-initFilters();
 const toggleMenu = (event: Event) => {
     menu.value?.toggle(event);
 };
@@ -369,7 +385,6 @@ const onRowUnselect = (event: any) => {
 
 onMounted(() => {
     fetchData()
-    initFilters()
 })
 
 watch(selectedItems, (newSelectedItems) => {
