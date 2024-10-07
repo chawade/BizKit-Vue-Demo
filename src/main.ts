@@ -1,27 +1,82 @@
-import '@/assets/stlye.css'
-import '@/assets/tailwind.css'
+import "@/assets/stlye.css";
+import "@/assets/tailwind.css";
 
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './Router/index'
+import { createApp } from "vue";
+import type { App as VueApp } from 'vue';
+import App from "./App.vue";
 
-import Aura from '@primevue/themes/aura';
-import PrimeVue from 'primevue/config';
-import ConfirmationService from 'primevue/confirmationservice';
-import ToastService from 'primevue/toastservice';
+import Aura from "@primevue/themes/aura";
+import PrimeVue from "primevue/config";
+import ConfirmationService from "primevue/confirmationservice";
+import ToastService from "primevue/toastservice";
+import Breadcrumb from "primevue/breadcrumb";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import InputGroup from "primevue/inputgroup";
+import Menu from "primevue/menu";
+import Checkbox from 'primevue/checkbox';
+import Password from 'primevue/password';
+import DatePicker from 'primevue/datepicker';
+import Select from 'primevue/select';
+import InputNumber from "primevue/inputnumber";
+import Textarea from "primevue/textarea";
+import StyleClass from 'primevue/styleclass';
+import SelectButton from "primevue/selectbutton";
+import router from "./Router";
+import ConfirmDialog from 'primevue/confirmdialog';
+import Toast from 'primevue/toast';
+import Chart from 'primevue/chart'; 
+import Paginator from "primevue/paginator";
+import Tag from "primevue/tag";
+import ProgressSpinner from "primevue/progressspinner";
+import Panel from "primevue/panel";
+import InputGroupAddon from "primevue/inputgroupaddon";
 
-const app = createApp(App);
+const app: VueApp = createApp(App);
 
 app.use(router);
 app.use(PrimeVue, {
-    theme: {
-        preset: Aura,
-        options: {
-            darkModeSelector: '.app-dark'
-        }
-    }
+  theme: {
+    preset: Aura,
+    options: {
+      darkModeSelector: ".app-dark",
+    },
+  },
 });
+app.directive('styleclass', StyleClass);
 app.use(ToastService);
 app.use(ConfirmationService);
 
-app.mount('#app');
+// Register PrimeVue components
+const components = {
+  InputGroup,
+  Menu,
+  InputText,
+  Button,
+  Column,
+  DataTable,
+  Breadcrumb,
+  Checkbox,
+  Password,
+  SelectButton,
+  ConfirmDialog,
+  Toast,
+  Chart,
+  Paginator,
+  Tag,
+  ProgressSpinner,
+  Panel,
+  InputGroupAddon,
+  DatePicker,
+  Select,
+  InputNumber,
+  Textarea
+};
+
+Object.entries(components).forEach(([name, component]) => {
+  app.component(name, component);
+});
+
+app.mount("#app");

@@ -1,13 +1,14 @@
-<script setup>
-import { useLayout } from '@/layout/composables/layout';
+<script lang="ts" setup>
+import { useLayout } from './composables/layout';
 import { computed, ref, watch } from 'vue';
-// import AppFooter from './AppFooter.vue';
+import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
 import AppTopbar from './AppTopbar.vue';
+import Title  from './Title.vue';
 
 const { layoutConfig, layoutState, isSidebarActive, resetMenu } = useLayout();
 
-const outsideClickListener = ref(null);
+const outsideClickListener = ref<((event: MouseEvent) => void) | null>(null);
 
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
@@ -29,7 +30,7 @@ const containerClass = computed(() => {
 
 function bindOutsideClickListener() {
     if (!outsideClickListener.value) {
-        outsideClickListener.value = (event) => {
+        outsideClickListener.value = (event: MouseEvent) => {
             if (isOutsideClicked(event)) {
                 resetMenu();
             }
@@ -40,16 +41,16 @@ function bindOutsideClickListener() {
 
 function unbindOutsideClickListener() {
     if (outsideClickListener.value) {
-        document.removeEventListener('click', outsideClickListener);
+        document.removeEventListener('click', outsideClickListener.value);
         outsideClickListener.value = null;
     }
 }
 
-function isOutsideClicked(event) {
+function isOutsideClicked(event: MouseEvent): boolean {
     const sidebarEl = document.querySelector('.layout-sidebar');
     const topbarEl = document.querySelector('.layout-menu-button');
 
-    return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
+    return !(sidebarEl?.isSameNode(event.target as Node) || sidebarEl?.contains(event.target as Node) || topbarEl?.isSameNode(event.target as Node) || topbarEl?.contains(event.target as Node));
 }
 </script>
 
@@ -59,11 +60,13 @@ function isOutsideClicked(event) {
         <app-sidebar></app-sidebar>
         <div class="layout-main-container">
             <div class="layout-main">
+                <Title />
+                <Toast />
+                <ConfirmDialog></ConfirmDialog>
                 <router-view></router-view>
             </div>
             <app-footer></app-footer>
         </div>
         <div class="layout-mask animate-fadein"></div>
     </div>
-    <Toast />
 </template>

@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import AppMenu from './AppMenu.vue';
 </script>
 
@@ -8,4 +8,4 @@ import AppMenu from './AppMenu.vue';
     </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style scoped></style>

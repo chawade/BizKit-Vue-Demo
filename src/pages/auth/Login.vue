@@ -2,11 +2,11 @@
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import AuthService from '@/Service/auth';
+import AuthService from '@/Service/AuthService';
 import Checkbox from 'primevue/checkbox';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
-import Button from 'primevue/button';
+import Button from 'primevue/button';   
 
 
 const router = useRouter();
@@ -19,8 +19,7 @@ const errorMessage = ref('');
 const loginAuth = async () => {
     try {
         await AuthService.login(email.value, password.value);
-
-        router.push({ name: 'StockTakingList' });
+        router.push({ name: 'Dashboard' });
     } catch (error:any) {
         errorMessage.value = error.response?.data?.message || 'Login failed';
     }
@@ -82,7 +81,7 @@ onMounted(() => {
                             <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot
                                 password?</span>
                         </div>
-                        <Button label="Sign In" class="w-full" @click="loginAuth"></Button>
+                        <Button label="Sign In" class="w-full" @click="loginAuth()"></Button>
                     </div>
                 </div>
             </div>
