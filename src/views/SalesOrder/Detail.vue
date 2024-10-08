@@ -171,11 +171,12 @@
                 </template>
                 <template #content>
                   <DataTable v-model:expandedRowGroups="expandedRowGroups" v-model:selection="selectedItems"
-                    :value="pickItems" :rows="10" dataKey="PickingID" :loading="fetchLoading" :lazy="true" :totalRecords="totalRecords"
-                    :rowsPerPageOptions="[5, 10, 25]" scrollable :paginator="true" @row-select="onRowSelect"
-                    @row-unselect="onRowUnselect" @page="onPageChange" expandableRowGroups rowGroupMode="subheader"
-                    groupRowsBy="ItemCode" @rowgroup-expand="onRowGroupExpand" @rowgroup-collapse="onRowGroupCollapse"
-                    sortMode="single" sortField="ItemCode" :sortOrder="1" tableStyle="width: 100%">
+                    :value="pickItems" :rows="10" dataKey="PickingID" :loading="fetchLoading" :lazy="true"
+                    :totalRecords="totalRecords" :rowsPerPageOptions="[5, 10, 25]" scrollable :paginator="true"
+                    @row-select="onRowSelect" @row-unselect="onRowUnselect" @page="onPageChange" expandableRowGroups
+                    rowGroupMode="subheader" groupRowsBy="ItemCode" @rowgroup-expand="onRowGroupExpand"
+                    @rowgroup-collapse="onRowGroupCollapse" sortMode="single" sortField="ItemCode" :sortOrder="1"
+                    tableStyle="width: 100%">
                     <template #groupheader="slotProps">
                       <span class="align-middle ml-2 font-bold leading-normal"> {{ slotProps.data.ItemCode }} - {{
                         slotProps.data.Description }}</span>
@@ -242,8 +243,8 @@
               <Column field="LineNumber" header="No."></Column>
               <Column field="PickingNo" header="Picking No.">
                 <template #body="{ data }">
-                  <Button :label="data.PickingNo" link @click="pickingNo = data.PickingNo; activeIndex = '2'; loadPickData()"
-                    class="p-0" />
+                  <Button :label="data.PickingNo" link
+                    @click="pickingNo = data.PickingNo; activeIndex = '2'; loadPickData()" class="p-0" />
                 </template>
               </Column>
               <Column field="ShippingNo" header="Shipping No.">
@@ -251,6 +252,12 @@
                   <Button :label="data.ShippingNo" link @click="shippingNo = data.ShippingNo" class="p-0" />
                 </template>
               </Column>
+              <template #empty>
+                <div class="p-text-center p-m-4">
+                  <Tag style="width: 100%; min-height: 70px" severity="secondary" value="No records available">
+                  </Tag>
+                </div>
+              </template>
             </DataTable>
           </template>
         </Card>
@@ -267,8 +274,11 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import SalesOrderService from '@/Service/salesorderService';
 import type { SalesOrderResource } from '@/Model/SalesOrder';
-import type { PikcingSearch } from '@/Model/Picking';
+import type { PickingSearch } from '@/Model/Picking';
 import { useToast } from 'primevue/usetoast';
+import { Subscription } from 'rxjs';
+
+let subscription: Subscription;
 
 const salesOrder = ref<SalesOrderResource>();
 const selectedTakingIds = ref<number[]>([]);
@@ -381,45 +391,67 @@ const handleTabChange = (index: number) => {
 };
 
 const loadPickData = async () => {
-  try {
-    debugger
-    if (pickingNo.value === '')
+  if (pickingNo.value === '')
       return
     console.log(pickingNo.value);
     fetchLoading.value = true;
-    const search: PikcingSearch = {
+    const search: PickingSearch = {
       SONo: SalesOrderNo,
       pickingNo: pickingNo.value,
       pageIndex: currentPage.value,
       pageSize: pageSize.value
     };
 
-    const response = await SalesOrderService.getPikcing(search);
-    pickItems.value = response.Data;
-    totalRecords.value = response.Pagination?.TotalRecords ?? 0;
-    totalPages.value = response.Pagination?.TotalPages ?? 0;
-  } catch (error) {
-    console.error('Error fetching picking list:', error);
-    // Handle error (e.g., show error message to user)
-  }finally{
-    fetchLoading.value = false;
-  }
+    subscription = SalesOrderService.getPikcing(search).subscribe({
+      next(result) {
+        if (result.IsSuccess) {
+          pickItems.value = result.Data;
+          totalRecords.value = result.Pagination?.TotalRecords ?? 0;
+          totalPages.value = result.Pagination?.TotalPages ?? 0;
+        } else {
+          toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        }
+      },
+      error: (error) => {
+        toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+      },
+      complete: () => {
+        fetchLoading.value = false;
+      }
+    })
 };
 
 const fetchData = async () => {
-  try {
-    loading.value = true;
-    const response = await SalesOrderService.get(SalesOrderNo);
-    const pickShipHistory = await SalesOrderService.getPickShipHistory(SalesOrderNo);
-    console.log(pickShipHistory.Data)
-    History.value = pickShipHistory.Data;
-    salesOrder.value = response.Data as SalesOrderResource;
-    SkipPick.value = salesOrder.value.SkipPicking;
-  } catch (err: any) {
-    error.value = `Failed to fetch stock taking data: ${err.message}`;
-  } finally {
-    loading.value = false;
-  }
+  fetchLoading.value = true;
+  subscription = SalesOrderService.get(SalesOrderNo).subscribe({
+    next: (result) => {
+      if (result.IsSuccess) {
+        salesOrder.value = result.Data;
+        totalRecords.value = result.Pagination?.TotalRecords ?? 0;
+        totalPages.value = result.Pagination?.TotalPages ?? 0;
+
+        subscription = SalesOrderService.getPickShipHistory(SalesOrderNo).subscribe({
+          next(result) {
+            if (result.IsSuccess) {
+              History.value = result.Data;
+            } 
+          },
+          error: (error) => {
+            toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+          }
+        })
+
+      } else {
+        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
 };
 
 const onRowSelect = (event: any) => {

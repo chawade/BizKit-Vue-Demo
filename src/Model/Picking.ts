@@ -1,4 +1,4 @@
-export interface PikcingSearch {
+export interface PickingSearch {
   SONo: string;
   pickingNo: string;
   pageIndex?: number;

@@ -1,15 +1,18 @@
+import type { HttpStatusCode } from "axios";
+
 // Base interfaces
-interface IError {
-  code: string;
-  message: string;
+export interface Error {
+  Code?: string | number;
+  Message?: string;
 }
 
-export interface Result{
-  Code: boolean;
-  Message: string;
-  Data: any;
-  Pagination?: Pagination
-  Sorting?: SortingInfo
+export interface Result<T>{
+  Error?: Error;
+  IsSuccess: boolean;
+  Pagination?: Pagination;
+  Sorting?: SortingInfo;
+  StatusCode: HttpStatusCode;
+  Data?: any;
 }
 
 export interface Pagination

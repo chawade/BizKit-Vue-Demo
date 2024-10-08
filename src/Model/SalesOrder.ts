@@ -1,3 +1,4 @@
+import type { BaseResource } from "./BaseResource";
 import type { CustomerResource } from "./Customer";
 import type { StatusResource } from "./Status";
 
@@ -95,3 +96,34 @@ export interface SalesOrderSearch {
     dateRange: [Date, Date] | null
     remark: string
   }
+
+
+  export interface SalesOrderSaveResource extends BaseResource {
+    SalesOrderID: number;
+    SalesOrderNumber: string;
+    SalesOrderDate: Date; // Use Date for DateTime in TypeScript
+    AssociatedSONo: string;
+    Customer?: CustomerResource;
+    WarehouseID: number;
+    ReferenceNo: string;
+    RefQuotationNo: string;
+    PaymentTerm: any;
+    DeliveryDate: Date;
+    PersonInCharge: string; // Corrected 'PersonInChrage' typo
+    Currency: string;
+    DiscountRate: number;
+    DiscountAmount: number;
+    OtherCharges: number;
+    Status?: StatusResource;
+    PickStatus: number;
+    PackStatus: number;
+    ShipStatus: number;
+    IsBackOrder: boolean;
+    IsSplitOrder: boolean;
+    Notes: string;
+    InternalMemo: string;
+    MemoDate: Date;
+    MemoBy: string;
+    IsPriceExcludeVat: boolean;
+    SalesOrderItemResource: SalesOrderItemResource[]; // Array of SalesOrderItemResource
+}

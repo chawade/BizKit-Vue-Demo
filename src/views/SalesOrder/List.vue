@@ -13,49 +13,33 @@
                     <Button icon="pi pi-plus-circle" label="Create Sales Order" severity="success" />
                 </router-link>
             </div>
-            <div class="row">
-                <div class="col-sm-8 mb-5">
-                    <div v-if="permission.EXPORT" class="grid gap-2" role="group">
-                        <div class="col-span-full lg:col-span-8 flex flex-wrap gap-2">
-                            <Button label="Adjust Stock" severity="success" class="w-full sm:w-auto"
-                                @click="approves" />
-                            <Button label="ExportCSV" severity="info" class="w-full sm:w-auto" @click="exportToCSV" />
-                            <Button label="ExportExcel" severity="info" class="w-full sm:w-auto"
-                                @click="exportToExcel" />
-                        </div>
-
-                        <div class="col-span-full lg:col-span-2 mt-2 lg:mt-0 lg:col-start-9">
-                            <span class="p-input-icon-right w-full">
-
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
 
             <div class="table-scrollable table-list">
                 <DataTable v-model:selection="selectedItems" :value="sortedItems" :rows="10" dataKey="SalesOrderID"
-                    :loading="fetchLoading" :rowsPerPageOptions="[5, 10, 25]" :paginator="true":lazy="true" 
-                    :totalRecords="totalRecords" scrollHeight="400px" tableStyle="min-width: 50rem" @page="onPageChange" @sort="onSort"
-                    @row-select="onRowSelect" @row-unselect="onRowUnselect">
+                    :loading="fetchLoading" :rowsPerPageOptions="[5, 10, 25]" :paginator="true" :lazy="true"
+                    :totalRecords="totalRecords" scrollHeight="400px" tableStyle="min-width: 50rem" filterDisplay="menu"
+                    @page="onPageChange" @sort="onSort" @row-select="onRowSelect" @row-unselect="onRowUnselect">
                     <template #header>
-                        <div class="flex justify-between">
-                            <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined @click="" />
-                            <IconField>
-                                <InputGroup>
-                                    <InputText v-model="searchString" placeholder="Keyword Search" />
-                                    <Button icon="pi pi-search" severity="info" @click="search" />
-                                    <Button icon="pi pi-bars" class="p-button-text" severity="info"
-                                        v-styleclass="{ selector: '#searchDetail', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }" />
-                                </InputGroup>
-                            </IconField>
-
-                        </div>
+                        <Menubar :model="filteredMenuItems" class="hidden md:flex">
+                            <template #start>
+                                <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined
+                                    @click="clearSearch" />
+                            </template>
+                            <template #end>
+                                <IconField>
+                                    <InputGroup>
+                                        <InputText v-model="searchString" placeholder="Keyword Search" />
+                                        <Button icon="pi pi-search" severity="info" @click="search" />
+                                        <Button icon="pi pi-bars" class="p-button-text" severity="info"
+                                            v-styleclass="{ selector: '#searchDetail', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }" />
+                                    </InputGroup>
+                                </IconField>
+                            </template>
+                        </Menubar>
                         <div id="searchDetail"
                             class="config-panel hidden w-full p-4 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
                             <div class="w-full">
-                                <form @submit.prevent="">
+                                <form @submit.prevent="searchDetail">
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <!-- First row -->
                                         <div class="flex flex-col">
@@ -132,36 +116,39 @@
                             </div>
                         </div>
                     </template>
-                    <Column header="" style="width: 5%">
+                    <Column v-if="selectedColumns.length > 0"  header="" style="width: 5%">
                         <template #body="{ data }">
                             <Button type="button" icon="pi pi-cog" class="p-button-text" @click="toggleMenu"
                                 aria-haspopup="true" aria-controls="overlay_menu" />
                             <Menu ref="menu" id="overlay_menu" :model="menuaa" :popup="true" />
                         </template>
                     </Column>
-                    <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
-                    <Column field="SalesOrderNumber" header="SalesOrder No." sortable style="width: 15%">
-                        <template #body="{ data }">
-                            <router-link :to="`/SalesOrder/Detail/${data.SalesOrderNumber}`" custom
+                    <Column v-if="selectedColumns.length > 0" selectionMode="multiple" headerStyle="width: 3rem"
+                        style="width: 5%"></Column>
+                    <Column v-for="col of selectedColumns" :key="col.field" :field="col.field" :header="col.header"
+                        :sortable="col.sortable" :style="col.style" :showFilterMenu="col.filterable"
+                        :filterField="col.filterField">
+                        <template #body="slotProps" v-if="col.field === 'SalesOrderNumber'">
+                            <router-link :to="`/SalesOrder/Detail/${slotProps.data.SalesOrderNumber}`" custom
                                 v-slot="{ navigate }">
-                                <Button :label="data.SalesOrderNumber" link @click="navigate" class="p-0" />
+                                <Button :label="slotProps.data.SalesOrderNumber" link @click="navigate" class="p-0" />
                             </router-link>
                         </template>
-                    </Column>
-                    <Column field="SalesOrderDate" header="Order Date" sortable style="width: 15%"></Column>
-                    <Column field="CustomerName" header="Customer" sortable style="width: 15%"></Column>
-                    <Column field="DeliveryDate" header="Delivery Date" sortable style="width: 15%;"></Column>
-                    <Column field="Status.StatusName" header="Status" sortable style="width: 20%;  text-align: center;">
-                        <template #body="{ data }">
-                            <Tag :value="data.Status.StatusName"
-                                :style="{ border: data.Status.StatusBorderColor, backgroundColor: data.Status.StatusBgColor, color: data.Status.StatusFontColor, fontSize: data.Status.StatusFontSize }" />
+                        <template #body="slotProps" v-else-if="col.field === 'Status.StatusName'">
+                            <Tag :value="slotProps.data.Status.StatusName"
+                                :style="{ border: slotProps.data.Status.StatusBorderColor, backgroundColor: slotProps.data.Status.StatusBgColor, color: slotProps.data.Status.StatusFontColor, fontSize: slotProps.data.Status.StatusFontSize }" />
+                        </template>
+                        <template #filter="{ filterModel }" v-if="col.filterable">
+                            <InputText v-model="filterModel.value" type="text" class="p-column-filter"
+                                placeholder="Search" />
                         </template>
                     </Column>
-                    <Column field="OrderQuantity" header="Order Qty" sortable style="width: 1%"></Column>
-                    <Column field="PickQuantity" header="Pick Qty" style="width: 10%"></Column>
-                    <Column field="ShipQuantity" header="Ship Qty" style="width: 10%"></Column>
-                    <Column field="PickQuantity - ShipQuantity" header="Balance" style="width: 10%"></Column>
-                    <Column field="TotalAmount" header="Total Amount" sortable style="width: 15%"></Column>
+                    <template #footer>
+                        <div class="p-text-center p-m-4">
+                            <MultiSelect v-model="selectedColumns" :options="columns" optionLabel="header"
+                                @change="onColumnToggle" display="chip" placeholder="Select Columns" class="w-full" />
+                        </div>
+                    </template>
                     <template #empty>
                         <div class="p-text-center p-m-4">
                             <Tag style="width: 100%; min-height: 70px" severity="secondary"
@@ -176,12 +163,15 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch, type Ref, reactive } from 'vue'
+import { ref, computed, onMounted, watch, type Ref, reactive, onUnmounted } from 'vue'
 import SalesOrderService from '@/Service/salesorderService'
 import type Menu from 'primevue/menu';
+import type { SalesOrderResource, SalesOrderSearch } from '@/Model/SalesOrder';
+import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
-import type { SalesOrderSearch } from '@/Model/SalesOrder';
+import { Subscription } from 'rxjs';
 
+let subscription: Subscription;
 const searchSo = reactive<SalesOrderSearch>({
     salesOrderNo: '',
     customer: '',
@@ -195,7 +185,10 @@ const searchSo = reactive<SalesOrderSearch>({
     dateRange: null,
     remark: ''
 })
-const items = ref([])
+const toast = useToast();
+const dt = ref();
+const router = useRouter();
+const items = ref<SalesOrderResource[]>([]);
 const currentPage = ref(1)
 const totalPages = ref(1)
 const pageSize = ref(10)
@@ -277,6 +270,70 @@ const onSort = (event: any) => {
     }
     fetchData();
 };
+
+interface ColumnDef {
+  field: string;
+  header: string;
+  sortable?: boolean;
+  style?: string;
+  filterable?: boolean;
+  filterField?: string;
+}
+const selectedColumns = ref<ColumnDef[]>([]);
+const onColumnToggle = (event: { value: ColumnDef[] }) => {
+    selectedColumns.value = event.value;
+};
+const columns = ref<ColumnDef[]>([
+      { field: 'SalesOrderNumber', header: 'SalesOrder No.', sortable: true, style: 'width: 15%' },
+      { field: 'SalesOrderDate', header: 'Order Date', sortable: true, style: 'width: 15%' },
+      { field: 'CustomerName', header: 'Customer', sortable: true, style: 'width: 15%' },
+      { field: 'DeliveryDate', header: 'Delivery Date', sortable: true, style: 'width: 15%'},
+      { field: 'Status.StatusName', header: 'Status', sortable: true, style: 'width: 20%; text-align: center;' },
+      { field: 'OrderQuantity', header: 'Order Qty', sortable: true, style: 'width: 1%'},
+      { field: 'PickQuantity', header: 'Pick Qty', style: 'width: 10%'},
+      { field: 'ShipQuantity', header: 'Ship Qty', style: 'width: 10%'},
+      { field: 'PickQuantity - ShipQuantity', header: 'Balance', style: 'width: 10%'},
+      { field: 'TotalAmount', header: 'Total Amount', sortable: true, style: 'width: 15%'}
+    ]);
+
+const nestedMenuitems = ref([
+    {
+        label: 'Approve',
+        icon: 'pi pi-check-circle',
+        command: () => {
+
+        }
+    },
+    {
+        label: 'Generate Invoice',
+        icon: 'pi pi-check-circle',
+        command: () => {
+
+        }
+    },
+    {
+        label: 'Print',
+        icon: 'pi pi-print',
+        command: () => {
+
+        }
+    },
+    {
+        label: 'Export',
+        items: [
+            {
+                label: 'Excel',
+                icon: 'pi pi-fw pi-compass'
+            },
+            {
+                label: 'CSV',
+                icon: 'pi pi-fw pi-map-marker'
+            }
+        ]
+    }
+]);
+
+
 const sortedItems = computed(() => {
     return items.value
 })
@@ -293,78 +350,78 @@ const onPageChange = (event: { first: number, rows: number, page: number }) => {
     fetchData();
 }
 
-
-const fetchData = async () => {
-    try {
-        fetchLoading.value = true;
-        const response = await SalesOrderService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
-
-        items.value = response.Data
-        totalRecords.value = response.Pagination?.TotalRecords ?? 0
-        totalPages.value = response.Pagination?.TotalPages ?? 0
-    } catch (error) {
-        console.error('Error fetching data:', error)
-    }
-    finally {
-        fetchLoading.value = false;
-    }
+const clearSearch = () => {
+    currentPage.value = 1
+    pageSize.value = 10
+    sortKey.value = 'SODate'
+    sortOrder.value = 'DESC'
+    searchString.value = ''
+    fetchData()
 }
 
-const approves = async () => {
-    try {
-        loading.value = true;
-        await SalesOrderService.approves(selectedTakingIds.value);
-        fetchData();
-    } catch (error) {
-        console.error('Error fetching data:', error)
+
+const searchDetail = () => {
+    fetchLoading.value = true;
+    subscription = SalesOrderService.searchDetail(searchSo).subscribe({
+        next: (result) => {
+            debugger;
+            if (result.IsSuccess) {
+                items.value = result.Data || [];
+                totalRecords.value = result.Pagination?.TotalRecords ?? 0;
+                totalPages.value = result.Pagination?.TotalPages ?? 0;
+            } else {
+                toast.add({ severity: 'error', summary: result.StatusCode.toString() , detail: result.Error?.Message, life: 2000 });
+            }
+        },
+        error: (error) => {
+            toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+        },
+        complete: () => {
+            fetchLoading.value = false;
+        }
+    });
+}
+
+const fetchData = () => {
+    fetchLoading.value = true;
+    const endpoint = `${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`;
+    items.value = [];
+    totalRecords.value = 0;
+    totalPages.value = 0;
+    subscription = SalesOrderService.search(endpoint).subscribe({
+        next: (result) => {
+            if (result.IsSuccess) {
+                items.value = result.Data || [];
+                totalRecords.value = result.Pagination?.TotalRecords ?? 0;
+                totalPages.value = result.Pagination?.TotalPages ?? 0;
+            } else {
+                const statusCode = result.StatusCode.toString() || 'Unknown';
+                const errorMessage = result.Error?.Message || 'An error occurred';
+                toast.add({ severity: 'error', summary: statusCode , detail: errorMessage, life: 2000 });
+            }
+        },
+        error: (error) => {
+            toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+        },
+        complete: () => {
+            fetchLoading.value = false;
+        }
+    });
+}
+
+const filteredMenuItems = computed(() => {
+  return nestedMenuitems.value.filter(item => {
+    if (item.label === 'Approve' || item.label === 'Generate Invoice' || item.label === 'Print') {
+      return selectedItems.value.length > 0; // Show "Approve" only if status is 100
     }
-};
-
-const exportToCSV = () => {
-    console.log('Export CSV');
-}
-
-const exportToExcel = () => {
-    console.log('Export Excel');
-}
+    return true; // Show other items regardless of status
+  });
+});
 
 const search = () => {
     currentPage.value = 1
     fetchData()
 }
-
-const edit = (takingId: number) => {
-    console.log('Edit', takingId);
-};
-
-const copy = (takingId: number) => {
-    console.log('Copy', takingId);
-};
-
-const print = (takingId: number) => {
-    console.log('Print', takingId);
-};
-
-const cancel = (takingId: number, takingDateEn: any) => {
-    console.log('Cancel', takingId, takingDateEn);
-};
-
-const handleAction = (data: { TakingId: number; TakingDateEn: any; StatusCode: number }, action: any) => {
-    switch (action) {
-        case 'edit':
-            edit(data.TakingId);
-            break;
-        case 'copy':
-            copy(data.TakingId);
-            break;
-        case 'print':
-            print(data.TakingId);
-            break;
-        case 'cancel':
-            cancel(data.TakingId, data.TakingDateEn);
-            break;
-    }
-};
 
 const onRowSelect = (event: any) => {
     const takingId = event.data.TakingId;
@@ -385,6 +442,11 @@ const onRowUnselect = (event: any) => {
 
 onMounted(() => {
     fetchData()
+    selectedColumns.value = [...columns.value];
+})
+
+onUnmounted(() =>{
+    subscription.unsubscribe();
 })
 
 watch(selectedItems, (newSelectedItems) => {
@@ -394,45 +456,3 @@ watch(selectedItems, (newSelectedItems) => {
 
 </script>
 
-<style scoped>
-.hoverTable {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.hoverTable tbody td {
-    padding: 7px;
-    /*border: #4e95f4 1px solid;*/
-}
-
-.hoverTable tbody tr {
-    background: white;
-}
-
-.hoverTable tbody tr:hover {
-    background-color: #f6f6f6;
-}
-
-.pagination {
-    display: inline-block;
-    cursor: pointer;
-}
-
-.pagination a {
-    color: black;
-    float: left;
-    padding: 8px 16px;
-    text-decoration: none;
-}
-
-.pagination a.active {
-    background-color: #4CAF50;
-    color: white;
-    border-radius: 5px;
-}
-
-.pagination a:hover:not(.active) {
-    background-color: #ddd;
-    border-radius: 5px;
-}
-</style>

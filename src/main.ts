@@ -47,6 +47,7 @@ import Badge from "primevue/badge";
 import InputIcon from "primevue/inputicon";
 import IconField from "primevue/iconfield";
 import MultiSelect from "primevue/multiselect";
+import Toolbar from "primevue/toolbar";
 
 const app: VueApp = createApp(App);
 
@@ -100,7 +101,8 @@ const components = {
   IconField,
   MultiSelect,
   InputNumber,
-  Textarea
+  Textarea,
+  Toolbar
 };
 
 Object.entries(components).forEach(([name, component]) => {

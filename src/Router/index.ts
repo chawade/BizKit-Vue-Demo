@@ -1,6 +1,6 @@
 import AppLayout from '@/layout/AppLayout.vue'
 import authService from '@/Service/authService';
-import { createRouter, createWebHistory, useRoute, type RouteLocationNormalized } from 'vue-router';
+import { createRouter, createWebHistory, useRoute, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router';
 
 
 const router = createRouter({
@@ -68,7 +68,7 @@ const router = createRouter({
                     meta: { 
                         parent: 'SalesOrder',  breadcrumb: 'Add/Edit Sales Order'
                       },
-                    component: () => import('@/views/StockTaking/Maintain.vue'),
+                    component: () => import('@/views/SalesOrder/Maintain.vue'),
                     props: true,
                   }
             ]
@@ -77,21 +77,29 @@ const router = createRouter({
 });
 
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+    debugger;
     const token = localStorage.getItem('authToken');
+
+    // Verify token on every navigation
+    const isValidToken = await authService.verifyToken();
+
     // If a module is equal to the breadcrumb, include the path of the list
-
-    const validToken = authService.verifyToken();
-
     if (to.meta.module === to.meta.breadcrumb && to.meta.parent) {
-        to.meta.breadcrumb = `${to.meta.module} > ${router.resolve({ name: String(to.meta.parent) }).href} > ${to.meta.breadcrumb}`;
+        to.meta.breadcrumb = `${to.meta.module} > ${router.resolve({ name: String(to.meta.parent) }).fullPath} > ${to.meta.breadcrumb}`;
     }
-    if (to.matched.some((record) => record.meta.requiresAuth) && !token) {
+
+    if (to.matched.some((record) => record.meta.requiresAuth) && !isValidToken) {
+        // Token is invalid or missing, redirect to login
         next({ name: 'login' });
     }
-    // If the user is trying to access the login page and they are already authenticated, redirect to dashboard
-    else if (to.name === 'login' && token) {
+    // If the user is trying to access the login page and they have a valid token, redirect to dashboard
+    else if (to.name === 'login' && isValidToken) {
         next({ name: 'Dashboard' });
+    }
+    // If token is invalid and user is not on login page, redirect to login
+    else if (!isValidToken && to.name !== 'login') {
+        next({ name: 'login' });
     }
     // Otherwise, allow navigation
     else {
