@@ -18,7 +18,6 @@
 </template>
 
 <script lang="ts" setup>
-import Breadcrumb from 'primevue/breadcrumb';
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 

@@ -49,25 +49,29 @@ class StockTakingService {
     return this.request('get', `${id}`);
   }
 
-  private async updateStatus(action: string, endpoint: string, docIds: number[]) {
-    const data = { DocId: docIds };
+  private async put(action: string, endpoint?: string, docIds?: number[], status?: number) {
+    const data = { DocId: docIds, Status: status };
     return this.request('put', `${action}${endpoint}`, data);
   }
 
+  async updateStatus(docId: number[], status?: number ) {
+    return this.put('status', '', docId, status);
+  }
+
   async approve(endpoint: string, docId: number[]) {
-    return this.updateStatus('approve', endpoint, docId);
+    return this.put('approve', endpoint, docId, undefined);
   }
   
   async approves(docId: number[]) {
-    return this.updateStatus('approves', '', docId);
+    return this.put('approves', '', docId, undefined);
   }
 
   async cancelApprove(endpoint: string, docId: number[]) {
-    return this.updateStatus('cancelApprove', endpoint, docId);
+    return this.put('cancelApprove', endpoint, docId, undefined);
   }
 
   async cancel(endpoint: string, docId: number[]) {
-    return this.updateStatus('cancel', endpoint, docId);
+    return this.put('cancel', endpoint, docId, undefined);
   }
 }
 

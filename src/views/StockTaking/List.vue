@@ -13,7 +13,8 @@
                 <div class="col-sm-8 mb-5">
                     <div v-if="permission.EXPORT" class="grid gap-2" role="group">
                         <div class="col-span-full lg:col-span-8 flex flex-wrap gap-2">
-                            <Button label="Adjust Stock" severity="success" class="w-full sm:w-auto" @click="approves" />
+                            <Button label="Adjust Stock" severity="success" class="w-full sm:w-auto"
+                                @click="approves" />
                             <Button label="ExportCSV" severity="info" class="w-full sm:w-auto" @click="exportToCSV" />
                             <Button label="ExportExcel" severity="info" class="w-full sm:w-auto"
                                 @click="exportToExcel" />
@@ -22,7 +23,7 @@
                         <div class="col-span-full lg:col-span-2 mt-2 lg:mt-0 lg:col-start-9">
                             <span class="p-input-icon-right w-full">
                                 <InputGroup>
-                                    <InputText v-model="searchString" class="w-full" type="text" size="medium"
+                                    <InputText v-model="searchString" class="w-full" type="text" size="small"
                                         placeholder="TakingNo, Warehouse" />
                                     <Button icon="pi pi-search" severity="info" @click="search" />
                                 </InputGroup>
@@ -34,9 +35,8 @@
 
             <div class="table-scrollable table-list">
                 <DataTable v-model:selection="selectedItems" :value="sortedItems" :rows="10" dataKey="TakingId"
-                    :paginator="true" :filters="sortedItems" :rowsPerPageOptions="[5, 10, 25]" scrollable
-                    scrollHeight="400px" tableStyle="min-width: 50rem" @row-select="onRowSelect"
-                    @row-unselect="onRowUnselect">
+                    :paginator="true" :rowsPerPageOptions="[5, 10, 25]" scrollable scrollHeight="400px"
+                    tableStyle="min-width: 50rem" @row-select="onRowSelect" @row-unselect="onRowUnselect">
                     <Column header="">
                         <template #body="{ data }">
                             <div class="dropdown" @mouseleave="closeDropdown(data)">
@@ -73,19 +73,22 @@
                     <Column field="WarehouseName" header="Warehouse" sortable style="width: 20%"></Column>
                     <Column field="LocationName" header="Location" sortable style="width: 20%"></Column>
                     <Column field="PersonInCharge" header="Person In Charge" sortable style="width: 20%"></Column>
-                    <Column field="Status" header="Status" sortable style="width: 15%;">
-                        <template #body="{ data }">
-                            <span :style="{
-                                backgroundColor: data.Status.StatusBgColor,
-                                color: data.Status.StatusFontColor,
-                                border: `1px solid ${data.Status.StatusBorderColor}`,
-                                fontSize: `${data.Status.StatusFontSize}px`,
+                    <Column field="Status" header="Status" style="width: 15%;">
+                        <template #body="slotProps">
+                            <span @click="sortBy(slotProps.data.Status.StatusName)" :style="{
+                                backgroundColor: slotProps.data.Status.StatusBgColor,
+                                color: slotProps.data.Status.StatusFontColor,
+                                border: `1px solid ${slotProps.data.Status.StatusBorderColor}`,
+                                fontSize: `${slotProps.data.Status.StatusFontSize}px`,
                                 padding: '0.25rem 0.5rem',
                                 borderRadius: '4px',
-                                display: 'inline-block'
+                                display: 'inline-block',
+                                cursor: 'pointer'
                             }">
-                                {{ data.Status.StatusName }}
+                                {{ slotProps.data.Status.StatusName }}
                             </span>
+                            <i :class="sortOrder === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"
+                                style="margin-left: 8px;"></i>
                         </template>
                     </Column>
                 </DataTable>
@@ -97,26 +100,20 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import type { Ref } from 'vue';
-import StockTakingService from '@/service/stockTakingService'
-
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import InputGroup from 'primevue/inputgroup';
+import StockTakingService from '@/Service/stockTakingService'
 
 const items = ref([])
-const currentPage = ref(1)
-const totalPages = ref(1)
-const pageSize = ref(0)
-const searchString = ref('')
-const sortKey = ref('TakingNo')
-const sortOrder = ref('DESC')
-const totalRecords = ref(0)
-const selectedItems = ref([]);
+const currentPage = ref<number>(1)
+const totalPages = ref<number>(1)
+const pageSize = ref<number>(0)
+const searchString = ref<string>('')
+const sortKey = ref<string>('TakingNo')
+const sortOrder = ref<string>('DESC')
+const totalRecords = ref<number>(0)
+const selectedItems = ref<number[]>([]);
 const selectedTakingIds = ref<number[]>([]);
 const dropdownVisible: Ref<Record<string, boolean>> = ref({});
-const loading = ref(false);
+const loading = ref<boolean>(false);
 const error = ref(false);
 
 const permission = ref({
@@ -126,7 +123,7 @@ const permission = ref({
     PRINT: true
 });
 
-const TAKING = 1;
+const TAKING = 175;
 const APPROVED = 200;
 const CANCELLED = 2000;
 
@@ -226,6 +223,24 @@ const onRowUnselect = (event: any) => {
     console.log('Selected TakingIds:', selectedTakingIds.value);
     return selectedTakingIds.value;
 };
+
+const sortBy = (key: string) => {
+    console.log('Sort by:', sortKey.value);
+    if (key === sortKey.value) {
+        sortOrder.value = sortOrder.value === 'ASC' ? 'DESC' : 'ASC'
+    } else {
+        sortKey.value = key
+        sortOrder.value = 'DESC'
+    }
+    fetchData()
+}
+
+const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page
+        fetchData()
+    }
+}
 
 onMounted(() => {
     fetchData()

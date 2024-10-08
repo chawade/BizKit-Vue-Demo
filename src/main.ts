@@ -18,6 +18,10 @@ import InputGroup from "primevue/inputgroup";
 import Menu from "primevue/menu";
 import Checkbox from 'primevue/checkbox';
 import Password from 'primevue/password';
+import DatePicker from 'primevue/datepicker';
+import Select from 'primevue/select';
+import InputNumber from "primevue/inputnumber";
+import Textarea from "primevue/textarea";
 import StyleClass from 'primevue/styleclass';
 import SelectButton from "primevue/selectbutton";
 import router from "./Router";
@@ -29,8 +33,6 @@ import Tag from "primevue/tag";
 import ProgressSpinner from "primevue/progressspinner";
 import Panel from "primevue/panel";
 import InputGroupAddon from "primevue/inputgroupaddon";
-import DatePicker from "primevue/datepicker";
-import Select from "primevue/select";
 import Menubar from "primevue/menubar";
 import Card from "primevue/card";
 import Tabs from "primevue/tabs";
@@ -96,7 +98,9 @@ const components = {
   Badge,
   InputIcon,
   IconField,
-  MultiSelect
+  MultiSelect,
+  InputNumber,
+  Textarea
 };
 
 Object.entries(components).forEach(([name, component]) => {

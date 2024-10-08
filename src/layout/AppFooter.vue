@@ -2,7 +2,7 @@
 
 <template>
     <div class="layout-footer">
-        SAKAI by
-        <a href="https://primevue.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">PrimeVue</a>
+        © 2023 BizKit powered by
+        <a href="https://innofinite.co.th/" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">Innofinite</a>
     </div>
 </template>
