@@ -1,74 +1,92 @@
-import authService from '@/Service/AuthService';
-const apiUrl = import.meta.env.VITE_API_URL;
+import authService from "@/Service/authService";
+import { HttpStatusCode, type AxiosInstance, type AxiosResponse } from "axios";
+import type { Error, Result } from "@/Model/Result";
+import { Observable, from, of } from "rxjs";
+import { map, catchError, tap, switchMap } from "rxjs/operators";
+import type { SalesOrderResource, SalesOrderSearch } from "@/Model/SalesOrder";
+import type { PickingSearch } from "@/Model/Picking";
+import ErrorService from "./errorService";
 
+const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/salesorder`;
 
 class SalesOrderService {
-  private axiosInstance: any | undefined;
-
+  private axiosInstance$: Observable<AxiosInstance>;
+  private errorService: ErrorService;
   constructor() {
-    this.initializeAxiosInstance();
+    this.axiosInstance$ = from(authService.getAuthenticatedAxiosInstance());
+    this.errorService = new ErrorService();
   }
 
-  private async initializeAxiosInstance() {
-    this.axiosInstance = await authService.getAuthenticatedAxiosInstance();
+  private getHttpOptions() {
+    return {
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache"
+      },
+    };
   }
 
-  private async request(method: string, endpoint: string, data?: any) {
-    debugger;
-    try {
-      const url = `${baseURL}/${endpoint}`;
-      const config = {
-        headers: { 'Content-Type': 'application/json' },
-      };
-
-      let response;
-      if (method === 'get') {
-        response = await this.axiosInstance.get(url, config);
-      } else if (method === 'put') {
-        response = await this.axiosInstance.put(url, data, config);
-      } else {
-        throw new Error('Unsupported HTTP method');
-      }
-
-      if (!response.data) {
-        throw new Error('Network response was not ok');
-      }
-      return response.data;
-    } catch (error: any) {
-      console.error('API request failed:', error);
-      throw error;
-    }
+  search(endpoint: string): Observable<Result<SalesOrderResource[]>> {
+    const url = `${baseURL}/${endpoint}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<SalesOrderResource[]>>(url, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<SalesOrderResource[]>>) => response.data),
+      tap(() => this.errorService.log("Fetched customer list")),
+      catchError(this.errorService.handleError<SalesOrderResource[]>("getCustomerList"))
+    );
   }
 
-  async search(endpoint: string) {
-    return this.request('get', endpoint);
+  searchDetail(search: SalesOrderSearch): Observable<Result<SalesOrderResource[]>> {
+    const url = `${baseURL}/search`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.post<Result<SalesOrderResource[]>>(url, search, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<SalesOrderResource[]>>) => response.data),
+      tap(() => this.errorService.log("Fetched sales order details")),
+      catchError(this.errorService.handleError<SalesOrderResource[]>("searchDetail"))
+    );
   }
 
-  async get(id: number) {
-    return this.request('get', `${id}`);
+  get(id: string): Observable<Result<SalesOrderResource>> {
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<SalesOrderResource>>(`${baseURL}/${id}`, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<SalesOrderResource>>) => response.data),
+      tap(() => this.errorService.log(`Fetched sales order with id ${id}`)),
+      catchError(this.errorService.handleError<SalesOrderResource>(`get id=${id}`))
+    );
   }
 
-  private async updateStatus(action: string, endpoint: string, docIds: number[]) {
-    const data = { DocId: docIds };
-    return this.request('put', `${action}${endpoint}`, data);
+  getPikcing(search: PickingSearch): Observable<Result<any>> {
+    const url = `${baseURL}/picking/list`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.post<Result<any>>(url, search, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<any>>) => response.data),
+      tap(() => this.errorService.log("Fetched picking list")),
+      catchError(this.errorService.handleError<any>("getPikcing"))
+    );
   }
 
-  async approve(endpoint: string, docId: number[]) {
-    return this.updateStatus('approve', endpoint, docId);
+  getPickShipHistory(soNo: string): Observable<Result<any>> {
+    const url = `${baseURL}/history/${soNo}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<any>>(url, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<any>>) => response.data),
+      tap(() => this.errorService.log(`Fetched pick ship history for SO ${soNo}`)),
+      catchError(this.errorService.handleError<any>("getPickShipHistory"))
+    );
   }
+
   
-  async approves(docId: number[]) {
-    return this.updateStatus('approves', '', docId);
-  }
-
-  async cancelApprove(endpoint: string, docId: number[]) {
-    return this.updateStatus('cancelApprove', endpoint, docId);
-  }
-
-  async cancel(endpoint: string, docId: number[]) {
-    return this.updateStatus('cancel', endpoint, docId);
-  }
 }
 
 export default new SalesOrderService();

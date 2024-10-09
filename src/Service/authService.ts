@@ -53,8 +53,7 @@ const authService = {
   async verifyToken() {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      router.push({ name: "login" });
-      throw new Error("No token found");
+      return false;
     }
 
     try {
