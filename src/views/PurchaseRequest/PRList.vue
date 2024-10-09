@@ -1,166 +1,208 @@
 <template>
-  <div class="container">
-    <!-- Page Breadcrumb -->
-    <ul class="breadcrumb">
-      <li><a href="~/dashboard">MenuHomeTitle</a></li>
-      <li><a href="~/PurchaseRequest/List">MenuPurchasesTitle</a></li>
-      <li>.PRListHeader</li>
-    </ul>
-
-    <!-- Header Section -->
-    <div class="header d-flex justify-content-between align-items-center">
-      <div class="caption">
-        <i class="icon-settings font-green"></i>
-        <span class="caption-subject font-green sbold uppercase">Purchase Request List</span>
+  <div v-if="loading">Loading...</div>
+  <div v-else-if="error">{{ error }}</div>
+  <div v-else>
+    <div class="card">
+      <!-- Header Section -->
+      <div class="col-sm-8 flex justify-between mb-8">
+        <h4 class="font-bold text-l flex gap-2 items-center"><span class="pi pi-cog"></span>Purchase Request List
+        </h4>
+        <router-link to="/PurchaseRequest/PRMaintain">
+          <Button icon="pi pi-plus-circle" label="New Purchase Request" severity="success" />
+        </router-link>
+        <!-- <div v-if="permission.MODIFY">
+          <Button icon="pi pi-plus-circle" label="New Purchase Request" severity="success" @click="NewPR" />
+        </div> -->
       </div>
 
-      <div class="actions" v-if="permission.MODIFY">
-        <a @click="NewPR" id="btnNewPR" class="btn btn-success">
-          <i class="pi pi-plus-circle"></i> New Purchase Request
-        </a>
-      </div>
-    </div>
-
-    <!-- Alert Message -->
-    <!-- <div id="alertmsg" class="alert alert-danger" v-if="showAlertMsg">
-      <button type="button" @click="hideDivMSG" class="close" data-dismiss="alert">&times;</button>
-      <span id="lblMsg">Message</span>
-    </div> -->
-
-    <!-- Actions Section -->
-    <div class="row mb-3">
-      <!-- <div class="col-md-8">
-        <div v-if="permission.APPROVE || permission.MODIFY || permission.PRINT">
-          <button v-if="permission.APPROVE" @click="Approve" class="btn btn-success">
-            <i class="pi pi-check-circle"></i> Approve
-          </button>
-          <button v-if="permission.MODIFY" @click="GeneratePO" class="btn btn-info">
-            <i class="pi pi-exchange"></i> ConvertPO
-          </button>
-          <button v-if="permission.PRINT" @click="PrintList" class="btn btn-info">
-            <i class="pi pi-print"></i> Print
-          </button>
-        </div>
-      </div> -->
-
-      <div class="col-md-4 text-right">
-        <div class="input-group">
-          <input type="text" class="form-control" placeholder="Request No., Vendor Name, Status" v-model="searchString" />
-          <span class="input-group-btn">
-            <button class="btn btn-primary" @click="searchList">
-              <i class="pi pi-search"></i> Search
-            </button>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Search Panel -->
-    <div id="pnlsearch" class="collapse border p-3 mb-3">
+      <!-- Search Section -->
       <div class="row">
-        <div class="col-md-3">
-          <label>PRNo</label>
-          <InputText type="text" class="form-control" v-model="PRNO" />
+        <div class="col-sm-8 mb-5">
+          <div v-if="permission.EXPORT" class="grid gap-2" role="group">
+            <div class="col-span-full lg:col-span-8 flex flex-wrap gap-2">
+              <Button label="Approve" severity="success" class="w-full sm:w-auto" @click="Approve" />
+              <Button label="ExportCSV" severity="info" class="w-full sm:w-auto" @click="exportToCSV" />
+              <Button label="ExportExcel" severity="info" class="w-full sm:w-auto" @click="exportToExcel" />
+            </div>
+            <div class="col-span-full lg:col-span-2 mt-2 lg:mt-0 lg:col-start-9">
+              <span class="p-input-icon-right w-full">
+                <InputGroup>
+                  <InputText v-model="searchString" class="w-full" placeholder="Request No., Vendor Name, Status" />
+                  <Button icon="pi pi-search" severity="info" @click="searchList" />
+                  <Button icon="pi pi-bars" class="p-button-text" severity="info"
+                    v-styleclass="{ selector: '#searchDetail', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }" />
+                </InputGroup>
+              </span>
+            </div>
+          </div>
         </div>
-        <div class="col-md-3">
-          <label>Vendor</label>
-          <select class="form-control" v-model="vendorID">
-            <option v-for="vendor in vendorList" :value="vendor.VendorId">{{ vendor.VendorName }}</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label>Status</label>
-          <select class="form-control" v-model="statusID">
-            <option v-for="status in statusList" :value="status.StatusId">{{ status.StatusName }}</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label>ReferenceNo</label>
-          <input type="text" class="form-control" v-model="ReferenceNo" />
+        <div id="searchDetail"
+          class="config-panel hidden right-0 w-full p-4 bg-surface-0 dark:bg-surface-900 border border-surface rounded-border origin-top shadow-[0px_3px_5px_rgba(0,0,0,0.02),0px_0px_2px_rgba(0,0,0,0.05),0px_1px_4px_rgba(0,0,0,0.08)]">
+          <div class="lg:w-3/3 border-b-1 rounded-md shadow p-5">
+            <form @submit.prevent="submitForm">
+              <!-- First row -->
+              <div class="flex flex-col lg:flex-row lg:justify-center">
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-bold" for="PRNo">PR No.</label>
+                    <InputText id="username" aria-describedby="username-help" placeholder="PR No."/>
+                  </div>
+                </div>
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-bold" for="PRNo">Vendor</label>
+                    <Select v-model="selectedVendor" optionLabel="name" placeholder="Select"
+                      class="w-full" />
+                  </div>
+                </div>
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-bold" for="PRNo">Status</label>
+                    <Select v-model="selectedStatus" optionLabel="name" placeholder="Select"
+                      class="w-full" />
+                  </div>
+                </div>
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-bold" for="PRNo">Reference No.</label>
+                    <InputText id="username" aria-describedby="username-help" placeholder="Reference No."/>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Second row -->
+              <div class="flex flex-col mt-4 lg:flex-row lg:justify-center">
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-bold" for="PRNo">Remark</label>
+                    <InputText id="username" aria-describedby="username-help" />
+                  </div>
+                </div>
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-bold" for="PRNo">Item Code</label>
+                    <InputText id="username" aria-describedby="username-help" />
+                  </div>
+                </div>
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-bold" for="PRNo">Item Name</label>
+                    <InputText id="username" aria-describedby="username-help" />
+                  </div>
+                </div>
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex gap-2 w-full">
+                    <div class="flex flex-col gap-2 w-1/2">
+                      <label class="font-bold" for="amountFrom">Amount From</label>
+                      <InputText id="amountFrom" aria-describedby="amountFrom-help"
+                        class="w-full" />
+                    </div>
+                    <div class="flex flex-col gap-2 w-1/2">
+                      <label class="font-bold" for="amountTo">To</label>
+                      <InputText id="amountTo" aria-describedby="amountTo-help" class="w-full" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Third row -->
+              <div class="flex flex-col mt-4 lg:flex-row lg:justify-center">
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-bold" for="PRNo">PR Date</label>
+                    <Select v-model="selectedPRDate" optionLabel="name" placeholder="Select"
+                      class="w-full" />
+                  </div>
+                </div>
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex gap-2 w-full">
+                    <div class="flex flex-col gap-2 w-1/2">
+                      <label class="font-bold" for="amountFrom">From</label>
+                      <InputText id="amountFrom" aria-describedby="amountFrom-help"
+                        class="w-full" />
+                    </div>
+                    <div class="flex flex-col gap-2 w-1/2">
+                      <label class="font-bold" for="amountTo">To</label>
+                      <InputText id="amountTo" aria-describedby="amountTo-help" class="w-full" />
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-bold" for="PRNo">Require Date</label>
+                    <Select v-model="selectedRequireDate" optionLabel="name" placeholder="Select"
+                      class="w-full" />
+                  </div>
+                </div>
+                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                  <div class="flex gap-2 w-full">
+                    <div class="flex flex-col gap-2 w-1/2">
+                      <label class="font-bold" for="amountFrom">From</label>
+                      <InputText id="amountFrom" aria-describedby="amountFrom-help"
+                        class="w-full" />
+                    </div>
+                    <div class="flex flex-col gap-2 w-1/2">
+                      <label class="font-bold" for="amountTo">To</label>
+                      <InputText id="amountTo" aria-describedby="amountTo-help" class="w-full" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
+                <Button label="Detail Search" severity="info" />
+              </div>
+            </form>
+          </div>
         </div>
       </div>
 
-      <!-- Additional Fields -->
-      <div class="row mt-3">
-        <div class="col-md-3">
-          <label>Remark</label>
-          <input type="text" class="form-control" v-model="remark" />
-        </div>
-        <div class="col-md-3">
-          <label>ItemCode</label>
-          <input type="text" class="form-control" v-model="itemCode" />
-        </div>
-        <div class="col-md-3">
-          <label>ItemName</label>
-          <input type="text" class="form-control" v-model="itemName" />
-        </div>
-      </div>
+      <!-- Table Section -->
+      <div class="table-scrollable table-list">
+        <DataTable v-model:selection="selectedItems" :value="request" :rows="10" dataKey="PurchaseRequestNo"
+          :paginator="true" :rowsPerPageOptions="[5, 10, 25]" scrollable scrollHeight="400px"
+          tableStyle="min-width: 50rem" @row-select="onRowSelect" @row-unselect="onRowUnselect">
 
-      <!-- Detailsearch -->
-      <div class="row mt-3">
-        <div class="col-md-12 text-right">
-          <button @click="searchDetails" class="btn btn-primary"><i class="pi pi-bars"></i></button> 
-        </div>
-      </div>
-    </div>
-
-    <!-- Table Section -->
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th><i class="pi pi-table" style="color: slateblue"></i></th>
-            <th><input type="checkbox" @change="toggleSelectAll($event)" /></th>
-            <th @click="sortData('PRNo')">PRNo</th>
-            <th @click="sortData('PRDate')">PRDate</th>
-            <th @click="sortData('DeliveryDate')">RequireDate</th>
-            <th @click="sortData('VendorName')">Vendor</th>
-            <th>Project</th>
-            <th>Department</th>
-            <th>Status</th>
-            <th @click="sortData('TotalAmount')">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="purchaseRequest in request" :key="purchaseRequest.PurchaseRequestNo">
-            <td><i class="pi pi-cog" style="font-size: 1rem"></i></td>
-            <td><input type="checkbox" v-model="purchaseRequest.selectedItems" /></td>
-            <td>{{ purchaseRequest.PurchaseRequestNo }}</td>
-            <td>{{ purchaseRequest.PurchaseRequestDate }}</td>
-            <td>{{ purchaseRequest.RequireDate }}</td>
-            <td>{{ purchaseRequest.Vendor?.VendorName || '' }}</td>
-            <td>{{ purchaseRequest.Project }}</td>
-            <td>{{ purchaseRequest.Department }}</td>
-            <td>
-              <span :class="['status-badge', getStatusClass(purchaseRequest.Status)]" :style="{
+          <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
+          <Column field="PurchaseRequestNo" header="PRNo" sortable>
+            <template #body="{ data }">
+              <router-link :to="`/PurchaseRequest/Detail/${data.PurchaseRequestNo}`" custom v-slot="{ navigate }">
+                <Button :label="data.PurchaseRequestNo" link @click="navigate" class="p-0" />
+              </router-link>
+            </template>
+          </Column>
+          <Column field="PurchaseRequestDate" header="PRDate" sortable></Column>
+          <Column field="RequireDate" header="RequireDate" sortable></Column>
+          <Column field="Vendor.VendorName" header="Vendor" sortable></Column>
+          <Column field="Project" header="Project"></Column>
+          <Column field="Department" header="Department"></Column>
+          <Column field="Amount" header="Amount" sortable class="text-right"></Column>
+          <Column field="Status.StatusName" header="Status">
+            <template #body="slotProps">
+              <span @click="SortBy(slotProps.data.Status.StatusName)" :style="{
+                backgroundColor: slotProps.data.Status.StatusBgColor,
+                color: slotProps.data.Status.StatusFontColor,
+                border: `1px solid ${slotProps.data.Status.StatusBorderColor}`,
+                fontSize: `${slotProps.data.Status.StatusFontSize}px`,
+                padding: '0.25rem 0.5rem',
+                borderRadius: '4px',
                 display: 'inline-block',
-                backgroundColor: purchaseRequest.Status.StatusBgColor,
-                borderColor: purchaseRequest.Status.StatusBorderColor,
-                fontSize: purchaseRequest.Status.StatusFontSize + 'px',
-                color: purchaseRequest.Status.StatusFontColor,
-              }">{{ purchaseRequest.Status?.StatusName || "" }}</span>
-            </td>
-            <td class="text-right">{{ purchaseRequest.Amount }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination Section -->
-    <div class="pagination">
-      <button @click="goToPage(1)" :disabled="pageNumber === 1">&lt;&lt;</button>
-      <button @click="goToPage(pageNumber - 1)" :disabled="pageNumber === 1">&lt;</button>
-      <span>{{ pageNumber }} / {{ totalPages }}</span>
-      <button @click="goToPage(pageNumber + 1)" :disabled="pageNumber === totalPages">&gt;</button>
-      <button @click="goToPage(totalPages)" :disabled="pageNumber === totalPages">&gt;&gt;</button>
+                cursor: 'pointer'
+              }">
+                {{ slotProps.data.Status.StatusName }}
+              </span>
+              <i :class="direction === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'" style="margin-left: 8px;"></i>
+            </template>
+          </Column>
+        </DataTable>
+      </div>
     </div>
   </div>
 </template>
 
-
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import authService from "@/service/authService";
+import authService from '@/Service/AuthService';
+import purchaseRequestService from '@/Service/purchaseRequestService';
 
 interface Vendor {
   VendorId: number;
@@ -237,11 +279,8 @@ interface CommonResource {
 }
 
 
-const PRNoSearchPlaceholder = ref('');
-const common = ref<CommonResource[]>([]);
-const stockTaking = ref<StockTaking[]>([]);
+const selectedItems = ref<number[]>([]);
 const request = ref<PurchaseRequest[]>([]);
-const paginatedData = ref<PaginatedData[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const totalPages = ref(1);
@@ -259,16 +298,12 @@ const permission = ref({
   PRINT: true,
   EXPORT: true
 });
-
+const selectedPurchaseRequestNo = ref<string[]>([]);
 const showAlertMsg = ref(false);
-const PRNO = ref('');
-const vendorID = ref<number | null>(null);  
-const statusID = ref<number | null>(null);  
-const ReferenceNo = ref('');
-const remark = ref('');
-const itemCode = ref('');
-const itemName = ref('');
-
+const selectedVendor = ref([]);
+const selectedStatus = ref([]);
+const selectedPRDate = ref([]);
+const selectedRequireDate = ref([]);
 
 const fetchPurchaseRequests = async () => {
   try {
@@ -279,31 +314,38 @@ const fetchPurchaseRequests = async () => {
       `http://localhost:3692/api/v1/purchaserequest/${pageNumber.value}/${pageSize.value}/${sortBy.value}/${direction.value}/${searchString.value}`
     );
 
-    request.value = response.data.Data; 
+    request.value = response.data.Data;
     console.log(request.value);
     totalRecords.value = response.data.Pagination.TotalRecords
     totalPages.value = response.data.Pagination.TotalPages
-  } catch (err) {
+  } catch (err: any) {
     error.value = `Failed to fetch purchase requests: ${err.message}`;
   } finally {
     loading.value = false;
   }
 };
 
-const getStatusClass = (status) => {
-  // switch (status) {
-  //   case "อนุมัติ":
-  //     return "bg-success"; // สีเขียวสำหรับ Approved
-  //   case "ร่าง":
-  //     return "bg-warning"; // สีเหลืองสำหรับ Draft
-  //   case "ปฏิเสธ":
-  //     return "bg-danger"; // สีแดงสำหรับ Rejected
-  //   default:
-  //     return "bg-info"; // สีฟ้าสำหรับสถานะอื่น ๆ
-  // }
+const onRowSelect = (event: any) => {
+  const purchaserequestNo = event.data.TakingId;
+  if (!selectedPurchaseRequestNo.value.includes(purchaserequestNo)) {
+    selectedPurchaseRequestNo.value.push(purchaserequestNo);
+  }
+};
+const onRowUnselect = (event: any) => {
+  const purchaserequestNo = event.data.TakingId;
+  const index = selectedPurchaseRequestNo.value.indexOf(purchaserequestNo);
+  if (index > -1) {
+    purchaserequestNo.value.splice(index, 1);
+  }
+  console.log('Selected PurchaserequestNo:', purchaserequestNo.value);
+  return purchaserequestNo.value;
 };
 
-const goToPage = (page) => {
+
+const submitForm = async () => {
+  
+}
+const goToPage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
     pageNumber.value = page;
     fetchPurchaseRequests();
@@ -358,7 +400,7 @@ const sortData = (column: string) => {
   fetchPurchaseRequests();
 };
 
-const toggleSelectAll = (event) => {
+const toggleSelectAll = (event: any) => {
   const checked = event.target.checked;
   request.value.forEach((request) => {
     request.selectedItems = checked;
@@ -369,6 +411,16 @@ const hideDivMSG = () => {
   showAlertMsg.value = false;
 };
 
+const SortBy = (key: string) => {
+  console.log('Sort by:', sortBy.value);
+  if (key === sortBy.value) {
+    direction.value = direction.value === 'ASC' ? 'DESC' : 'ASC'
+  } else {
+    sortBy.value = key
+    direction.value = 'DESC'
+  }
+  fetchPurchaseRequests()
+}
 // เรียกใช้ฟังก์ชันดึงข้อมูลเมื่อ component ถูก mount
 onMounted(() => {
   fetchPurchaseRequests();
@@ -376,7 +428,48 @@ onMounted(() => {
 </script>
 
 <style scoped>
-html,
+.hoverTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.hoverTable tbody td {
+  padding: 7px;
+  /*border: #4e95f4 1px solid;*/
+}
+
+.hoverTable tbody tr {
+  background: white;
+}
+
+.hoverTable tbody tr:hover {
+  background-color: #f6f6f6;
+}
+
+.pagination {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.pagination a {
+  color: black;
+  float: left;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+.pagination a.active {
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+}
+
+.pagination a:hover:not(.active) {
+  background-color: #ddd;
+  border-radius: 5px;
+}
+
+/* html,
 body {
   height: 100%;
   margin: 0;
@@ -384,16 +477,13 @@ body {
 
 .container {
   width: 100vw;
-  /* ปรับให้เต็มความกว้าง */
   height: 100vh;
-  /* ปรับให้เต็มความสูง */
   background-color: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   overflow-y: auto;
-  /* เพิ่มการเลื่อนแนวตั้ง */
 }
 
 .breadcrumb {
@@ -550,6 +640,5 @@ body {
   padding: 5px 10px;
   border-radius: 5px;
   color: white;
-  /* สีข้อความ */
-}
+} */
 </style>

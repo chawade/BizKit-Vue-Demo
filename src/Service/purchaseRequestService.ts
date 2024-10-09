@@ -1,94 +1,80 @@
-import authService from '@/Service/authService';
-import axios from 'axios';
+import authService from '@/Service/AuthService';
 
-const baseURL = 'http://localhost:3692/api/v1/purchaserequest';
-const axiosInstance = await authService.getAuthenticatedAxiosInstance();
+const apiUrl = import.meta.env.VITE_API_URL;
 
-const resource = {
-  async updatestatus(docIds:number[]) {
-    return {
-      DocId: docIds
-    };
+const baseURL = `${apiUrl}/v1/purchaserequest`;
+
+class PurchaseRequetService {
+  private axiosInstance : any | undefined ;
+
+  constructor() {
+    this.initializeAxiosInstance();
   }
-};
 
-const PurchaseRequestService = {
-  async search(endpoint:any) {
+  private async initializeAxiosInstance() {
+    this.axiosInstance = await authService.getAuthenticatedAxiosInstance();
+  }
+
+  private async request(method: string, endpoint: string, data?: any) {
+    debugger;
     try {
-      const response = await axiosInstance.get(`${baseURL}/${endpoint}`);
+      const url = `${baseURL}/${endpoint}`;
+      const config = {
+        headers: { 'Content-Type': 'application/json' },
+      };
+
+      let response;
+      if (method === 'get') {
+        response = await this.axiosInstance.get(url, config);
+      } else if (method === 'put') {
+        response = await this.axiosInstance.put(url, data, config);
+      } else {
+        throw new Error('Unsupported HTTP method');
+      }
+
       if (!response.data) {
         throw new Error('Network response was not ok');
       }
       return response.data;
-    } catch (error:any) {
-      alert(error.message);
-    }
-  },
-
-  async get(prNo : string,) {
-    try {
-      const response = await axiosInstance.get(`${baseURL}/${prNo}`);
-      if (!response.data) {
-        throw new Error('Network response was not ok');
-      }
-      return response.data;
-    } catch (error:any) {
-      alert(error.message);
-    }
-  },
-
-  async approve(endpoint, docId) {
-    try {
-      const data = await resource.updatestatus(docId);
-      const response = await axiosInstance.put(`${baseURL}/approve/${endpoint}`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.data) {
-        throw new Error('Network response was not ok');
-      }
-      return response.data;
-    } catch (error) {
-      alert(error.message);
-    }
-  },
-
-  async cancelApprove(endpoint, docId) {
-    try {
-
-      const data = await resource.updatestatus(docId);
-      const response = await axiosInstance.put(`${baseURL}/cancelApprove/${endpoint}`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.data) {
-        throw new Error('Network response was not ok');
-      }
-      return response.data;
-    } catch (error) {
-      alert(error.message);
-    }
-  },
-
-  async cancel(endpoint, docId) {
-    try {
-
-      const data = await resource.updatestatus(docId);
-      const response = await axiosInstance.put(`${baseURL}/cancel/${endpoint}`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.data) {
-        throw new Error('Network response was not ok');
-      }
-      return response.data;
-    } catch (error) {
-      alert(error.message);
+    } catch (error: any) {
+      console.error('API request failed:', error);
+      throw error;
     }
   }
-};
 
-export { PurchaseRequestService }
+  async search(endpoint: string) {
+    return this.request('get', endpoint);
+  }
+
+  async get(no: string) {
+    console.log(no)
+    return this.request('get', no);
+  }
+
+  private async put(action: string, endpoint?: string, docNos?: string, status?: number) {
+    const data = { DocNo: docNos, Status: status };
+    return this.request('put', `${action}${endpoint}`, data);
+  }
+
+  async updateStatus(docNo: string, status?: number ) {
+    return this.put('status', '', docNo, status);
+  }
+
+  async approve(endpoint: string, docNo: string) {
+    return this.put('approve', endpoint, docNo, undefined);
+  }
+  
+  async approves(docNo: string) {
+    return this.put('approves', '', docNo, undefined);
+  }
+
+  async cancelApprove(endpoint: string, docNo: string) {
+    return this.put('cancelApprove', endpoint, docNo, undefined);
+  }
+
+  async cancel(endpoint: string, docNo: string) {
+    return this.put('cancel', endpoint, docNo, undefined);
+  }
+}
+
+export default new PurchaseRequetService();

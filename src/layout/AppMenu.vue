@@ -29,7 +29,7 @@ const model = ref([
             {
                 label: 'PRDetails',
                 icon: 'pi pi-fw pi-book',
-                to: '/PurchaseRequest/PRDetail'
+                to: '/PurchaseRequest/PRDetail/PR2409046'
             },
             {
                 label: 'PRSettings',
@@ -42,8 +42,7 @@ const model = ref([
                 to: '/PurchaseRequest/PRListtest'
             }
         ]
-    }
-},
+    },
     {
         label: 'Sales',
         items: [
@@ -53,7 +52,7 @@ const model = ref([
                 to: '/SalesOrder/List'
             }
         ]
-}
+    },
 ]);
 </script>
 

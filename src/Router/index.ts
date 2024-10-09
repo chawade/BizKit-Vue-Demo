@@ -53,7 +53,7 @@ const router = createRouter({
                     component: () => import('@/views/SalesOrder/List.vue'),
                     props: true,
                 },
-{
+                {
                     path: '/PurchaseRequest/PRList/',
                     name: 'PurchaseRequestList',
                     meta: { module: 'Purchase', breadcrumb: 'PRList' },
@@ -61,9 +61,9 @@ const router = createRouter({
                     props: true,
                 },
                 {
-                    path: '/PurchaseRequest/PRDetail/',
+                    path: '/PurchaseRequest/Detail/:no',
                     name: 'PurchaseRequestDetail',
-                    meta: { module: 'Purchase', breadcrumb: 'PRDetail' },
+                    meta: { module: 'PurchaseRequestList', breadcrumb: 'PRDetail' },
                     component: () => import('@/views/PurchaseRequest/PRDetail.vue'),
                     props: true,
                 },
