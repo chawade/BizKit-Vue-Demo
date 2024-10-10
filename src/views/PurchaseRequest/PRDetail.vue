@@ -3,188 +3,55 @@
   <div v-else-if="error">{{ error }}</div>
   <div v-else class="purchase-request-detail">
     <div class="card">
-      <ActionButtons :actions="actions" createRoute="/PurchaseRequset/Maintain/" createButtonLabel="Create PurchaseRequset"
-        @eidt-pr="editPR" @print-pr="printPR" @approve="approve" @reject="reject" @back-to-list="backToList" />
+      <ActionButtons :actions="actions" createRoute="/PurchaseRequset/Maintain/"
+        createButtonLabel="Create PurchaseRequset" @eidt-pr="editPR" @print-pr="printPR" @approve="approve"
+        @reject="reject" @back-to-list="backToList" />
 
       <DetailHeader title="Purchase Request Detail" :itemNo="request.PurchaseRequestNo" :status="request.Status" />
-      <div class="flex justify-between gap-4">
-        <!-- Vendor Info อยู่ทางซ้าย -->
-        <div class="w-1/2">
+      <div class="flex flex-col md:flex-row w-full">
+        <div class="w-full md:w-1/2">
           <InfoBox title="Vendor Info" :info="{
-            'Issue Date': request.IssueDate,
-            'Reqeust Date': request.PurchaseRequestDate,
-            'Reference No.': request.ReferenceNo,
-            'PIC': request.PersonInCharge,
-            'Project': request.ProjectName,
-            'Depaerment': request.DepaermentName,
+            'Name': vendorData.VendorName,
+            'Address': vendorData.Address1,
+            'City': vendorData.City,
+            'State': vendorData.State,
+            'ZipCode': vendorData.ZipCode,
+            'Country': vendorData.Country,
+            'TaxId': vendorData.TaxId,
+            'BranchCode': vendorData.BranchCode,
           }" />
         </div>
 
-        <!-- PurchaseRequest Info อยู่ทางขวา -->
-        <div class="w-1/2">
+        <div class="w-full md:w-1/2 md:flex md:justify-end">
           <InfoBox title="PurchaseRequest Info" :info="{
-            'Issue Date': request.IssueDate,
-            'Reqeust Date': request.PurchaseRequestDate,
+            'Issue Date': new Date(request.PurchaseRequestDate).toLocaleDateString(),
+            'Require Date': new Date(requiredDate).toLocaleDateString(),
             'Reference No.': request.ReferenceNo,
             'PIC': request.PersonInCharge,
             'Project': request.ProjectName,
-            'Depaerment': request.DepaermentName,
+            'Department': request.DepaermentName
           }" />
         </div>
       </div>
       <ItemTable :items="purchase" :columns="columns" tableStyle="min-width: 50rem" />
 
-      <Remark title="Remark" :remark="request.Remark" />
-      <!-- <div class="row">
-      <div class="col-sm-8">
-        <div v-if="enableWorkFlow && purchaseRequestStatusEnum.APPROVED">
-          <template v-if="!permission.APPROVE">
-            <button v-if="permission.PRINT" class="btn btn-outline-primary" id="btnshowreport">
-              <i class="pi pi-print"></i>btnPrint
-            </button>
-            <button v-if="purchaseRequestStatusEnum.SUBMITTED" class="btn btn-outline-primary" id="btnSubmit">
-              <i class="pi pi-send"></i> btnSubmit
-            </button>
-            <button v-if="
-              permission.MODIFY &&
-              purchaseRequestStatusEnum.CANCELLED &&
-              purchaseRequestStatusEnum.SUBMITTED
-            " class="btn btn-outline-primary" id="btnPrEdit">
-              <i class="pi pi-pencil"></i>btnEdit
-            </button>
-            <button v-if="permission.MODIFY && purchaseRequestStatusEnum.CANCELLED" class="btn btn-outline-primary"
-              id="btnCancel">
-              <i class="pi pi-trash"></i>btnCancel
-            </button>
-          </template>
-<template v-else>
-            <button v-if="permission.MODIFY && purchaseRequestStatusEnum.CANCELLED" class="btn btn-outline-primary"
-              id="btnPrEdit">
-              <i class="pi pi-pencil"></i>btnEdit
-            </button>
-            <button v-if="permission.PRINT" class="btn btn-outline-primary">
-              <i class="pi pi-print"></i>print'
-            </button>
-            <button class="btn btn-success" type="button" id="btnApprove">
-              <i class="pi pi-check-circle"></i>btnApprove
-            </button>
-            <div class="btn-group">
-              <button class="btn btn-danger dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
-                aria-expanded="false">
-                <i class="pi pi-times"></i>btnReject
-                <i class="pi pi-angle-down"></i>
-              </button>
-              <div class="dropdown-menu dropdown-content input-large hold-on-click" role="menu">
-                <div class="input-group">
-                  <label>ReasonsForRejection</label>
-                  <textarea id="ReasonsForRejection" class="form-control" v-model="rejectReason"
-                    placeholder="enterReason"></textarea>
-                  <button class="btn btn-danger">btnReject</button>
-                </div>
-              </div>
-            </div>
-          </template>
-</div>
-</div>
-<div class="col-xs-4 text-right">
-  <i class="pi pi-arrow-left"></i>back
-
-  <template v-if="permission.MODIFY">
-          <button class="btn btn-outline-primary">
-            <i class="pi pi-plus-circle"></i>newPR
-          </button>
-        </template>
-</div>
-</div> -->
-    </div>
-  </div>
-
-  <!-- Invoice Head -->
-  <div class="row invoice-head">
-    <div class="col-md-7 col-xs-6">
-      <div class="invoice-logo">
-        <h1 class="uppercase text-left">
-          <span>PRDetailHeader</span>
-        </h1>
-      </div>
-    </div>
-    <!-- <div class="col-md-5 col-xs-6 text-right">
-      <div class="invoice-no">
-        <h4>{{ prNo }}</h4>
-        <p v-if="purchaseRequestStatusEnum.REJECTED">
-          <span class="text-muted">{{ rejectReason }}: </span>
-          <span class="text-danger">{{ rejectReason }}</span>
-        </p>
-      </div>
-    </div> -->
-  </div>
-
-  <!-- Vendor and Purchase Request Info -->
-  <div class="row invoice-cust-add">
-    <div class="col-xs-5">
-      <div class="portlet bz-default box">
-        <div class="portlet-title">
-          <div class="caption">
-            <span class="control-label invoice-title uppercase">vendorInfo</span>
-          </div>
+      <div class="flex flex-col md:flex-row w-full">
+        <div class="w-full md:w-1/2">
+          <Remark title="Remark" :remark="request.Notes" />
         </div>
-        <div class="portlet-body">
-          <div class="row static-info">
-            <!-- <div class="col-sm-12" v-html="vendorAddressHtml"></div> -->
-          </div>
+        <div class="w-full md:w-1/2 md:flex md:justify-end">
+          <InfoBox title="Summary" :info="{
+            'Subtotal': request.Subtotal,
+            'VAT': request.TaxAmount,
+            'Other Charges': request.OtherCharges,
+            'Grand Total': request.TotalAmount
+          }" />
         </div>
-      </div>
-    </div>
-    <div class="col-xs-5 col-md-offset-2">
-      <div class="portlet bz-default box">
-        <div class="portlet-title">
-          <div class="caption">
-            <span class="invoice-title uppercase">PurchaseRequestInfo</span>
-          </div>
-        </div>
-        <!-- <tr v-for=" in request" :key="prNo"> -->
-        <!-- <div class="portlet-body">
-          <div class="row static-info">
-            <span class="invoice-desc col-sm-4">Issue Date</span>
-            <span class="col-sm-6 font-normal">{{ request.PurchaseRequestDate ?? '' }}</span>
-          </div>
-          <div class="row static-info">
-            <span class="invoice-desc col-sm-4">Require Date</span>
-            <span class="col-sm-6 font-normal">{{
-              request.DeliveryDate ?? ''
-            }}</span>
-          </div>
-          <div class="row static-info">
-            <span class="invoice-desc col-sm-4">Reference No.</span>
-            <span class="col-sm-6 font-normal">{{
-              request.ReferenceNo ?? ''
-            }}</span>
-          </div>
-          <div class="row static-info">
-            <span class="invoice-desc col-sm-4">PIC</span>
-            <span class="col-sm-6 font-normal">{{
-              request.PIC ?? ''
-            }}</span>
-          </div>
-          <div class="row static-info">
-            <span class="invoice-desc col-sm-4">Project</span>
-            <span class="col-sm-6 font-normal">{{
-              request.Project ?? ''
-            }}</span>
-          </div>
-          <div class="row static-info">
-            <span class="invoice-desc   col-sm-4">Department</span>
-            <span class="col-sm-6 font-normal">{{
-              request.Department ?? ''
-            }}</span>
-          </div>
-        </div> -->
-        <!-- </tr> -->
       </div>
     </div>
   </div>
 
-  <div class="row">
+  <!-- <div class="row">
     <div style="clear: both">&nbsp;</div>
     <div class="tabbable-custom" id="tabContent">
       <ul class="nav nav-tabs">
@@ -213,13 +80,13 @@
           <a id="btnAddcomment" class="btn blue btn-outline" @click="addComment">
             <i class="pi pi-comments-o"></i>btnNewCommentResource
           </a>
-          <!-- <div
+          <div
             id="ReqComment"
             style="color: red; display: none"
             v-if="showReqComment"
           >
             msgReqComment
-          </div> -->
+          </div>
           <div class="table-scrollable">
             <table class="table table-hover" id="commentPR">
               <thead>
@@ -280,7 +147,6 @@
         </div>
         <div role="tabpanel" class="tab-pane" id="activity">
           <div class="timeline">
-            <!-- Activity content goes here -->
           </div>
         </div>
       </div>
@@ -291,12 +157,59 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-body">
-          <!-- <img :src="popupImage" class="img-responsive" id="popupimg" /> -->
+          <img :src="popupImage" class="img-responsive" id="popupimg" />
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
   <!-- END Tabs -->
+
+  <div class="card">
+    <Suspense>
+      <Tabs v-model:activeIndex="activeIndex" @tab-change="handleTabChange">
+        <TabPanel header="Comment" value="1">
+          <div class="p-fluid">
+            <div class="p-field">
+              <InputText v-model="tranComment" placeholder="Enter comment" style="width: 500px" />
+              <Button label="New Comment" icon="pi pi-comments" @click="addComment" class="p-button-outlined" />
+            </div>
+            <DataTable :value="comments">
+              <Column field="text" header="Comment"></Column>
+              <Column field="date" header="Date"></Column>
+              <Column field="by" header="By"></Column>
+              <Column>
+                <template #body="slotProps">
+                  <Button icon="pi pi-trash" @click="deleteComment(slotProps.data)"
+                    class="p-button-text p-button-danger" />
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+        </TabPanel>
+
+        <TabPanel header="Attachment" value="2">
+          <div class="p-fluid">
+            <div class="p-field">
+              <input type="file" @change="uploadChange" />
+              <Button label="Attach" icon="pi pi-paperclip" @click="attachFile" class="p-button-outlined" />
+              <small v-if="uploadMessage" class="p-error">{{ uploadMessage }}</small>
+            </div>
+            <DataTable :value="attachedFiles">
+              <Column field="name" header="File Name"></Column>
+              <Column field="date" header="Date"></Column>
+              <Column field="by" header="By"></Column>
+              <Column>
+                <template #body="slotProps">
+                  <Button icon="pi pi-trash" @click="deleteAttachment(slotProps.data)"
+                    class="p-button-text p-button-danger" />
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+        </TabPanel>
+      </Tabs>
+    </Suspense>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -305,10 +218,17 @@ import DetailHeader from '@/components/DetailHeader.vue';
 import InfoBox from '@/components/InfoBox.vue';
 import ItemTable from '@/components/ItemTable.vue';
 import Remark from '@/components/Remark.vue';
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from 'vue-router';
-import authService from '@/Service/AuthService';
 import PurchaseRequestService from "@/Service/purchaseRequestService";
+import vendorService from '@/Service/vendorService';
+import Tabs from 'primevue/tabs';
+import TabPanel from 'primevue/tabpanel';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+
 
 interface PurchaseRequestStatus {
   APPROVED: number;
@@ -327,6 +247,7 @@ interface PurchaseRequest {
   PurchaseRequestDate: string;
   DeliveryDate: string;
   ReferenceNo: string;
+  RequireDate: Date;
   PIC: string;
   Project: string;
   Department: string;
@@ -335,8 +256,12 @@ interface PurchaseRequest {
   PersonInCharge: string;
   ProjectName: '';
   DepaermentName: '';
-  Remark: string;
+  Notes: string;
   Vendor: Vendor;
+  Subtotal: number;
+  TaxAmount: number;
+  OtherCharges: number;
+  TotalAmount: number;
 }
 interface Status {
   StatusId: number;
@@ -358,7 +283,7 @@ interface PurchaseRequestItems {
   id: number;
   ItemCode: string;
   ItemName: string;
-  RequiredDate: string;
+  RequiredDate: Date;
   PurchaseOrderNo: string;
   ReferenceNo: string;
   Unit: string;
@@ -369,12 +294,44 @@ interface PurchaseRequestItems {
   OrderQty: number;
 }
 interface Vendor {
- VendorId: number;
- VendorCode: string;
- VendorName: string;
- Address: string;
+  VendorId: number;
+  VendorCode: string;
+  VendorName: string;
+  Address: string;
 }
-const purchase = ref([]);
+interface Vendorlist {
+  Address1: string;
+  City: string;
+  State: string;
+  ZipCode: number;
+  Country: string;
+  TaxId: number;
+  BranchCode: string;
+  VendorName: string;
+}
+interface Comment {
+  text: string;
+  date: string;
+  by: string;
+}
+
+interface AttachedFile {
+  name: string;
+  date: string;
+  by: string;
+}
+
+const handleTabChange = (e: { index: string }) => {
+  activeIndex.value = e.index;
+};
+
+const requiredDate = computed(() => {
+  if (purchase.value && purchase.value.length > 0) {
+    return purchase.value[0].RequiredDate;
+  }
+  return 'N/A';
+});
+const purchase = ref();
 const router = useRouter();
 const request = ref<PurchaseRequest>({} as PurchaseRequest);
 
@@ -393,13 +350,18 @@ const permission = ref({
   MODIFY: true,
   PRINT: true,
 });
-const comments = ref<Commnet[]>([]);
-const isModalOpen = ref("");
-const uploadFile = ref("");
-const uploadFileName = ref("");
-const attachedFiles = ref<AttachedFiles[]>([]);
+
+const uploadMessage = ref<string>('');
+const uploadFile = ref<File | null>(null);
+const uploadFileName = ref<string>('');
+const tranComment = ref<string>('');
+const comments = ref<Comment[]>([]);;
+const attachedFiles = ref<AttachedFile[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const vendorData = ref<Vendorlist>({} as Vendorlist);
+const vendorId = ref<number>(0);
+const activeIndex = ref('1');
 
 const updateStatus = async (statusId: number) => {
   try {
@@ -413,7 +375,7 @@ const updateStatus = async (statusId: number) => {
   }
 };
 const actions = [
-  { label: "Edit Purchase", severity: "info", event: "edit-purchase" },
+  { label: "Edit", severity: "info", event: "edit-purchase", icon: "pi pi-pencil" },
   { label: "Print", severity: "info", event: "print-purchase" },
   { label: "Approve", severity: "info", event: "approve" },
   { label: "Reject", severity: "danger", event: "reject" },
@@ -425,13 +387,17 @@ const columns = [
   // { field: "No", header: "No" },
   { field: "ItemCode", header: "Item Code" },
   { field: "ItemName", header: "Item Name" },
-  { field: "RequiredDate", header: "Required Date" },
+  {
+    field: "RequiredDate",
+    header: "Required Date",
+    formatter: (value: Date) => (value ? new Date(value).toLocaleDateString() : "N/A")
+  },
   { field: "PONo", header: "PO No" },
   { field: "ReferenceNo", header: "Reference No." },
   { field: "OrderQuantity", header: "Qty" },
   { field: "Unit", header: "UOM" },
   { field: "UnitCost", header: "Unit Cost" },
-  { field: "VatCode", header: "Vat" },
+  { field: "VatCode", header: "VAT" },
   { field: "LineTotal", header: "Total" }
 ];
 const editPR = async () => {
@@ -456,18 +422,34 @@ const approve = async () => {
   }
 };
 const fetchPurchaseRequestDetail = async () => {
-  debugger;
   try {
     loading.value = true;
     // console.log(prNO);
     const response = await PurchaseRequestService.get(prNO);
-    console.log(response.Data, 'response1');
+    // console.log(response.Data, 'response1');
 
-    request.value = response.Data; // บันทึกข้อมูลจาก response
+    request.value = response.Data;
+    vendorId.value = response.Data.Vendor.VendorId; // บันทึกข้อมูลจาก response
+
     purchase.value = response.Data.PurchaseRequestItems; // บันท��กข้อมูลจา�� response
-    console.log(request.value, 'response');
+    console.log(purchase.value, 'purchase');
+    fetchVendorData();
+
   } catch (err: any) {
     error.value = `Failed to fetch purchase requests: ${err.message}`;
+  } finally {
+    loading.value = false;
+  }
+};
+
+const fetchVendorData = async () => {
+  try {
+    console.log(vendorId.value, 'response');
+    const response = await vendorService.get(vendorId.value);
+    vendorData.value = response.Data;
+    console.log(vendorData.value, 'VendorData');
+  } catch (err: any) {
+    error.value = `Failed to fetch stock taking data: ${err.message}`;
   } finally {
     loading.value = false;
   }
@@ -476,27 +458,48 @@ const fetchPurchaseRequestDetail = async () => {
 const backToList = async () => {
   router.push(`/{PurchaseRequest/PRList`);
 }
-const deleteComment = () => {
-  console.log("deleteComment");
+const deleteComment = (comment: Comment) => {
+  const index = comments.value.indexOf(comment);
+  if (index > -1) {
+    comments.value.splice(index, 1);
+  }
 };
 
-const tranComment = () => {
-  console.log("deleteComment");
-};
 const addComment = () => {
-  console.log("deleteComment");
+  if (tranComment.value) {
+    comments.value.push({
+      text: tranComment.value,
+      date: new Date().toLocaleString(),
+      by: 'Current User'
+    });
+    tranComment.value = '';
+  }
 };
 const showReqComment = () => {
   console.log("deleteComment");
 };
-const deleteAttachment = () => {
-  console.log("deleteComment");
+const deleteAttachment = (file: AttachedFile) => {
+  const index = attachedFiles.value.indexOf(file);
+  if (index > -1) {
+    attachedFiles.value.splice(index, 1);
+  }
 };
 const uploadChange = () => {
   console.log("deleteComment");
 };
 const attachFile = () => {
-  console.log("deleteComment");
+  if (uploadFile.value) {
+    attachedFiles.value.push({
+      name: uploadFileName.value,
+      date: new Date().toLocaleString(),
+      by: 'Current User'
+    });
+    uploadFile.value = null;
+    uploadFileName.value = '';
+    uploadMessage.value = 'File uploaded successfully';
+  } else {
+    uploadMessage.value = 'Please select a file';
+  }
 };
 const openPopUpImg = () => {
   console.log("deleteComment");
@@ -507,6 +510,7 @@ onMounted(() => {
 });
 
 </script>
+
 <style scoped>
 .modal-content {
   position: relative;

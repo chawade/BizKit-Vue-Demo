@@ -135,7 +135,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch } from "vue";
-import authService from "@/service/authService";
+import authService from "@/Service/authService";
 
 interface Vendor {
   VendorId: number;
@@ -193,7 +193,7 @@ const searchParams = reactive({
 const totalPages = ref(1);
 const totalRecords = ref(0);
 const loading = ref(true);
-const error = ref(null);
+const error = ref<string | null>(null);
 const search = ref(""); // ตัวแปรการค้นหา
 const pageNumber = ref(1);
 const pageSize = ref(10); // ตัวแปรขนาดหน้า
@@ -215,14 +215,14 @@ const fetchPurchaseRequests = async () => {
     console.log(purchaseRequests.value);
     totalRecords.value = response.data.Pagination.TotalRecords
     totalPages.value = response.data.Pagination.TotalPages
-  } catch (err) {
+  } catch (err: any) {
     error.value = `Failed to fetch purchase requests: ${err.message}`;
   } finally {
     loading.value = false;
   }
 };
 
-const goToPage = (page) => {
+const goToPage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
     pageNumber.value = page;
     fetchPurchaseRequests();
@@ -251,7 +251,7 @@ watch(search, () => {
   }
 });
 
-const toggleAll = (event) => {
+const toggleAll = (event: any) => {
   const checked = event.target.checked;
   purchaseRequests.value.forEach((request) => {
     request.selected = checked;
@@ -259,7 +259,7 @@ const toggleAll = (event) => {
 };
 
 // ฟังก์ชันกำหนดคลาสสถานะ
-const getStatusClass = (status) => {
+const getStatusClass = (status: any) => {
   switch (status) {
     case "Approved":
       return "bg-success"; // สีเขียวสำหรับ Approved

@@ -70,8 +70,8 @@ const router = createRouter({
                       },
                     component: () => import('@/views/SalesOrder/Maintain.vue'),
                     props: true,
-                  },
-{
+                },
+                {
                     path: '/PurchaseRequest/PRList/',
                     name: 'PurchaseRequestList',
                     meta: { module: 'Purchase', breadcrumb: 'PRList' },
@@ -106,7 +106,7 @@ const router = createRouter({
 
 
 router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-    debugger;
+    // debugger;
     const token = localStorage.getItem('authToken');
 
     // Verify token on every navigation

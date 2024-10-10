@@ -2,9 +2,9 @@ import authService from "./authService";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-const baseURL = `${apiUrl}/v1/purchaserequest`;
+const baseURL = `${apiUrl}/v1/vendor`;
 
-class PurchaseRequetService {
+class VendorService {
   private axiosInstance : any | undefined ;
 
   constructor() {
@@ -16,7 +16,7 @@ class PurchaseRequetService {
   }
 
   private async request(method: string, endpoint: string, data?: any) {
-    // debugger;
+    debugger;
     try {
       const url = `${baseURL}/${endpoint}`;
       const config = {
@@ -42,39 +42,38 @@ class PurchaseRequetService {
     }
   }
 
-  async getlist(endpoint: string) {
+  async search(endpoint: string) {
     return this.request('get', endpoint);
   }
 
-  async get(no: string) {
-    // console.log(no)
-    return this.request('get', no);
+  async get(id: number) {
+    return this.request('get', `${id}`);
   }
 
-  private async put(action: string, endpoint?: string, docNos?: string, status?: number) {
-    const data = { DocNo: docNos, Status: status };
+  private async put(action: string, endpoint?: string, docIds?: number[], status?: number) {
+    const data = { DocId: docIds, Status: status };
     return this.request('put', `${action}${endpoint}`, data);
   }
 
-  async updateStatus(docNo: string, status?: number ) {
-    return this.put('status', '', docNo, status);
+  async updateStatus(docId: number[], status?: number ) {
+    return this.put('status', '', docId, status);
   }
 
-  async approve(endpoint: string, docNo: string) {
-    return this.put('approve', endpoint, docNo, undefined);
+  async approve(endpoint: string, docId: number[]) {
+    return this.put('approve', endpoint, docId, undefined);
   }
   
-  async approves(docNo: string) {
-    return this.put('approves', '', docNo, undefined);
+  async approves(docId: number[]) {
+    return this.put('approves', '', docId, undefined);
   }
 
-  async cancelApprove(endpoint: string, docNo: string) {
-    return this.put('cancelApprove', endpoint, docNo, undefined);
+  async cancelApprove(endpoint: string, docId: number[]) {
+    return this.put('cancelApprove', endpoint, docId, undefined);
   }
 
-  async cancel(endpoint: string, docNo: string) {
-    return this.put('cancel', endpoint, docNo, undefined);
+  async cancel(endpoint: string, docId: number[]) {
+    return this.put('cancel', endpoint, docId, undefined);
   }
 }
 
-export default new PurchaseRequetService();
+export default new VendorService();

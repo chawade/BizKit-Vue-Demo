@@ -45,27 +45,25 @@
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex flex-col gap-2">
                     <label class="font-bold" for="PRNo">PR No.</label>
-                    <InputText id="username" aria-describedby="username-help" placeholder="PR No."/>
+                    <InputText id="username" aria-describedby="username-help" placeholder="PR No." />
                   </div>
                 </div>
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex flex-col gap-2">
                     <label class="font-bold" for="PRNo">Vendor</label>
-                    <Select v-model="selectedVendor" optionLabel="name" placeholder="Select"
-                      class="w-full" />
+                    <Select v-model="selectedVendor" optionLabel="name" placeholder="Select" class="w-full" />
                   </div>
                 </div>
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex flex-col gap-2">
                     <label class="font-bold" for="PRNo">Status</label>
-                    <Select v-model="selectedStatus" optionLabel="name" placeholder="Select"
-                      class="w-full" />
+                    <Select v-model="selectedStatus" optionLabel="name" placeholder="Select" class="w-full" />
                   </div>
                 </div>
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex flex-col gap-2">
                     <label class="font-bold" for="PRNo">Reference No.</label>
-                    <InputText id="username" aria-describedby="username-help" placeholder="Reference No."/>
+                    <InputText id="username" aria-describedby="username-help" placeholder="Reference No." />
                   </div>
                 </div>
               </div>
@@ -94,8 +92,7 @@
                   <div class="flex gap-2 w-full">
                     <div class="flex flex-col gap-2 w-1/2">
                       <label class="font-bold" for="amountFrom">Amount From</label>
-                      <InputText id="amountFrom" aria-describedby="amountFrom-help"
-                        class="w-full" />
+                      <InputText id="amountFrom" aria-describedby="amountFrom-help" class="w-full" />
                     </div>
                     <div class="flex flex-col gap-2 w-1/2">
                       <label class="font-bold" for="amountTo">To</label>
@@ -110,16 +107,14 @@
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex flex-col gap-2">
                     <label class="font-bold" for="PRNo">PR Date</label>
-                    <Select v-model="selectedPRDate" optionLabel="name" placeholder="Select"
-                      class="w-full" />
+                    <Select v-model="selectedPRDate" optionLabel="name" placeholder="Select" class="w-full" />
                   </div>
                 </div>
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex gap-2 w-full">
                     <div class="flex flex-col gap-2 w-1/2">
                       <label class="font-bold" for="amountFrom">From</label>
-                      <InputText id="amountFrom" aria-describedby="amountFrom-help"
-                        class="w-full" />
+                      <InputText id="amountFrom" aria-describedby="amountFrom-help" class="w-full" />
                     </div>
                     <div class="flex flex-col gap-2 w-1/2">
                       <label class="font-bold" for="amountTo">To</label>
@@ -130,16 +125,14 @@
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex flex-col gap-2">
                     <label class="font-bold" for="PRNo">Require Date</label>
-                    <Select v-model="selectedRequireDate" optionLabel="name" placeholder="Select"
-                      class="w-full" />
+                    <Select v-model="selectedRequireDate" optionLabel="name" placeholder="Select" class="w-full" />
                   </div>
                 </div>
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex gap-2 w-full">
                     <div class="flex flex-col gap-2 w-1/2">
                       <label class="font-bold" for="amountFrom">From</label>
-                      <InputText id="amountFrom" aria-describedby="amountFrom-help"
-                        class="w-full" />
+                      <InputText id="amountFrom" aria-describedby="amountFrom-help" class="w-full" />
                     </div>
                     <div class="flex flex-col gap-2 w-1/2">
                       <label class="font-bold" for="amountTo">To</label>
@@ -161,7 +154,30 @@
         <DataTable v-model:selection="selectedItems" :value="request" :rows="10" dataKey="PurchaseRequestNo"
           :paginator="true" :rowsPerPageOptions="[5, 10, 25]" scrollable scrollHeight="400px"
           tableStyle="min-width: 50rem" @row-select="onRowSelect" @row-unselect="onRowUnselect">
-
+          <Column header="">
+                        <template #body="{ data }">
+                            <div class="dropdown" @mouseleave="closeDropdown(data)">
+                                <Button icon="pi pi-cog" class="p-button-text" @click="toggleDropdown(data)"
+                                    aria-label="Menu" />
+                                <div v-if="dropdownVisible[data.PurchaseRequestNo]" class="dropdown-menu">
+                                    <ul class="dropdown-list">
+                                        <li><router-link :to="`/PurchaseRequest/Detail/${data.PurchaseRequestNo}`">{{ 'Detail'
+                                                }}</router-link></li>
+                                        <li v-if="permission.MODIFY && data.StatusCode !== TAKING && data.StatusCode < APPROVED"
+                                            @click="handleAction(data, 'edit')">{{ 'Edit' }}</li>
+                                        <li v-if="permission.MODIFY" @click="handleAction(data, 'copy')">{{ 'Copy' }}
+                                        </li>
+                                        <li v-if="permission.PRINT && data.StatusCode !== CANCELLED"
+                                            @click="handleAction(data, 'print')">{{ 'Print' }}</li>
+                                        <li v-if="permission.MODIFY && data.StatusCode < APPROVED"
+                                            @click="handleAction(data, 'cancel')" class="text-danger">
+                                            <span><i class="fa fa-trash-o"></i> {{ 'Cancel' }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </template>
+                    </Column>
           <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
           <Column field="PurchaseRequestNo" header="PRNo" sortable>
             <template #body="{ data }">
@@ -200,9 +216,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import authService from '@/Service/AuthService';
-import purchaseRequestService from '@/Service/purchaseRequestService';
+import { ref, onMounted, watch, type Ref } from 'vue';
+import PurchaseRequestService from '@/Service/purchaseRequestService';
+import type Menu from 'primevue/menu';
 
 interface Vendor {
   VendorId: number;
@@ -277,8 +293,16 @@ interface CommonResource {
   FromStringResource: string;
   ToStringResource: string;
 }
-
-
+interface ColumnDef {
+  field: string;
+  header: string;
+  sortable?: boolean;
+  style?: string;
+  filterable?: boolean;
+  filterField?: string;
+}
+const dropdownVisible: Ref<Record<string, boolean>> = ref({});
+const menu = ref<InstanceType<typeof Menu> | null>(null);
 const selectedItems = ref<number[]>([]);
 const request = ref<PurchaseRequest[]>([]);
 const loading = ref(false);
@@ -287,7 +311,7 @@ const totalPages = ref(1);
 const totalRecords = ref(0);
 const pageNumber = ref(1);
 const pageSize = ref(10);
-const sortBy = ref('PRNo');
+const sortBy = ref('PRDate');
 const direction = ref('DESC');
 const searchString = ref('');
 const vendorList = ref<Vendor[]>([]);
@@ -298,6 +322,10 @@ const permission = ref({
   PRINT: true,
   EXPORT: true
 });
+const TAKING = 175;
+const APPROVED = 200;
+const CANCELLED = 2000;
+
 const selectedPurchaseRequestNo = ref<string[]>([]);
 const showAlertMsg = ref(false);
 const selectedVendor = ref([]);
@@ -307,17 +335,14 @@ const selectedRequireDate = ref([]);
 
 const fetchPurchaseRequests = async () => {
   try {
+    debugger;
     loading.value = true;
-    const axiosInstance = await authService.getAuthenticatedAxiosInstance();
+    const response = await PurchaseRequestService.getlist(`${pageNumber.value}/${pageSize.value}/${sortBy.value}/${direction.value}/${searchString.value}`)
 
-    const response = await axiosInstance.get(
-      `http://localhost:3692/api/v1/purchaserequest/${pageNumber.value}/${pageSize.value}/${sortBy.value}/${direction.value}/${searchString.value}`
-    );
-
-    request.value = response.data.Data;
-    console.log(request.value);
-    totalRecords.value = response.data.Pagination.TotalRecords
-    totalPages.value = response.data.Pagination.TotalPages
+    request.value = response.Data;
+    // console.log(response);
+    totalRecords.value = response.Pagination.TotalRecords
+    totalPages.value = response.Pagination.TotalPages
   } catch (err: any) {
     error.value = `Failed to fetch purchase requests: ${err.message}`;
   } finally {
@@ -325,6 +350,28 @@ const fetchPurchaseRequests = async () => {
   }
 };
 
+// const menuaa = ref([
+//   {
+//     label: 'Options',
+//     items: [
+//       {
+//         label: 'Detail',
+//         icon: 'pi pi-refresh'
+//       },
+//       {
+//         label: 'Export',
+//         icon: 'pi pi-upload'
+//       },
+//       {
+//         label: 'Cancel',
+//         icon: 'pi pi-trash'
+//       }
+//     ]
+//   }
+// ]);
+const toggleMenu = (event: Event) => {
+  menu.value?.toggle(event);
+};
 const onRowSelect = (event: any) => {
   const purchaserequestNo = event.data.TakingId;
   if (!selectedPurchaseRequestNo.value.includes(purchaserequestNo)) {
@@ -343,7 +390,7 @@ const onRowUnselect = (event: any) => {
 
 
 const submitForm = async () => {
-  
+
 }
 const goToPage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
@@ -409,6 +456,44 @@ const toggleSelectAll = (event: any) => {
 
 const hideDivMSG = () => {
   showAlertMsg.value = false;
+};
+
+const edit = (PurchaseRequestNo: string) => {
+    console.log('Edit', PurchaseRequestNo);
+};
+const copy = (PurchaseRequestNo: string) => {
+    console.log('Copy', PurchaseRequestNo);
+};
+const print = (PurchaseRequestNo: string) => {
+    console.log('Print', PurchaseRequestNo);
+};
+
+const cancel = (PurchaseRequestNo: string, PurchaseRequestDateEn: any) => {
+    console.log('Cancel', PurchaseRequestNo, PurchaseRequestDateEn);
+};
+const handleAction = (data: { PurchaseRequestNo: string; PurchaseRequestDateEn: any; StatusCode: number }, action: any) => {
+    switch (action) {
+        case 'edit':
+            edit(data.PurchaseRequestNo);
+            break;
+        case 'copy':
+            copy(data.PurchaseRequestNo);
+            break;
+        case 'print':
+            print(data.PurchaseRequestNo);
+            break;
+        case 'cancel':
+            cancel(data.PurchaseRequestNo, data.PurchaseRequestDateEn);
+            break;
+    }
+};
+
+const toggleDropdown = (data: { PurchaseRequestNo: string; }) => {
+    dropdownVisible.value[data.PurchaseRequestNo] = !dropdownVisible.value[data.PurchaseRequestNo];
+};
+
+const closeDropdown = (data: { PurchaseRequestNo: string; }) => {
+    dropdownVisible.value[data.PurchaseRequestNo] = false;
 };
 
 const SortBy = (key: string) => {
