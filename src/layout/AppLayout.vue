@@ -5,11 +5,11 @@ import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
 import AppTopbar from './AppTopbar.vue';
 import Title  from './Title.vue';
+import Landing from '@/pages/Landing.vue';
+import { isLoading } from '@/Router';
 
 const { layoutConfig, layoutState, isSidebarActive, resetMenu } = useLayout();
-
 const outsideClickListener = ref<((event: MouseEvent) => void) | null>(null);
-
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
         bindOutsideClickListener();
@@ -56,17 +56,28 @@ function isOutsideClicked(event: MouseEvent): boolean {
 
 <template>
     <div class="layout-wrapper" :class="containerClass">
-        <app-topbar></app-topbar>
-        <app-sidebar></app-sidebar>
-        <div class="layout-main-container">
-            <div class="layout-main">
-                <Title />
-                <Toast />
-                <ConfirmDialog></ConfirmDialog>
-                <router-view></router-view>
+        <div class="relative">
+            <!-- Loading Spinner and BlockUI -->
+            <div v-if="isLoading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9000]">
+                <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="8" animationDuration=".5s"
+                    aria-label="Loading" />
+                <BlockUI fullScreen />
             </div>
-            <app-footer></app-footer>
+
+            <!-- Main Content -->
+            <div class="layout-main-container">
+                <div class="layout-main">
+                    <app-topbar></app-topbar>
+                    <app-sidebar></app-sidebar>
+                    <Title />
+                    <Toast />
+                    <ConfirmDialog></ConfirmDialog>
+                    <router-view></router-view>
+                </div>
+                <app-footer></app-footer>
+            </div>
+
+            <div class="layout-mask animate-fadein"></div>
         </div>
-        <div class="layout-mask animate-fadein"></div>
     </div>
 </template>

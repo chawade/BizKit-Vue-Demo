@@ -48,11 +48,20 @@ import InputIcon from "primevue/inputicon";
 import IconField from "primevue/iconfield";
 import MultiSelect from "primevue/multiselect";
 import Toolbar from "primevue/toolbar";
+import Message from "primevue/message";
+import Fluid from "primevue/fluid";
+import Tooltip from 'primevue/tooltip';
+import BlockUI from "primevue/blockui";
+import ContextMenu from "primevue/contextmenu";
+import Image from "primevue/image";
 
 const app: VueApp = createApp(App);
 
 app.use(router);
 app.use(PrimeVue, {
+  locale: {
+    accept: 'Thailand',
+  },
   theme: {
     preset: Aura,
     options: {
@@ -60,6 +69,7 @@ app.use(PrimeVue, {
     },
   },
 });
+app.directive('tooltip', Tooltip);
 app.directive('styleclass', StyleClass);
 app.use(ToastService);
 app.use(ConfirmationService);
@@ -102,7 +112,12 @@ const components = {
   MultiSelect,
   InputNumber,
   Textarea,
-  Toolbar
+  Toolbar,
+  Message,
+  Fluid,
+  BlockUI,
+  ContextMenu,
+  Image
 };
 
 Object.entries(components).forEach(([name, component]) => {

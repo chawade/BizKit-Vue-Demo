@@ -324,7 +324,7 @@ const nestedMenuitems = ref([
     label: 'Edit',
     icon: 'pi pi-pencil',
     command: () => {
-      router.push(`/SalesOrder/Maintain/${salesOrder.value?.SalesOrderId}`)
+      router.push(`/SalesOrder/Maintain/${salesOrder.value?.SalesOrderNumber}`)
     }
   },
   {

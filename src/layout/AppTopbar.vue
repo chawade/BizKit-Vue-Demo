@@ -7,6 +7,9 @@ import { useRouter } from 'vue-router';
 import AppConfigurator from './AppConfigurator.vue';
 import type { MenuItem } from 'primevue/menuitem';
 import Menu from 'primevue/menu';
+import authService from '@/Service/authService';
+import { isLoading } from '@/Router';
+import { setTimeout } from 'timers/promises';
 
 const router = useRouter();
 const menu = ref<InstanceType<typeof Menu> | null>(null);
@@ -25,41 +28,38 @@ const overlayMenuItems = ref([
     {
         label: 'Logout',
         icon: 'pi pi-sign-out',
-        command: async () => {
-            console.log('Logout button clicked');
-            var confirm = await openDialog();
-            console.log('Confirm dialog result:', confirm);
-            if (!confirm) {
-                localStorage.removeItem("authToken");
-            } else {
-                console.log('Logout cancelled');
-            }
+        command: () => {
+            confirm.require({
+                message: 'Are you sure you want to proceed?',
+                header: 'Confirmation',
+                icon: 'pi pi-exclamation-triangle',
+                rejectProps: {
+                    label: 'Cancel',
+                    severity: 'secondary',
+                    outlined: true
+                },
+                acceptProps: {
+                    label: 'Save'
+                },
+                accept: async () => {
+                    toast.add({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
+                    isLoading.value = true;
+                    try {
+                        authService.logout();
+                    } catch (err: any) {
+                        toast.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
+                    } finally {
+                        isLoading.value = false;
+                        router.push({ name: "login" });
+                    }
+                },
+                reject: () => {
+                    toast.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
+                }
+            });
         }
     }
 ]);
-
-const openDialog = ():any => {
-    confirm.require({
-        message: 'Are you sure you want to proceed?',
-        header: 'Confirmation',
-        icon: 'pi pi-exclamation-triangle',
-        rejectProps: {
-            label: 'Cancel',
-            severity: 'secondary',
-            outlined: true
-        },
-        acceptProps: {
-            label: 'Save'
-        },
-        accept: () => {
-            toast.add({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
-            router.push({ name: "login" });
-        },
-        reject: () => {
-            toast.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
-        }
-    });
-};
 
 const toggleMenu = (event: Event) => {
     menu.value?.toggle(event);

@@ -1,7 +1,9 @@
 import AppLayout from '@/layout/AppLayout.vue'
 import authService from '@/Service/authService';
+import { ref } from 'vue';
 import { createRouter, createWebHistory, useRoute, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router';
 
+export const isLoading = ref(false);
 
 const router = createRouter({
     history: createWebHistory(),
@@ -78,7 +80,7 @@ const router = createRouter({
 
 
 router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-    debugger;
+    isLoading.value = true;
     const token = localStorage.getItem('authToken');
 
     // Verify token on every navigation
@@ -106,5 +108,11 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
         next();
     }
 });
+
+router.afterEach(() => {
+    // Stop loading after route is finished
+    isLoading.value = false;
+});
+
 
 export default router;
