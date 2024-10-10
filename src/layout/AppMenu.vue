@@ -27,12 +27,7 @@ const model = ref([
                 to: '/PurchaseRequest/PRList'
             },
             {
-                label: 'PRDetails',
-                icon: 'pi pi-fw pi-book',
-                to: '/PurchaseRequest/PRDetail/PR2409046'
-            },
-            {
-                label: 'PRSettings',
+                label: 'PRMaintain',
                 icon: 'pi pi-fw pi-book',
                 to: '/PurchaseRequest/PRMaintain'
             },

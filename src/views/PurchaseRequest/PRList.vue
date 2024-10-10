@@ -155,29 +155,28 @@
           :paginator="true" :rowsPerPageOptions="[5, 10, 25]" scrollable scrollHeight="400px"
           tableStyle="min-width: 50rem" @row-select="onRowSelect" @row-unselect="onRowUnselect">
           <Column header="">
-                        <template #body="{ data }">
-                            <div class="dropdown" @mouseleave="closeDropdown(data)">
-                                <Button icon="pi pi-cog" class="p-button-text" @click="toggleDropdown(data)"
-                                    aria-label="Menu" />
-                                <div v-if="dropdownVisible[data.PurchaseRequestNo]" class="dropdown-menu">
-                                    <ul class="dropdown-list">
-                                        <li><router-link :to="`/PurchaseRequest/Detail/${data.PurchaseRequestNo}`">{{ 'Detail'
-                                                }}</router-link></li>
-                                        <li v-if="permission.MODIFY && data.StatusCode !== TAKING && data.StatusCode < APPROVED"
-                                            @click="handleAction(data, 'edit')">{{ 'Edit' }}</li>
-                                        <li v-if="permission.MODIFY" @click="handleAction(data, 'copy')">{{ 'Copy' }}
-                                        </li>
-                                        <li v-if="permission.PRINT && data.StatusCode !== CANCELLED"
-                                            @click="handleAction(data, 'print')">{{ 'Print' }}</li>
-                                        <li v-if="permission.MODIFY && data.StatusCode < APPROVED"
-                                            @click="handleAction(data, 'cancel')" class="text-danger">
-                                            <span><i class="fa fa-trash-o"></i> {{ 'Cancel' }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </template>
-                    </Column>
+            <template #body="{ data }">
+              <div class="dropdown" @mouseleave="closeDropdown(data)">
+                <Button icon="pi pi-cog" class="p-button-text" @click="toggleDropdown(data)" aria-label="Menu" />
+                <div v-if="dropdownVisible[data.PurchaseRequestNo]" class="dropdown-menu">
+                  <ul class="dropdown-list">
+                    <li><router-link :to="`/PurchaseRequest/Detail/${data.PurchaseRequestNo}`">{{ 'Detail'
+                        }}</router-link></li>
+                    <li v-if="permission.MODIFY && data.StatusCode !== TAKING && data.StatusCode < APPROVED"
+                      @click="handleAction(data, 'edit')">{{ 'Edit' }}</li>
+                    <li v-if="permission.MODIFY" @click="handleAction(data, 'copy')">{{ 'Copy' }}
+                    </li>
+                    <li v-if="permission.PRINT && data.StatusCode !== CANCELLED" @click="handleAction(data, 'print')">{{
+                      'Print' }}</li>
+                    <li v-if="permission.MODIFY && data.StatusCode < APPROVED" @click="handleAction(data, 'cancel')"
+                      class="text-danger">
+                      <span><i class="fa fa-trash-o"></i> {{ 'Cancel' }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </template>
+          </Column>
           <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
           <Column field="PurchaseRequestNo" header="PRNo" sortable>
             <template #body="{ data }">
@@ -256,51 +255,6 @@ interface PurchaseRequest {
   TotalAmount: number;
 }
 
-interface PaginatedData {
-  id: number;
-  PurchaseRequestNo: string;
-  PurchaseRequestDate: string;
-  RequireDate: string;
-  VendorName: string;
-  Project: string;
-  Department: string;
-  Status: string;
-  TotalAmount: number;
-  DeliveryDate: string;
-  selectedItems: boolean;
-}
-interface StockTaking {
-  StockTakingId: number;
-  PRNo: string;
-  PRDate: string;
-  ReferenceNo: string;
-  Remark: string;
-  Status: Status;
-  ItemCode: string;
-  ItemName: string;
-  Amount: number;
-  CreateBy: string;
-  CreateDate: string;
-  UpdateBy: string | null;
-  UpdateDate: string | null;
-  VendorId: number;
-  VendorName: string;
-  Project: string;
-  Department: string;
-  Search: string;
-}
-interface CommonResource {
-  FromStringResource: string;
-  ToStringResource: string;
-}
-interface ColumnDef {
-  field: string;
-  header: string;
-  sortable?: boolean;
-  style?: string;
-  filterable?: boolean;
-  filterField?: string;
-}
 const dropdownVisible: Ref<Record<string, boolean>> = ref({});
 const menu = ref<InstanceType<typeof Menu> | null>(null);
 const selectedItems = ref<number[]>([]);
@@ -314,8 +268,6 @@ const pageSize = ref(10);
 const sortBy = ref('PRDate');
 const direction = ref('DESC');
 const searchString = ref('');
-const vendorList = ref<Vendor[]>([]);
-const statusList = ref<Status[]>([]);
 const permission = ref({
   APPROVE: true,
   MODIFY: true,
@@ -459,41 +411,41 @@ const hideDivMSG = () => {
 };
 
 const edit = (PurchaseRequestNo: string) => {
-    console.log('Edit', PurchaseRequestNo);
+  console.log('Edit', PurchaseRequestNo);
 };
 const copy = (PurchaseRequestNo: string) => {
-    console.log('Copy', PurchaseRequestNo);
+  console.log('Copy', PurchaseRequestNo);
 };
 const print = (PurchaseRequestNo: string) => {
-    console.log('Print', PurchaseRequestNo);
+  console.log('Print', PurchaseRequestNo);
 };
 
 const cancel = (PurchaseRequestNo: string, PurchaseRequestDateEn: any) => {
-    console.log('Cancel', PurchaseRequestNo, PurchaseRequestDateEn);
+  console.log('Cancel', PurchaseRequestNo, PurchaseRequestDateEn);
 };
 const handleAction = (data: { PurchaseRequestNo: string; PurchaseRequestDateEn: any; StatusCode: number }, action: any) => {
-    switch (action) {
-        case 'edit':
-            edit(data.PurchaseRequestNo);
-            break;
-        case 'copy':
-            copy(data.PurchaseRequestNo);
-            break;
-        case 'print':
-            print(data.PurchaseRequestNo);
-            break;
-        case 'cancel':
-            cancel(data.PurchaseRequestNo, data.PurchaseRequestDateEn);
-            break;
-    }
+  switch (action) {
+    case 'edit':
+      edit(data.PurchaseRequestNo);
+      break;
+    case 'copy':
+      copy(data.PurchaseRequestNo);
+      break;
+    case 'print':
+      print(data.PurchaseRequestNo);
+      break;
+    case 'cancel':
+      cancel(data.PurchaseRequestNo, data.PurchaseRequestDateEn);
+      break;
+  }
 };
 
 const toggleDropdown = (data: { PurchaseRequestNo: string; }) => {
-    dropdownVisible.value[data.PurchaseRequestNo] = !dropdownVisible.value[data.PurchaseRequestNo];
+  dropdownVisible.value[data.PurchaseRequestNo] = !dropdownVisible.value[data.PurchaseRequestNo];
 };
 
 const closeDropdown = (data: { PurchaseRequestNo: string; }) => {
-    dropdownVisible.value[data.PurchaseRequestNo] = false;
+  dropdownVisible.value[data.PurchaseRequestNo] = false;
 };
 
 const SortBy = (key: string) => {

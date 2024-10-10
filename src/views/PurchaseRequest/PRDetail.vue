@@ -3,7 +3,7 @@
   <div v-else-if="error">{{ error }}</div>
   <div v-else class="purchase-request-detail">
     <div class="card">
-      <ActionButtons :actions="actions" createRoute="/PurchaseRequset/Maintain/"
+      <ActionButtons :actions="actions" createRoute="/PurchaseRequset/PRMaintain/"
         createButtonLabel="Create PurchaseRequset" @eidt-pr="editPR" @print-pr="printPR" @approve="approve"
         @reject="reject" @back-to-list="backToList" />
 
@@ -165,9 +165,13 @@
   <!-- END Tabs -->
 
   <div class="card">
-    <Suspense>
       <Tabs v-model:activeIndex="activeIndex" @tab-change="handleTabChange">
-        <TabPanel header="Comment" value="1">
+        <TabList>
+          <Tab value="0">Comment</Tab>
+                <Tab value="1">Attach files</Tab>
+                <Tab value="2">Edit History</Tab>
+        </TabList>
+        <TabPanel header="Comment" value="0">
           <div class="p-fluid">
             <div class="p-field">
               <InputText v-model="tranComment" placeholder="Enter comment" style="width: 500px" />
@@ -187,7 +191,7 @@
           </div>
         </TabPanel>
 
-        <TabPanel header="Attachment" value="2">
+        <TabPanel header="Attachment" value="1">
           <div class="p-fluid">
             <div class="p-field">
               <input type="file" @change="uploadChange" />
@@ -208,8 +212,8 @@
           </div>
         </TabPanel>
       </Tabs>
-    </Suspense>
   </div>
+  
 </template>
 
 <script setup lang="ts">
@@ -224,10 +228,6 @@ import PurchaseRequestService from "@/Service/purchaseRequestService";
 import vendorService from '@/Service/vendorService';
 import Tabs from 'primevue/tabs';
 import TabPanel from 'primevue/tabpanel';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
 
 
 interface PurchaseRequestStatus {
@@ -236,12 +236,7 @@ interface PurchaseRequestStatus {
   SUBMITTED: number;
   CANCELLED: number;
 }
-interface Commnet {
-  id: number;
-  text: string;
-  date: string;
-  by: string;
-}
+
 interface PurchaseRequest {
   PurchaseRequestNo: string;
   PurchaseRequestDate: string;
@@ -271,12 +266,6 @@ interface Status {
   StatusBorderColor: string;
   StatusFontColor: string;
   StatusFontSize: number;
-}
-interface AttachedFiles {
-  id: number;
-  name: string;
-  date: string;
-  by: string;
 }
 
 interface PurchaseRequestItems {
@@ -321,7 +310,9 @@ interface AttachedFile {
   by: string;
 }
 
-const handleTabChange = (e: { index: string }) => {
+const activeIndex = ref(0); 
+
+const handleTabChange = (e: { index: number }) => {
   activeIndex.value = e.index;
 };
 
@@ -361,7 +352,6 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const vendorData = ref<Vendorlist>({} as Vendorlist);
 const vendorId = ref<number>(0);
-const activeIndex = ref('1');
 
 const updateStatus = async (statusId: number) => {
   try {
@@ -375,7 +365,7 @@ const updateStatus = async (statusId: number) => {
   }
 };
 const actions = [
-  { label: "Edit", severity: "info", event: "edit-purchase", icon: "pi pi-pencil" },
+  { label: "Edit", severity: "info", event: "edit-purchase" },
   { label: "Print", severity: "info", event: "print-purchase" },
   { label: "Approve", severity: "info", event: "approve" },
   { label: "Reject", severity: "danger", event: "reject" },
@@ -384,7 +374,7 @@ const actions = [
 
 const columns = [
   // { field: "cog", header: "cog" },
-  // { field: "No", header: "No" },
+  { field: "LineNumber", header: "No" },
   { field: "ItemCode", header: "Item Code" },
   { field: "ItemName", header: "Item Name" },
   {
@@ -456,7 +446,7 @@ const fetchVendorData = async () => {
 };
 
 const backToList = async () => {
-  router.push(`/{PurchaseRequest/PRList`);
+  router.push(`/PurchaseRequest/PRList`);
 }
 const deleteComment = (comment: Comment) => {
   const index = comments.value.indexOf(comment);

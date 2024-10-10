@@ -16,7 +16,6 @@ class VendorService {
   }
 
   private async request(method: string, endpoint: string, data?: any) {
-    debugger;
     try {
       const url = `${baseURL}/${endpoint}`;
       const config = {
