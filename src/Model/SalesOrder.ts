@@ -1,5 +1,6 @@
-import type { BaseResource } from "./BaseResource";
+import type { BaseResource, SelectItem } from "./BaseResource";
 import type { CustomerResource } from "./Customer";
+import type { PaymentTermListResource } from "./PaymentTerm";
 import type { StatusResource } from "./Status";
 
 export interface SalesOrderResource {
@@ -54,10 +55,12 @@ export interface SalesOrderItemResource {
     lineNumber: number;
     itemID: number;
     itemCode: string;
+    itemname: string;
     deliveryDate: Date;
     unitCost: number;
     baseUnitPrice: number;
     unitPrice: number;
+    avaliableQty: number;
     orderQty: number;
     unit: string;
     unitID: number;
@@ -81,6 +84,8 @@ export interface SalesOrderItemResource {
     parentLineId: number;
     freeItemFlag: boolean;
     trackStock: boolean;
+    selectItem: SelectItem;
+    DDLItem: SelectItem[];
 }
 
 export interface SalesOrderSearch {
@@ -101,20 +106,23 @@ export interface SalesOrderSearch {
   export interface SalesOrderSaveResource extends BaseResource {
     SalesOrderID: number;
     SalesOrderNumber: string;
-    SalesOrderDate: Date; // Use Date for DateTime in TypeScript
+    SalesOrderDate: Date ; // Use Date for DateTime in TypeScript
+    DeliveryDate: Date;
+    DueDate: Date;
     AssociatedSONo: string;
-    Customer?: CustomerResource;
-    WarehouseID: number;
+    Customer: CustomerResource | null;
+    PriceTier: number;
+    WarehouseID: number;    
     ReferenceNo: string;
     RefQuotationNo: string;
-    PaymentTerm: any;
-    DeliveryDate: Date;
+    PaymentTerm: PaymentTermListResource | null;
     PersonInCharge: string; // Corrected 'PersonInChrage' typo
     Currency: string;
     DiscountRate: number;
     DiscountAmount: number;
     OtherCharges: number;
-    Status?: StatusResource;
+    SkipPicking: boolean;
+    Status: StatusResource | null;
     PickStatus: number;
     PackStatus: number;
     ShipStatus: number;

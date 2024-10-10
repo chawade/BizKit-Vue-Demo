@@ -1,3 +1,4 @@
+import { isLoading } from '@/Router';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 
@@ -20,10 +21,9 @@ const authService = {
     }
     return response.data;
   },
-  logout() {
+  async logout() {
     localStorage.removeItem("authToken");
     delete axios.defaults.headers.common['Authorization'];
-    router.push({ name: "login" });
   },
   getToken() {
     return localStorage.getItem(AUTH_TOKEN_KEY);
@@ -43,7 +43,6 @@ const authService = {
 
   async getAuthenticatedAxiosInstance() {
     let token = localStorage.getItem('authToken');
-    console.log('Token:', token);
     return axios.create({
       headers: {
         'Authorization': `Bearer ${token}`

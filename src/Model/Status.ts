@@ -1,5 +1,5 @@
-export interface StatusResource {
-    StatusId?: number;
+export class StatusResource {
+    StatusId?: number ;
     StatusName?: string;
     LocalStatusName?: string;
     StatusBgColor?: string;

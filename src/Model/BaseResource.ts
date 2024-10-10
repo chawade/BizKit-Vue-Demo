@@ -3,8 +3,12 @@ export interface BaseResource {
   CompanyId?: number;
   IpAddress?: string;
   Url?: string;
-  CreateDate?: Date;
-  CreateBy?: string;
   UpdateDate?: Date;
   UpdateBy?: string;
+}
+
+
+export interface SelectItem {
+  name: string;
+  code: string;
 }

@@ -324,7 +324,7 @@ const nestedMenuitems = ref([
     label: 'Edit',
     icon: 'pi pi-pencil',
     command: () => {
-      router.push(`/SalesOrder/Maintain/${salesOrder.value?.SalesOrderId}`)
+      router.push(`/SalesOrder/Maintain/${salesOrder.value?.SalesOrderNumber}`)
     }
   },
   {
@@ -383,8 +383,6 @@ const filteredMenuItems = computed(() => {
 });
 
 const handleTabChange = (index: number) => {
-  debugger
-  console.log('Tab changed to:', index);
   if (index == 2) {
     loadPickData();
   }
@@ -393,7 +391,6 @@ const handleTabChange = (index: number) => {
 const loadPickData = async () => {
   if (pickingNo.value === '')
       return
-    console.log(pickingNo.value);
     fetchLoading.value = true;
     const search: PickingSearch = {
       SONo: SalesOrderNo,
@@ -467,7 +464,6 @@ const onRowUnselect = (event: any) => {
   if (index > -1) {
     selectedTakingIds.value.splice(index, 1);
   }
-  console.log('Selected TakingIds:', selectedTakingIds.value);
   return selectedTakingIds.value;
 };
 
