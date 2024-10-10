@@ -1,4 +1,4 @@
-import type { BaseResource } from "./BaseResource";
+import type { BaseResource, SelectItem } from "./BaseResource";
 import type { CustomerResource } from "./Customer";
 import type { PaymentTermListResource } from "./PaymentTerm";
 import type { StatusResource } from "./Status";
@@ -84,6 +84,8 @@ export interface SalesOrderItemResource {
     parentLineId: number;
     freeItemFlag: boolean;
     trackStock: boolean;
+    selectItem: SelectItem;
+    DDLItem: SelectItem[];
 }
 
 export interface SalesOrderSearch {

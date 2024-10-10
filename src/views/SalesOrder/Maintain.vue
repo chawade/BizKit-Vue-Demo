@@ -213,9 +213,10 @@
                         <div class="row invoice-body mb-8">
                           <div class="col-xs-12 table-wrapper">
                             <ContextMenu ref="cm" :model="menuModel" @hide="selectedProduct = null" />
-                            <DataTable :value="salesOrderSave.SalesOrderItemResource" tableStyle="min-width: 50rem"
-                              contextMenu v-model:contextMenuSelection="selectedProduct" :scrollable="true"
-                              columnResizeMode="fit" @rowContextmenu="onRowContextMenu" :rowclass="rowClass">
+                            <DataTable :value="salesOrderItem" tableStyle="min-width: 50rem" contextMenu
+                              v-model:contextMenuSelection="selectedProduct" :scrollable="true" columnResizeMode="fit"
+                              @rowContextmenu="onRowContextMenu" :rowclass="rowClass">
+
                               <template #header>
                                 <Menubar class="hidden md:flex">
                                   <template #end>
@@ -223,37 +224,42 @@
                                   </template>
                                 </Menubar>
                               </template>
+
+                              <!-- LineNumber -->
                               <Column field="LineNumber" header="No.">
                                 <template #body="{ data, index }">
                                   {{ index + 1 }}
                                 </template>
                               </Column>
-                              <Column field="image" header="Image" class="w-fit">
+
+                              <!-- Item Code Column with unique key -->
+                              <Column field="selectItem" header="Item Code" class="min-w-60">
                                 <template #body="{ data, index }">
-                                  <Image src="/image.jpg" alt="Image" class="max-w-52" />
-                                </template>
-                              </Column>
-                              <Column field="itemCode" header="Item Code" class="min-w-60">
-                                <template #body="{ data, index }">
-                                  <SelectCustom v-model="data.itemCode" :options="ddlWarehouse" :loading="fetchLoading"
-                                    placeholder="Select a Warehouse" @filter="getWarehouseList" optionLabel="name"
-                                    dataKey="code" @focus="onFieldFocus(index)" @blur="onFieldBlur">
+                                  <SelectCustom v-model="data.selectItem" :options="data.DDLItem" :loading="fetchLoading"
+                                    placeholder="Select an item" @filter="(event) => getItemList(event, index)" optionLabel="name" dataKey="code"
+                                    :key="`code-${index}`"> <!-- key added here -->
+
                                     <template #option="slotProps">
                                       <Card class="w-[400px] min-w-56">
                                         <template #title>
                                           <div class="caption">
                                             <span class="uppercase font-bold text-primary" style="font-size: 1.2rem;">
-                                              <i class="pi pi-credit-card"></i> Item Code : {{ slotProps.option.name }}</span>
+                                              <i class="pi pi-credit-card"></i> Item Code : {{ slotProps.option.name }}
+                                            </span>
                                           </div>
                                         </template>
                                         <template #content>
                                           <div class="text-start">
-                                            <div><i class="pi pi-barcode text-primary" aria-hidden="true"></i><b> Item Name :</b> 
-                                              TestMultiImport3</div>
-                                            <div><i class="pi pi-user text-primary" aria-hidden="true"></i><b> Customer Item Code :</b> 
+                                            <div><i class="pi pi-barcode text-primary" aria-hidden="true"></i><b> Item
+                                                Name :</b>
+                                              TestMultiImport3
+                                            </div>
+                                            <div><i class="pi pi-user text-primary" aria-hidden="true"></i><b> Customer
+                                                Item Code :</b>
                                               ABCDE
                                             </div>
-                                            <div><i class="pi pi-info text-primary" aria-hidden="true"></i><b> Available Qty(All) :</b>
+                                            <div><i class="pi pi-info text-primary" aria-hidden="true"></i><b> Available
+                                                Qty(All) :</b>
                                               1,473.00
                                             </div>
                                           </div>
@@ -263,66 +269,32 @@
                                   </SelectCustom>
                                 </template>
                               </Column>
+
+                              <!-- Item Name Column with unique key -->
                               <Column field="itemName" header="Item Name" class="min-w-60">
                                 <template #body="{ data, index }">
-                                  <Textarea v-model="data.itemname" rows="2" cols="30" />
+                                  <Textarea v-model="data.itemName" rows="2" cols="30" :key="`itemName-${index}`" />
+                                  <!-- key added here -->
                                 </template>
                               </Column>
-                              <Column field="deliveryDate" header="Delivery Date" header-class="min-w-60 text-center"
-                                body-class="text-end">
-                                <template #body="{ data, index }">
-                                  <DatePicker v-model="data.deliveryDate" variant="filled" showButtonBar showIcon fluid locale="Thailand"
-                                    :manual-input="false" @focus="onFieldFocus(index)" @blur="onFieldBlur" />
-                                </template>
-                              </Column>
-                              <Column field="avaliableQty" class="w-36">
-                                <template #header>
-                                  <div class="text-center w-full">
-                                    <span class="font-bold">Avaliable Qty</span>
-                                  </div>
-                                </template>
-                                <template #body="{ data, index }">
-                                  <div class="text-end w-full min-w-32">
-                                    <span class="font-bold">
-                                      {{ data.avaliableQty }}</span>
-                                  </div>
-                                </template>
-                              </Column>
-                              <Column field="OrderQty" class="w-40">
-                                <template #header>
-                                  <div class="text-center w-full">
-                                    <span class="font-bold">Order Qty</span>
-                                  </div>
-                                </template>
+
+                              <!-- Order Qty Column with unique key -->
+                              <Column field="OrderQty" header="Order Qty" class="w-40">
                                 <template #body="{ data, index }">
                                   <InputNumber v-model="data.OrderQty" class="min-w-36" @focus="onFieldFocus(index)"
-                                    @blur="onFieldBlur" />
+                                    @blur="onFieldBlur" :key="`orderQty-${index}`" /> <!-- key added here -->
                                 </template>
                               </Column>
-                              <Column field="Unit">
-                                <template #header>
-                                  <div class="text-center w-full">
-                                    <span class="font-bold">UOM</span>
-                                  </div>
-                                </template>
-                                <template #body="{ data, index }">
-                                  <SelectCustom v-model="data.itemCode" :options="ddlWarehouse" :loading="fetchLoading"
-                                    placeholder="Select a uom" @filter="getWarehouseList" optionLabel="name"
-                                    dataKey="code" @focus="onFieldFocus(index)" @blur="onFieldBlur">
-                                  </SelectCustom>
-                                </template>
-                              </Column>
-                              <Column field="UnitPrice">
-                                <template #header>
-                                  <div class="text-center w-full">
-                                    <span class="font-bold">Unit Price</span>
-                                  </div>
-                                </template>
+
+                              <!-- Unit Price Column with unique key -->
+                              <Column field="UnitPrice" header="Unit Price">
                                 <template #body="{ data, index }">
                                   <InputNumber v-model="data.UnitPrice" class="min-w-36" mode="currency" currency="THB"
-                                    @focus="onFieldFocus(index)" @blur="onFieldBlur" />
+                                    @focus="onFieldFocus(index)" @blur="onFieldBlur" :key="`unitPrice-${index}`" />
+                                  <!-- key added here -->
                                 </template>
                               </Column>
+
                             </DataTable>
                           </div>
                         </div>
@@ -340,7 +312,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed, reactive, onUnmounted } from 'vue';
+import { ref, onMounted, computed, reactive, onUnmounted, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import SalesOrderService from '@/Service/salesorderService';
 import type { SalesOrderItemResource, SalesOrderResource, SalesOrderSaveResource, SalesOrderSearch } from '@/Model/SalesOrder';
@@ -348,12 +320,16 @@ import { useToast } from 'primevue/usetoast';
 import CustomerService from '@/Service/CustomerService';
 import { Subscription } from 'rxjs';
 import SelectCustom from '@/components/SelectCustom.vue';
-import PriceList  from '@/Model/GlobalVariable/PriceList'
+import PriceList from '@/Model/GlobalVariable/PriceList'
 import PaymentTermService from '@/Service/PaymentTermService';
 import WarehouseService from '@/Service/WarehouseService';
 import type { SelectItem } from '@/Model/BaseResource';
+import router from '@/Router';
+import ItemService from '@/Service/ItemService';
 
 let subscription: Subscription;
+const setStickyButtons = inject<any>('setStickyButtons');
+
 const toast = useToast();
 const loading = ref(false);
 const error = ref('');
@@ -372,10 +348,16 @@ const SalesOrderNo: string = String(route.params.id);
 const ddlCustomer = ref<SelectItem[]>([]);
 const ddlPaymentTerm = ref<SelectItem[]>([]);
 const ddlWarehouse = ref<SelectItem[]>([]);
+const ddlItem = ref<SelectItem[]>([]);
+
 const fetchLoading = ref(false);
+
 const selectCustomer = ref<SelectItem | null>();
 const selectPaymentTerm = ref<SelectItem | null>();
 const selectWarehouse = ref<SelectItem | null>();
+const selectItem = ref<SelectItem | null>();
+
+const salesOrderItem = ref<SalesOrderItemResource[]>([]);
 const salesOrderSave = ref<SalesOrderSaveResource>({
   SalesOrderID: 0,
   SalesOrderNumber: '',
@@ -425,14 +407,14 @@ const rowClass = (data: SalesOrderItemResource, index: number) => {
   };
 };
 const menuModel = ref([
-  { 
-    label: 'Delete', 
-    icon: 'pi pi-fw pi-times', 
+  {
+    label: 'Delete',
+    icon: 'pi pi-fw pi-times',
     command: () => {
       if (selectedProduct.value) {
         deleteProduct(selectedProduct.value.data, selectedProduct.value.index);
       }
-    } 
+    }
   }
 ]);
 
@@ -454,7 +436,7 @@ const onSelectCustomer = (event: SelectItem) => {
   subscription = CustomerService.getCustomerById(parseInt(event.code)).subscribe({
     next: (result) => {
       if (result.IsSuccess) {
-        if(salesOrderSave.value){
+        if (salesOrderSave.value) {
           salesOrderSave.value.Customer = result.Data;
         }
       } else {
@@ -549,9 +531,9 @@ const fetchData = async () => {
             selectCustomer.value = selectDDL ?? {} as SelectItem;
           }
 
-          if(paymentTerm){
+          if (paymentTerm) {
             getPaymentTermList(paymentTerm.TermId.toString());
-            
+
             let selectDDL: SelectItem = {
               code: paymentTerm.TermId.toString(),
               name: paymentTerm.Description
@@ -573,6 +555,36 @@ const fetchData = async () => {
     }
   });
 };
+
+const getItemList = async (event: string, rowIndex: number) => {
+  fetchLoading.value = true;
+  searchString.value = event;
+  const endpoint = `${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`;
+  subscription = ItemService.getitemList(endpoint).subscribe({
+    next: (result) => {
+      if (result.IsSuccess) {
+        salesOrderItem.value[rowIndex].DDLItem = CloneItemDDL(result.Data || []);
+      } else {
+        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+}
+
+const CloneItemDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.ItemCode == "" ? "--All--" : option.ItemCode,
+    code: option.ItemId == 0 ? "0" : option.ItemId.toString(),
+  }));
+
+  return data.length > 0 ? data : [];
+}
 
 const ClonePaymentTermDDL = (options: Array<any>): Array<SelectItem> => {
   const data = options.map((option) => ({
@@ -637,21 +649,58 @@ const addRow = () => {
     balanceAmount: 0,
     parentLineId: 0,
     freeItemFlag: false,
-    trackStock: false
+    trackStock: false,
+    selectItem: {
+      code: '',
+      name: ''
+    },
+    DDLItem: []
   };
 
-  salesOrderSave.value.SalesOrderItemResource.push(soItem);
+  salesOrderItem.value.push(soItem);
+}
+
+const SaveSalesOrder = () => {
+  console.log('save');
 }
 
 onUnmounted(() => {
   if (subscription)
     subscription.unsubscribe();
+
+  setStickyButtons([]);
+
 })
 onMounted(() => {
   salesOrderSave.value.SalesOrderNumber = "-- ออกโดยระบบ --";
-  if(SalesOrderNo != ''){
+  if (SalesOrderNo != '') {
     fetchData()
   }
+
+  setStickyButtons([
+    {
+      icon: 'pi pi-cog',
+      label: 'Save',
+      severity: 'info',
+      action: () => {
+        SaveSalesOrder()
+      }
+    },
+    {
+      icon: 'pi pi-check',
+      label: 'Save And Approve',
+      severity: 'info',
+      action: () => { /* Save and approve logic */ }
+    },
+    {
+      icon: 'pi pi-times',
+      label: 'Cancel',
+      severity: 'secondary',
+      action: async () => {
+        await router.push({ name: 'SalesOrder' })
+      }
+    }
+  ]);
 
 })
 </script>

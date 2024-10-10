@@ -43,7 +43,6 @@ const authService = {
 
   async getAuthenticatedAxiosInstance() {
     let token = localStorage.getItem('authToken');
-    console.log('Token:', token);
     return axios.create({
       headers: {
         'Authorization': `Bearer ${token}`
