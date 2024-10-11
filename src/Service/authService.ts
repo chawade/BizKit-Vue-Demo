@@ -45,7 +45,9 @@ const authService = {
     let token = localStorage.getItem('authToken');
     return axios.create({
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache"
       }
     });
   },

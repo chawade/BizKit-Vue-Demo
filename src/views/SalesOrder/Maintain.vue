@@ -129,7 +129,7 @@
                         <div class="col-span-12 md:col-span-8">
                           <SelectCustom v-model="selectWarehouse" :options="ddlWarehouse" :loading="fetchLoading"
                             placeholder="Select a Warehouse" @filter="getWarehouseList" optionLabel="name"
-                            dataKey="code" />
+                            dataKey="code" :invalid="!selectWarehouse" />
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
@@ -152,8 +152,8 @@
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Order
                           Date</label>
                         <div class="col-span-12 md:col-span-8">
-                          <DatePicker v-model="salesOrderSave.DueDate" variant="filled" showButtonBar showIcon fluid
-                            :manual-input="false" />
+                          <DatePicker v-model="salesOrderSave.SalesOrderDate" variant="filled" showButtonBar showIcon
+                            fluid :manual-input="false" :invalid="!salesOrderSave.DueDate" />
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
@@ -169,8 +169,8 @@
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Due
                           Date</label>
                         <div class="col-span-12 md:col-span-8">
-                          <DatePicker v-model="salesOrderSave.DeliveryDate" variant="filled" showButtonBar showIcon
-                            fluid :manual-input="false" />
+                          <DatePicker v-model="salesOrderSave.DueDate" variant="filled" showButtonBar showIcon fluid
+                            :manual-input="false" />
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
@@ -214,8 +214,8 @@
                           <div class="col-xs-12 table-wrapper">
                             <ContextMenu ref="cm" :model="menuModel" @hide="selectedProduct = null" />
                             <DataTable :value="salesOrderItem" tableStyle="min-width: 50rem;" contextMenu
-                              v-model:contextMenuSelection="selectedProduct" scrollable scroll-height="30rem" columnResizeMode="fit"
-                              @rowContextmenu="onRowContextMenu" :rowclass="rowClass">
+                              v-model:contextMenuSelection="selectedProduct" scrollable scroll-height="30rem"
+                              columnResizeMode="fit" @rowContextmenu="onRowContextMenu" :rowclass="rowClass">
 
                               <template #header>
                                 <Menubar class="hidden md:flex">
@@ -235,33 +235,36 @@
                               <!-- Item Code Column with unique key -->
                               <Column field="selectItem" header="Item Code" class="min-w-60">
                                 <template #body="{ data, index }">
-                                  
-                                  <SelectCustom v-model="data.selectItem" :options="data.DDLItem" :loading="fetchLoading"
-                                    placeholder="Select an item" @filter="(event) => getItemList(event, index)" optionLabel="ItemCode" dataKey="itemId"
-                                    :key="`code-${index}`">
+
+                                  <SelectCustom v-model="data.selectItem" :options="data.DDLItem"
+                                    :disabled="!selectWarehouse" :loading="fetchLoading" placeholder="Select an item"
+                                    @filter="(event) => getItemList(event, index)" optionLabel="ItemCode"
+                                    dataKey="itemId" :key="`code-${index}`"
+                                    @update:model-value="itemSelecChange(data.selectItem,index)">
 
                                     <template #option="slotProps">
                                       <Card class="w-[400px] min-w-56">
                                         <template #title>
                                           <div class="caption">
                                             <span class="uppercase font-bold text-primary" style="font-size: 1.2rem;">
-                                              <i class="pi pi-credit-card"></i> Item Code : {{ slotProps.option.ItemCode }}
+                                              <i class="pi pi-credit-card"></i> Item Code : {{ slotProps.option.ItemCode
+                                              }}
                                             </span>
                                           </div>
                                         </template>
                                         <template #content>
                                           <div class="text-start">
                                             <div><i class="pi pi-barcode text-primary" aria-hidden="true"></i><b> Item
-                                                Name :</b>
-                                              {{ slotProps.option.code }}
+                                                Name : </b>
+                                              <Tag severity="info" :value="slotProps.option.ItemName" />
                                             </div>
                                             <div><i class="pi pi-user text-primary" aria-hidden="true"></i><b> Customer
-                                                Item Code :</b>
-                                              ABCDE
+                                                Item Code : </b>
+                                              <Tag severity="info" :value=" slotProps.option.CustomerItemCode || '-'" />
                                             </div>
                                             <div><i class="pi pi-info text-primary" aria-hidden="true"></i><b> Available
-                                                Qty(All) :</b>
-                                              1,473.00
+                                                Qty(All) : </b>
+                                              <Tag severity="info" :value=" slotProps.option.AvailableQty || '-'" />
                                             </div>
                                           </div>
                                         </template>
@@ -272,11 +275,22 @@
                               </Column>
 
                               <!-- Item Name Column with unique key -->
-                              <Column field="itemName" header="Item Name" class="min-w-60">
+                              <Column field="itemName" header="Description" class="min-w-60">
                                 <template #body="{ data, index }">
-                                  <Textarea v-model="data.itemName" rows="2" cols="30" :key="`itemName-${index}`" />
+                                  <Textarea v-model="data.ItemName" rows="2" cols="30" :key="`itemName-${index}`" />
                                   <!-- key added here -->
                                 </template>
+                              </Column>
+
+                              <Column field="DeliveryDate" header="Delivery Date" class="min-w-60">
+                                <template #body="{ data, index }">
+                                  <DatePicker v-model="data.DeliveryDate" @focus="onFieldFocus(index)" showButtonBar
+                                    showIcon fluid :manual-input="false" @blur="onFieldBlur" variant="filled"
+                                    :key="`DeliveryDate-${index}`" />
+                                </template>
+                              </Column>
+
+                              <Column field="AvaliableQty" header="Available Qty" class="min-w-36">
                               </Column>
 
                               <!-- Order Qty Column with unique key -->
@@ -287,6 +301,14 @@
                                 </template>
                               </Column>
 
+                              <Column field="selectItem" header="UOM" class="min-w-60">
+                                <template #body="{ data, index }">
+                                  <Select placeholder="Select a UOM" @focus="onFieldFocus(index)"
+                                  @blur="onFieldBlur" :key="`UOM-${index}`" ></Select>
+
+                                </template>
+                              </Column>
+
                               <!-- Unit Price Column with unique key -->
                               <Column field="UnitPrice" header="Unit Price">
                                 <template #body="{ data, index }">
@@ -294,6 +316,25 @@
                                     @focus="onFieldFocus(index)" @blur="onFieldBlur" :key="`unitPrice-${index}`" />
                                   <!-- key added here -->
                                 </template>
+                              </Column>
+
+                              <Column field="DiscountRate" header="Discount">
+                                <template #body="{ data, index }">
+                                  <InputNumber v-model="data.DiscountRate" class="min-w-36"
+                                    @focus="onFieldFocus(index)" @blur="onFieldBlur" :key="`DiscountRate-${index}`" />
+                                  <!-- key added here -->
+                                </template>
+                              </Column>
+
+                              <Column field="TaxID" header="Vat">
+                                <template #body="{ data, index }">
+                                  <InputNumber v-model="data.TaxID" class="min-w-36"
+                                    @focus="onFieldFocus(index)" @blur="onFieldBlur" :key="`Vat-${index}`" />
+                                  <!-- key added here -->
+                                </template>
+                              </Column>
+
+                              <Column field="LineTotal" header="Total" class="min-w-28">
                               </Column>
 
                             </DataTable>
@@ -328,6 +369,7 @@ import type { SelectItem } from '@/Model/BaseResource';
 import router from '@/Router';
 import ItemService from '@/Service/ItemService';
 import type { ItemSearch } from '@/Model/Item';
+import DatePicker from 'primevue/datepicker';
 
 let subscription: Subscription;
 const setStickyButtons = inject<any>('setStickyButtons');
@@ -356,10 +398,7 @@ const fetchLoading = ref(false);
 
 const selectCustomer = ref<SelectItem | null>();
 const selectPaymentTerm = ref<SelectItem | null>();
-const selectWarehouse = ref<SelectItem | null>({
-  name: '',
-  code: ''
-});
+const selectWarehouse = ref<SelectItem | null>();
 const selectItem = ref<SelectItem | null>();
 
 const salesOrderItem = ref<SalesOrderItemResource[]>([]);
@@ -422,6 +461,29 @@ const menuModel = ref([
     }
   }
 ]);
+
+const itemSelecChange = (event: SalesOrderItemResource,index: number) =>{
+  console.log(event.ItemId);
+  fetchLoading.value = true;
+  subscription = ItemService.getitemByItemID(event.ItemId).subscribe({
+    next: (result) => {
+      if (result.IsSuccess) {
+        salesOrderItem.value[index].ItemName = result.Data.ItemName;
+        salesOrderItem.value[index].AvaliableQty = result.Data.AvailableQty;
+        salesOrderItem.value[index].UnitPrice = result.Data.UnitPrice;
+      } else {
+        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+}
+
 
 // Modify the onRowContextMenu function to include index
 const onRowContextMenu = (event: any) => {
@@ -577,6 +639,7 @@ const getItemList = async (event: string, rowIndex: number) => {
     next: (result) => {
       if (result.IsSuccess) {
         salesOrderItem.value[rowIndex].DDLItem = result.Data;
+        console.log(salesOrderItem.value[rowIndex].DDLItem)
       } else {
         toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
       }
@@ -619,42 +682,42 @@ const CloneCustomerDDL = (options: Array<any>): Array<SelectItem> => {
 
 const addRow = () => {
   let soItem: SalesOrderItemResource = {
-    salesOrderItemID: 0,
-    salesOrderNumber: '',
-    companyID: 0,
-    lineNumber: 0,
-    itemID: 0,
-    itemCode: '',
-    itemname: '',
-    deliveryDate: new Date(),
-    unitCost: 0,
-    baseUnitPrice: 0,
-    unitPrice: 0,
-    avaliableQty: 0,
-    orderQty: 0,
-    unit: '',
-    unitID: 0,
-    baseUnit: '',
-    baseUnitID: 0,
-    conversionQty: 0,
-    baseUnitQty: 0,
-    discountRate: 0,
-    discountAmount: 0,
-    taxID: 0,
-    taxCode: '',
-    taxRate: 0,
-    taxAmount: 0,
-    lineTotal: 0,
-    description: '',
-    image: '',
-    shippedQty: 0,
-    shippedAmount: 0,
-    balanceQty: 0,
-    balanceAmount: 0,
-    parentLineId: 0,
-    freeItemFlag: false,
-    trackStock: false,
-    selectItem: {
+    SalesOrderItemID: 0,
+    SalesOrderNumber: '',
+    CompanyID: 0,
+    LineNumber: 0,
+    ItemId: 0,
+    ItemCode: '',
+    ItemName: '',
+    DeliveryDate: new Date(),
+    UnitCost: 0,
+    BaseUnitPrice: 0,
+    UnitPrice: 0,
+    AvaliableQty: 0,
+    OrderQty: 0,
+    Unit: '',
+    UnitID: 0,
+    BaseUnit: '',
+    BaseUnitID: 0,
+    ConversionQty: 0,
+    BaseUnitQty: 0,
+    DiscountRate: 0,
+    DiscountAmount: 0,
+    TaxID: 0,
+    TaxCode: '',
+    TaxRate: 0,
+    TaxAmount: 0,
+    LineTotal: 0,
+    Description: '',
+    Image: '',
+    ShippedQty: 0,
+    ShippedAmount: 0,
+    BalanceQty: 0,
+    BalanceAmount: 0,
+    ParentLineId: 0,
+    FreeItemFlag: false,
+    TrackStock: false,
+    SelectItem: {
       code: '',
       name: ''
     },

@@ -9,7 +9,7 @@ import type { ItemSearch } from "@/Model/Item";
 const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/item`;
 
-class CustomerService {
+class ItemService {
   private axiosInstance: Observable<AxiosInstance>;;
   private errorService: ErrorService;
 
@@ -18,20 +18,23 @@ class CustomerService {
     this.errorService = new ErrorService();
   }
 
-  private getHttpOptions() {
-    return {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache"
-      },
-    };
-  }
-
   getitemList(endpoint: string): Observable<Result<any[]>> {
     const url = `${baseURL}/search/${endpoint}`;
     return this.axiosInstance.pipe(
         switchMap((axiosInstance) =>
-          from(axiosInstance.get<Result<any[]>>(url, this.getHttpOptions()))
+          from(axiosInstance.get<Result<any[]>>(url))
+        ),
+        map((response: AxiosResponse<Result<any[]>>) => response.data),
+        tap(() => this.errorService.log("Fetched customer dropdown")),
+        catchError(this.errorService.handleError<any[]>("customer dropdown"))
+      );
+  }
+
+  getitemByItemID(endpoint: number): Observable<Result<any[]>> {
+    const url = `${baseURL}/${endpoint}`;
+    return this.axiosInstance.pipe(
+        switchMap((axiosInstance) =>
+          from(axiosInstance.get<Result<any[]>>(url))
         ),
         map((response: AxiosResponse<Result<any[]>>) => response.data),
         tap(() => this.errorService.log("Fetched customer dropdown")),
@@ -43,7 +46,7 @@ class CustomerService {
     const url = `${baseURL}/search`;
     return this.axiosInstance.pipe(
         switchMap((axiosInstance) =>
-          from(axiosInstance.post<Result<any[]>>(url,endpoint , this.getHttpOptions()))
+          from(axiosInstance.post<Result<any[]>>(url,endpoint))
         ),
         map((response: AxiosResponse<Result<any[]>>) => response.data),
         tap(() => this.errorService.log("Fetched customer dropdown")),
@@ -53,4 +56,4 @@ class CustomerService {
 
 }
 
-export default new CustomerService();
+export default new ItemService();

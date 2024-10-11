@@ -49,44 +49,45 @@ export interface SalesOrderResource {
 }
 
 export interface SalesOrderItemResource {
-    salesOrderItemID: number;
-    salesOrderNumber: string;
-    companyID: number;
-    lineNumber: number;
-    itemID: number;
-    itemCode: string;
-    itemname: string;
-    deliveryDate: Date;
-    unitCost: number;
-    baseUnitPrice: number;
-    unitPrice: number;
-    avaliableQty: number;
-    orderQty: number;
-    unit: string;
-    unitID: number;
-    baseUnit: string;
-    baseUnitID: number;
-    conversionQty: number;
-    baseUnitQty: number;
-    discountRate: number;
-    discountAmount: number;
-    taxID: number;
-    taxCode: string;
-    taxRate: number;
-    taxAmount: number;
-    lineTotal: number;
-    description: string;
-    image: string;
-    shippedQty: number;
-    shippedAmount: number;
-    balanceQty: number;
-    balanceAmount: number;
-    parentLineId: number;
-    freeItemFlag: boolean;
-    trackStock: boolean;
-    selectItem: SelectItem;
-    DDLItem: any[];
+  SalesOrderItemID: number;
+  SalesOrderNumber: string;
+  CompanyID: number;
+  LineNumber: number;
+  ItemId: number; // Kept the original casing for 'Id'
+  ItemCode: string;
+  ItemName: string; // 'name' stays as originally written
+  DeliveryDate: Date;
+  UnitCost: number;
+  BaseUnitPrice: number;
+  UnitPrice: number;
+  AvaliableQty: number; // Preserved the original spelling
+  OrderQty: number;
+  Unit: string;
+  UnitID: number;
+  BaseUnit: string;
+  BaseUnitID: number;
+  ConversionQty: number;
+  BaseUnitQty: number;
+  DiscountRate: number;
+  DiscountAmount: number;
+  TaxID: number;
+  TaxCode: string;
+  TaxRate: number;
+  TaxAmount: number;
+  LineTotal: number;
+  Description: string;
+  Image: string;
+  ShippedQty: number;
+  ShippedAmount: number;
+  BalanceQty: number;
+  BalanceAmount: number;
+  ParentLineId: number; // Kept 'Id' in lowercase
+  FreeItemFlag: boolean;
+  TrackStock: boolean;
+  SelectItem: SelectItem;
+  DDLItem: any[];
 }
+    
 
 export interface SalesOrderSearch {
     salesOrderNo: string
