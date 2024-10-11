@@ -1,22 +1,8 @@
 <template>
-  <DataTable 
-    :value="items" 
-    :rows="rowsPerPage" 
-    :dataKey="dataKey" 
-    :loading="loading"
-    :rowsPerPageOptions="rowsPerPageOptions" 
-    :paginator="true" 
-    :lazy="lazy" 
-    :totalRecords="totalRecords"
-    :scrollHeight="scrollHeight" 
-    :tableStyle="tableStyle" 
-    filterDisplay="menu" 
-    :selection="selectedItems"
-    selectionMode="multiple"
-    @update:selection="onSelectionChange"
-    @page="onPageChange" 
-    @sort="onSort"
-  >
+  <DataTable :value="items" :rows="rowsPerPage" :dataKey="dataKey" :loading="loading"
+    :rowsPerPageOptions="rowsPerPageOptions" :paginator="true" :lazy="lazy" :totalRecords="totalRecords"
+    :scrollHeight="scrollHeight" :tableStyle="tableStyle" filterDisplay="menu" :selection="selectedItems"
+    selectionMode="multiple" @update:selection="onSelectionChange" @page="onPageChange" @sort="onSort">
     <!-- Header -->
     <template v-for="(_, slot) in $slots" v-slot:[slot]="scope">
       <slot :name="slot" v-bind="scope" />
@@ -33,8 +19,8 @@
     <Column v-if="selectionMode === 'multiple' && selectedColumns.length > 0" selectionMode="multiple"
       headerStyle="width: 3rem">
     </Column>
-    <Column v-for="col in selectedColumns" :key="col.field" :field="col.field"
-      :sortable="col.sortable" :style="col.class" :show-filter-menu="col.filterable" :filter-field="col.filterField">
+    <Column v-for="col in selectedColumns" :key="col.field" :field="col.field" :sortable="col.sortable"
+      :style="col.class" :show-filter-menu="col.filterable" :filter-field="col.filterField">
       <template #header="slotProps">
         <div :class="col.headerClass">
           {{ col.header }}
@@ -121,23 +107,22 @@ const isAllSelected = ref(false);
 const rowsPerPage = computed(() => props.rowsPerPage || 10)
 
 // Methods
-const updateDataTableSelection = () => {
-  selectedItems.value = []
-  if (props.items && isAllSelected.value) {
-    selectedItems.value = props.items;
-  }
-};
+// const updateDataTableSelection = () => {
+//   selectedItems.value = []
+//   if (props.items && isAllSelected.value) {
+//     selectedItems.value = props.items;
+//   }
+// };
 
 const onPageChange = (event: DataTablePageEvent) => {
   emit('page', event);
   // Apply the current selection state to the new page
-  updateDataTableSelection();
+  // updateDataTableSelection();
 }
 
 const onSelectionChange = (newSelection: any[]) => {
   selectedItems.value = newSelection;
-  isAllSelected.value = newSelection.length === props.items?.length;
-  updateDataTableSelection();
+  // updateDataTableSelection();
   emit('update:selection', newSelection);
 };
 
