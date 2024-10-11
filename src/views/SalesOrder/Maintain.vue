@@ -590,15 +590,6 @@ const getItemList = async (event: string, rowIndex: number) => {
   });
 }
 
-const CloneItemDDL = (options: Array<any>): Array<SelectItem> => {
-  const data = options.map((option) => ({
-    name: option.ItemCode == "" ? "--All--" : option.ItemCode,
-    code: option.ItemId == 0 ? "0" : option.ItemId.toString(),
-  }));
-
-  return data.length > 0 ? data : [];
-}
-
 const ClonePaymentTermDDL = (options: Array<any>): Array<SelectItem> => {
   const data = options.map((option) => ({
     name: option.Description == "" ? "--All--" : option.Description,
