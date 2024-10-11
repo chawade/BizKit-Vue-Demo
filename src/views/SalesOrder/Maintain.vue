@@ -213,8 +213,8 @@
                         <div class="row invoice-body mb-8">
                           <div class="col-xs-12 table-wrapper">
                             <ContextMenu ref="cm" :model="menuModel" @hide="selectedProduct = null" />
-                            <DataTable :value="salesOrderItem" tableStyle="min-width: 50rem" contextMenu
-                              v-model:contextMenuSelection="selectedProduct" :scrollable="true" columnResizeMode="fit"
+                            <DataTable :value="salesOrderItem" tableStyle="min-width: 50rem;" contextMenu
+                              v-model:contextMenuSelection="selectedProduct" scrollable scroll-height="30rem" columnResizeMode="fit"
                               @rowContextmenu="onRowContextMenu" :rowclass="rowClass">
 
                               <template #header>
@@ -235,16 +235,17 @@
                               <!-- Item Code Column with unique key -->
                               <Column field="selectItem" header="Item Code" class="min-w-60">
                                 <template #body="{ data, index }">
+                                  
                                   <SelectCustom v-model="data.selectItem" :options="data.DDLItem" :loading="fetchLoading"
-                                    placeholder="Select an item" @filter="(event) => getItemList(event, index)" optionLabel="name" dataKey="code"
-                                    :key="`code-${index}`"> <!-- key added here -->
+                                    placeholder="Select an item" @filter="(event) => getItemList(event, index)" optionLabel="ItemCode" dataKey="itemId"
+                                    :key="`code-${index}`">
 
                                     <template #option="slotProps">
                                       <Card class="w-[400px] min-w-56">
                                         <template #title>
                                           <div class="caption">
                                             <span class="uppercase font-bold text-primary" style="font-size: 1.2rem;">
-                                              <i class="pi pi-credit-card"></i> Item Code : {{ slotProps.option.name }}
+                                              <i class="pi pi-credit-card"></i> Item Code : {{ slotProps.option.ItemCode }}
                                             </span>
                                           </div>
                                         </template>
@@ -252,7 +253,7 @@
                                           <div class="text-start">
                                             <div><i class="pi pi-barcode text-primary" aria-hidden="true"></i><b> Item
                                                 Name :</b>
-                                              TestMultiImport3
+                                              {{ slotProps.option.code }}
                                             </div>
                                             <div><i class="pi pi-user text-primary" aria-hidden="true"></i><b> Customer
                                                 Item Code :</b>
@@ -326,6 +327,7 @@ import WarehouseService from '@/Service/WarehouseService';
 import type { SelectItem } from '@/Model/BaseResource';
 import router from '@/Router';
 import ItemService from '@/Service/ItemService';
+import type { ItemSearch } from '@/Model/Item';
 
 let subscription: Subscription;
 const setStickyButtons = inject<any>('setStickyButtons');
@@ -354,7 +356,10 @@ const fetchLoading = ref(false);
 
 const selectCustomer = ref<SelectItem | null>();
 const selectPaymentTerm = ref<SelectItem | null>();
-const selectWarehouse = ref<SelectItem | null>();
+const selectWarehouse = ref<SelectItem | null>({
+  name: '',
+  code: ''
+});
 const selectItem = ref<SelectItem | null>();
 
 const salesOrderItem = ref<SalesOrderItemResource[]>([]);
@@ -559,11 +564,19 @@ const fetchData = async () => {
 const getItemList = async (event: string, rowIndex: number) => {
   fetchLoading.value = true;
   searchString.value = event;
-  const endpoint = `${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`;
-  subscription = ItemService.getitemList(endpoint).subscribe({
+  const search: ItemSearch = {
+    searchString: event,
+    sortBy: sortKey.value,
+    sortDirection: sortOrder.value,
+    pageNo: currentPage.value,
+    pageSize: pageSize.value,
+    warehouseID:  selectWarehouse == null ? 0 : parseInt(selectWarehouse.value?.code ?? '0')
+  };
+
+  subscription = ItemService.getitemFilter(search).subscribe({
     next: (result) => {
       if (result.IsSuccess) {
-        salesOrderItem.value[rowIndex].DDLItem = CloneItemDDL(result.Data || []);
+        salesOrderItem.value[rowIndex].DDLItem = result.Data;
       } else {
         toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
       }

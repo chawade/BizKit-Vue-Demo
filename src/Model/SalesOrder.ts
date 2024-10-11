@@ -85,7 +85,7 @@ export interface SalesOrderItemResource {
     freeItemFlag: boolean;
     trackStock: boolean;
     selectItem: SelectItem;
-    DDLItem: SelectItem[];
+    DDLItem: any[];
 }
 
 export interface SalesOrderSearch {

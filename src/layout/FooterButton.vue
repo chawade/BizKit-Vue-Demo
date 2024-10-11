@@ -1,5 +1,5 @@
 <template>
-    <div v-if="buttons.length > 0" class="w-full bg-primary py-4 sticky bottom-0 left-0 right-0 z-[5000]">
+    <div v-if="buttons.length > 0" class="w-full bg-primary py-4 sticky bottom-0 left-0 right-0 z-[1000]">
       <div class="mr-[2rem] mx-auto flex justify-end">
         <Button 
           v-for="button in buttons" 
