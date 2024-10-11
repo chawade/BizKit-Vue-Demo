@@ -4,7 +4,7 @@
     <template v-for="(_, slot) in $slots" v-slot:[slot]="scope">
       <slot :name="slot" v-bind="scope" />
     </template>
-    </Select>
+  </Select>
 </template>
 
 <script lang="ts" setup>
@@ -13,10 +13,10 @@ import type { SelectChangeEvent, SelectFilterEvent } from 'primevue/select';
 import type { SelectItem } from '@/Model/BaseResource'; // Adjust based on actual model
 
 interface Props {
-  modelValue: SelectItem | null | undefined ;
-  options: SelectItem[];
-  optionLabel: keyof SelectItem;
-  dataKey: keyof SelectItem;
+  modelValue: SelectItem | any | null | undefined ;
+  options: SelectItem[] | any[];
+  optionLabel: any;
+  dataKey: any;
   placeholder?: string;
   loading?: boolean;
 }
