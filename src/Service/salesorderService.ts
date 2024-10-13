@@ -18,20 +18,12 @@ class SalesOrderService {
     this.errorService = new ErrorService();
   }
 
-  private getHttpOptions() {
-    return {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache"
-      },
-    };
-  }
 
   search(endpoint: string): Observable<Result<SalesOrderResource[]>> {
     const url = `${baseURL}/${endpoint}`;
     return this.axiosInstance$.pipe(
       switchMap((axiosInstance) =>
-        from(axiosInstance.get<Result<SalesOrderResource[]>>(url, this.getHttpOptions()))
+        from(axiosInstance.get<Result<SalesOrderResource[]>>(url))
       ),
       map((response: AxiosResponse<Result<SalesOrderResource[]>>) => response.data),
       tap(() => this.errorService.log("Fetched customer list")),
@@ -43,7 +35,7 @@ class SalesOrderService {
     const url = `${baseURL}/search`;
     return this.axiosInstance$.pipe(
       switchMap((axiosInstance) =>
-        from(axiosInstance.post<Result<SalesOrderResource[]>>(url, search, this.getHttpOptions()))
+        from(axiosInstance.post<Result<SalesOrderResource[]>>(url, search))
       ),
       map((response: AxiosResponse<Result<SalesOrderResource[]>>) => response.data),
       tap(() => this.errorService.log("Fetched sales order details")),
@@ -54,7 +46,7 @@ class SalesOrderService {
   get(id: string): Observable<Result<SalesOrderResource>> {
     return this.axiosInstance$.pipe(
       switchMap((axiosInstance) =>
-        from(axiosInstance.get<Result<SalesOrderResource>>(`${baseURL}/${id}`, this.getHttpOptions()))
+        from(axiosInstance.get<Result<SalesOrderResource>>(`${baseURL}/${id}`))
       ),
       map((response: AxiosResponse<Result<SalesOrderResource>>) => response.data),
       tap(() => this.errorService.log(`Fetched sales order with id ${id}`)),
@@ -66,7 +58,7 @@ class SalesOrderService {
     const url = `${baseURL}/picking/list`;
     return this.axiosInstance$.pipe(
       switchMap((axiosInstance) =>
-        from(axiosInstance.post<Result<any>>(url, search, this.getHttpOptions()))
+        from(axiosInstance.post<Result<any>>(url, search))
       ),
       map((response: AxiosResponse<Result<any>>) => response.data),
       tap(() => this.errorService.log("Fetched picking list")),
@@ -78,7 +70,7 @@ class SalesOrderService {
     const url = `${baseURL}/history/${soNo}`;
     return this.axiosInstance$.pipe(
       switchMap((axiosInstance) =>
-        from(axiosInstance.get<Result<any>>(url, this.getHttpOptions()))
+        from(axiosInstance.get<Result<any>>(url))
       ),
       map((response: AxiosResponse<Result<any>>) => response.data),
       tap(() => this.errorService.log(`Fetched pick ship history for SO ${soNo}`)),

@@ -1,11 +1,21 @@
 <template>
   <DataTable :value="items" :rows="rowsPerPage" :dataKey="dataKey" :loading="loading"
     :rowsPerPageOptions="rowsPerPageOptions" :paginator="true" :lazy="lazy" :totalRecords="totalRecords"
-    :scrollHeight="scrollHeight" :tableStyle="tableStyle" filterDisplay="menu" :selection="selectedItems"
+    :scrollHeight="scrollHeight" :tableStyle="tableStyle" filterDisplay="menu" v:selection="selectedItems"
     @update:selection="onSelectionChange" @page="onPageChange" @sort="onSort">
     <!-- Header -->
     <template v-for="(_, slot) in $slots" v-slot:[slot]="scope">
       <slot :name="slot" v-bind="scope" />
+      <Tag v-if="!isAllSelected && selectedItems.length > 0 && selectedItems.length == rowsPerPage"
+        style="width: 100%; min-height: 50px" severity="info">
+        <span class="font-bold text-base">คุณเลือกรายการทั้ง {{ rowsPerPage }} รายการในหน้านี้</span>
+        <Button link :label="`เลือกทั้ง ${totalRecords} รายการในเอกสารทั้งหมด`" @click="selectAll" />
+      </Tag>
+      <Tag v-if="isAllSelected"
+        style="width: 100%; min-height: 50px" severity="info">
+        ทั้ง {{totalRecords}} รายการถูกเลือกอยู่
+        <Button link label="ล้างการเลือก" @click="clearSelection" />
+      </Tag>
     </template>
 
     <!-- Body -->
@@ -17,7 +27,7 @@
       </template>
     </Column>
     <Column v-if="selectionMode === 'multiple' && selectedColumns.length > 0" selectionMode="multiple"
-      headerStyle="width: 3rem"/>
+      headerStyle="width: 3rem" />
     <Column v-for="col in selectedColumns" :key="col.field" :field="col.field" :sortable="col.sortable"
       :style="col.class" :show-filter-menu="col.filterable" :filter-field="col.filterField">
       <template #header="slotProps">
@@ -67,7 +77,6 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import MultiSelect from 'primevue/multiselect'
 import Tag from 'primevue/tag'
-import Checkbox from 'primevue/checkbox'
 import type Menu from 'primevue/menu'
 import type { ColumnDef } from '@/Model/GlobalVariable/DataTable'
 
@@ -105,23 +114,12 @@ const isAllSelected = ref(false);
 // Computed properties
 const rowsPerPage = computed(() => props.rowsPerPage || 10)
 
-// Methods
-// const updateDataTableSelection = () => {
-//   selectedItems.value = []
-//   if (props.items && isAllSelected.value) {
-//     selectedItems.value = props.items;
-//   }
-// };
-
 const onPageChange = (event: DataTablePageEvent) => {
   emit('page', event);
-  // Apply the current selection state to the new page
-  // updateDataTableSelection();
 }
 
 const onSelectionChange = (newSelection: any[]) => {
   selectedItems.value = newSelection;
-  // updateDataTableSelection();
   emit('update:selection', newSelection);
 };
 
@@ -135,6 +133,19 @@ const onSort = (event: DataTableSortEvent) => {
 
 const onColumnToggle = (event: { value: ColumnDef[] }) => {
     selectedColumns.value = event.value;
+};
+
+// New methods for selection management
+const selectAll = () => {
+  isAllSelected.value = true;
+  selectedItems.value = props.items || [];
+  emit('update:selection', selectedItems.value);
+};
+
+const clearSelection = () => {
+  isAllSelected.value = false;
+  selectedItems.value = [];
+  emit('update:selection', []);
 };
 
 // Watch for changes in props.columns and update selectedColumns

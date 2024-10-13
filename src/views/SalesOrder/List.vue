@@ -115,12 +115,12 @@
                     </template>
 
                     <template #Status="slotProps">
-                        <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.Status.StatusName" :style="{ 
-                                border: slotProps.data.Status.StatusBorderColor, 
-                                backgroundColor: slotProps.data.Status.StatusBgColor, 
-                                color: slotProps.data.Status.StatusFontColor, 
-                                fontSize: slotProps.data.Status.StatusFontSize 
-                            }" />
+                        <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.Status.StatusName" :style="{
+                            backgroundColor: statusTheme(slotProps.data.Status.StatusId).bgColor,
+                            border: `1px solid ${statusTheme(slotProps.data.Status.StatusId).borderColor}`,
+                            color: statusTheme(slotProps.data.Status.StatusId).fontColor,
+                            fontSize: statusTheme(slotProps.data.Status.StatusId).fontSize
+                        }" />
                     </template>
 
                     <template #SalesOrderNumber="slotProps">
@@ -147,6 +147,7 @@ import { Subscription } from 'rxjs';
 import ItemTable from '@/components/ItemTable.vue';
 import type { DataTablePageEvent } from 'primevue/datatable';
 import type { ColumnDef } from '@/Model/GlobalVariable/DataTable';
+import StatusService from '@/Service/statusService';
 
 let subscription: Subscription;
 const searchSo = reactive<SalesOrderSearch>({
@@ -162,6 +163,7 @@ const searchSo = reactive<SalesOrderSearch>({
     dateRange: null,
     remark: ''
 })
+const statusService = new StatusService();
 const toast = useToast();
 const isSelectAll = ref(false);
 const router = useRouter();
@@ -296,8 +298,9 @@ const nestedMenuitems = ref([
         ]
     }
 ]);
-
-
+const statusTheme = (statusId:number) => {
+    return statusService.getStatusTheme(statusId)
+}
 const sortedItems = computed(() => {
     return items.value
 })
