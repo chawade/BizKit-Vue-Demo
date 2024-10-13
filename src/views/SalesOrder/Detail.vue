@@ -240,16 +240,16 @@
               </p>
             </TabPanel>
             <TabPanel value="5" header="Edit History" :lazy="true">
-              <div class="card ">
-                <Timeline :value="operationLog" class="max-h-60" align="alternate" style="overflow-y: scroll;">
+              <ScrollPanel style="width: 100%; height: 200px">
+                <Timeline :value="operationLog" class="p-5" align="alternate" >
                   <template #opposite="slotProps">
                     <small class="text-surface-500 dark:text-surface-400">{{ slotProps.item.ActionDate }}</small>
                   </template>
                   <template #content="slotProps" class="w-96">
-                    <Message severity="info">{{slotProps.item.Action}} by {{ slotProps.item.Email }}</Message>
+                    <Message severity="info">{{ slotProps.item.Action }} by {{ slotProps.item.Email }}</Message>
                   </template>
                 </Timeline>
-              </div>
+              </ScrollPanel>
             </TabPanel>
           </Tabs>
         </Suspense>

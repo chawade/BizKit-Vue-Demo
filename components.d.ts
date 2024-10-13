@@ -37,6 +37,7 @@ declare module 'vue' {
     Remark: typeof import('./src/components/Remark.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ScrollPanel: typeof import('primevue/scrollpanel')['default']
     Select: typeof import('primevue/select')['default']
     SelectButton: typeof import('primevue/selectbutton')['default']
     SelectCustom: typeof import('./src/components/SelectCustom.vue')['default']
