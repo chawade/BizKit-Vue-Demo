@@ -299,13 +299,13 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import SalesOrderService from '@/Service/salesorderService';
+import SalesOrderService from '@/service/salesorderService';
 import type { SalesOrderResource } from '@/Model/SalesOrder';
 import type { PickingSearch } from '@/Model/Picking';
 import { useToast } from 'primevue/usetoast';
 import { Subscription } from 'rxjs';
-import StatusService from '@/Service/statusService';
-import baseService from '@/Service/baseService';
+import StatusService from '@/service/statusService';
+import baseService from '@/service/baseService';
 
 let subscription: Subscription;
 const statusService = new StatusService();

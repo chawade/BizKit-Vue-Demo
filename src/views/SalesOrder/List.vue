@@ -15,7 +15,7 @@
             </div>
 
             <div class="table-scrollable table-list">
-                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'SalesOrderID'" :rows-per-page="pageSize"
+                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'SalesOrderID'" :rows-per-page="pageSize" :pageIdentifier="'salesOrder'"
                     :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems" :loading="fetchLoading" :lazy="true"
                     :totalRecords="totalRecords" @page="onPageChange" selectionMode="multiple"
                     @update:selection="onRowSelect" @sort="onSort" @search="fetchData" :menu="menuaa">
@@ -138,7 +138,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref, reactive, onUnmounted } from 'vue'
-import SalesOrderService from '@/Service/salesorderService'
+import SalesOrderService from '@/service/salesorderService'
 import type Menu from 'primevue/menu';
 import type { SalesOrderResource, SalesOrderSearch } from '@/Model/SalesOrder';
 import { useRouter } from 'vue-router';
@@ -147,7 +147,7 @@ import { Subscription } from 'rxjs';
 import ItemTable from '@/components/ItemTable.vue';
 import type { DataTablePageEvent } from 'primevue/datatable';
 import type { ColumnDef } from '@/Model/GlobalVariable/DataTable';
-import StatusService from '@/Service/statusService';
+import StatusService from '@/service/statusService';
 
 let subscription: Subscription;
 const searchSo = reactive<SalesOrderSearch>({

@@ -2,12 +2,12 @@
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import AuthService from '@/Service/authService';
+import AuthService from '@/service/authService';
 import Checkbox from 'primevue/checkbox';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import Button from 'primevue/button';   
-import { isLoading } from '@/Router';
+import { isLoading } from '@/router';
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();

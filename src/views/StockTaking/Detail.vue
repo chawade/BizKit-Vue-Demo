@@ -48,7 +48,7 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import StockTakingService from '@/Service/stockTakingService';
+import StockTakingService from '@/service/stockTakingService';
 import ActionButtons from '@/components/ActionButtons.vue';
 import DetailHeader from '@/components/DetailHeader.vue';
 import InfoBox from '@/components/InfoBox.vue';

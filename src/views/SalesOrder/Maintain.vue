@@ -356,20 +356,20 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, reactive, onUnmounted, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import SalesOrderService from '@/Service/salesorderService';
+import SalesOrderService from '@/service/salesorderService';
 import type { SalesOrderItemResource, SalesOrderResource, SalesOrderSaveResource, SalesOrderSearch } from '@/Model/SalesOrder';
 import { useToast } from 'primevue/usetoast';
-import CustomerService from '@/Service/CustomerService';
 import { Subscription } from 'rxjs';
 import SelectCustom from '@/components/SelectCustom.vue';
 import PriceList from '@/Model/GlobalVariable/PriceList'
-import PaymentTermService from '@/Service/PaymentTermService';
-import WarehouseService from '@/Service/WarehouseService';
 import type { SelectItem } from '@/Model/BaseResource';
-import router from '@/Router';
-import ItemService from '@/Service/ItemService';
+import router from '@/router';
+import ItemService from '@/service/ItemService';
 import type { ItemSearch } from '@/Model/Item';
 import DatePicker from 'primevue/datepicker';
+import CustomerService from '@/service/CustomerService';
+import WarehouseService from '@/service/WarehouseService';
+import PaymentTermService from '@/service/PaymentTermService';
 
 let subscription: Subscription;
 const setStickyButtons = inject<any>('setStickyButtons');

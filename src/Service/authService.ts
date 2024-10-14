@@ -1,4 +1,4 @@
-import { isLoading } from '@/Router';
+import { isLoading } from '@/router';
 import axios, { AxiosError, type AxiosInstance } from 'axios';
 import { useRouter } from 'vue-router';
 

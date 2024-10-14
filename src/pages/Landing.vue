@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { isLoading } from '@/Router/index'
+import { isLoading } from '@/router/index'
 </script>
 
 <style scoped></style>
