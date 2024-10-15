@@ -110,35 +110,35 @@ export interface SalesOrderSearch {
 
 
   export interface SalesOrderSaveResource extends BaseResource {
-    SalesOrderID: number;
-    SalesOrderNumber: string;
-    SalesOrderDate: Date ; // Use Date for DateTime in TypeScript
-    DeliveryDate: Date;
-    DueDate: Date;
-    AssociatedSONo: string;
-    Customer: CustomerResource | null;
-    PriceTier: number;
-    WarehouseID: number;    
-    ReferenceNo: string;
-    RefQuotationNo: string;
-    PaymentTerm: PaymentTermListResource | null;
-    PersonInCharge: string; // Corrected 'PersonInChrage' typo
-    Currency: string;
-    DiscountRate: number;
-    DiscountAmount: number;
-    OtherCharges: number;
-    SkipPicking: boolean;
-    Status: StatusResource | null;
-    PickStatus: number;
-    PackStatus: number;
-    ShipStatus: number;
-    IsBackOrder: boolean;
-    IsSplitOrder: boolean;
-    Notes: string;
-    InternalMemo: string;
-    MemoDate: Date;
-    MemoBy: string;
-    Remark?: string;
-    IsPriceExcludeVat: boolean;
-    SalesOrderItemResource: SalesOrderItemResource[]; // Array of SalesOrderItemResource
+    salesOrderID: number;
+    salesOrderNumber: string;
+    salesOrderDate: Date ; // Use Date for DateTime in TypeScript
+    deliveryDate: Date;
+    dueDate: Date;
+    associatedSONo: string;
+    customer: CustomerResource | null;
+    priceTier: number;
+    warehouseID: number;    
+    referenceNo: string;
+    refQuotationNo: string;
+    paymentTerm: PaymentTermListResource | null;
+    personInCharge: string; // Corrected 'PersonInChrage' typo
+    currency: string;
+    discountRate: number;
+    discountAmount: number;
+    otherCharges: number;
+    skipPicking: boolean;
+    status: StatusResource | null;
+    pickStatus: number;
+    packStatus: number;
+    shipStatus: number;
+    isBackOrder: boolean;
+    isSplitOrder: boolean;
+    notes: string;
+    internalMemo: string;
+    memoDate: Date;
+    memoBy: string;
+    remark?: string;
+    isPriceExcludeVat: boolean;
+    salesOrderItemResource: SalesOrderItemResource[]; // Array of SalesOrderItemResource
 }

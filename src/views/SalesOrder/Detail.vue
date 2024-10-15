@@ -177,38 +177,35 @@
                 </template>
                 <template #content>
                   <DataTable v-model:expandedRowGroups="expandedRowGroups" v-model:selection="selectedItems"
-                    :value="pickItems" :rows="10" dataKey="PickingID" :loading="fetchLoading" :lazy="true"
+                    :value="pickItems" :rows="10" dataKey="pickingID" :loading="fetchLoading" :lazy="true"
                     :totalRecords="totalRecords" :rowsPerPageOptions="[5, 10, 25]" scrollable :paginator="true"
                     @row-select="onRowSelect" @row-unselect="onRowUnselect" @page="onPageChange" expandableRowGroups
-                    rowGroupMode="subheader" groupRowsBy="ItemCode" @rowgroup-expand="onRowGroupExpand"
+                    rowGroupMode="subheader" groupRowsBy="itemCode" @rowgroup-expand="onRowGroupExpand"
                     @rowgroup-collapse="onRowGroupCollapse" sortMode="single" sortField="ItemCode" :sortOrder="1"
                     tableStyle="width: 100%">
                     <template #groupheader="slotProps">
-                      <span class="align-middle ml-2 font-bold leading-normal"> {{ slotProps.data.ItemCode }} - {{
-                        slotProps.data.Description }}</span>
+                      <span class="align-middle ml-2 font-bold leading-normal"> {{ slotProps.data.itemCode }} - {{
+                        slotProps.data.description }}</span>
                     </template>
                     <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
-                    <Column field="LineNumber" header="Line No." style="width: 10%">
+                    <Column field="lineNumber" header="Line No." style="width: 10%">
                       <template #body="slotProps">
                         {{ (slotProps.index + 1) }} <!-- Adjusting the index to start from 1 -->
                       </template>
                     </Column>
-                    <Column field="LotNo" header="Lot No." style="width: 15%"></Column>
-                    <Column field="WarehouseName" header="Warehouse" style="width: 20%"></Column>
-                    <Column field="ShelfCode" header="Shelf" style="width: 15%"></Column>
-                    <Column field="Available" header="Available Qty" style="width: 15%"></Column>
-                    <Column field="PickedQty" header="Picked Qty" style="width: 15%"></Column>
-                    <Column field="StatusName" header="Status" style="width: 10%">
+                    <Column field="lotNo" header="Lot No." style="width: 15%"></Column>
+                    <Column field="warehouseName" header="Warehouse" style="width: 20%"></Column>
+                    <Column field="shelfCode" header="Shelf" style="width: 15%"></Column>
+                    <Column field="available" header="Available Qty" style="width: 15%"></Column>
+                    <Column field="pickedQty" header="Picked Qty" style="width: 15%"></Column>
+                    <Column field="status" header="Status" style="width: 10%">
                       <template #body="slotProps">
-                        <span :style="{
-                        backgroundColor: slotProps.data.StatusBgColor,
-                        color: slotProps.data.StatusFontColor,
-                        padding: '2px 4px',
-                        borderRadius: '3px',
-                        fontSize: `${slotProps.data.StatusFontSize}px`
-                      }">
-                          {{ slotProps.data.StatusName }}
-                        </span>
+                        <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.statusName" :style="{
+                              backgroundColor: statusTheme(slotProps.data.statusId ?? 0).bgColor,
+                              border: `1px solid ${statusTheme(slotProps.data.statusId ?? 0).borderColor}`,
+                              color: statusTheme(slotProps.data.statusId ?? 0).fontColor,
+                              fontSize: statusTheme(slotProps.data.statusId ?? 0).fontSize
+                            }" />
                       </template>
                     </Column>
                     <template #empty>
@@ -270,13 +267,13 @@
               <Column field="lineNumber" header="No."></Column>
               <Column field="pickingNo" header="Picking No.">
                 <template #body="{ data }">
-                  <Button :label="data.PickingNo" link
-                    @click="pickingNo = data.PickingNo; activeIndex = '2'; loadPickData()" class="p-0" />
+                  <Button :label="data.pickingNo" link
+                    @click="pickingNo = data.pickingNo; activeIndex = '2'; loadPickData()" class="p-0" />
                 </template>
               </Column>
               <Column field="shippingNo" header="Shipping No.">
                 <template #body="{ data }">
-                  <Button :label="data.ShippingNo" link @click="shippingNo = data.ShippingNo" class="p-0" />
+                  <Button :label="data.shippingNo" link @click="shippingNo = data.ShippingNo" class="p-0" />
                 </template>
               </Column>
               <template #empty>
@@ -482,6 +479,7 @@ const fetchData = async () => {
           next(result) {
             if (result.isSuccess) {
               History.value = result.data;
+              console.log(History.value)
             } 
           },
           error: (error) => {
