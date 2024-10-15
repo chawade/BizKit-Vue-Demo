@@ -23,19 +23,19 @@ const model = ref([
         items: [
             {
                 label: 'PurchaseRequest',
-                icon: 'pi pi-fw pi-book',
-                to: '/PurchaseRequest/PRList'
+                icon: 'pi pi-cart-plus',
+                to: '/PurchaseRequest/List'
             },
-            {
-                label: 'PRMaintain',
-                icon: 'pi pi-fw pi-book',
-                to: '/PurchaseRequest/PRMaintain'
-            },
-            {
-                label: 'PRListtest',
-                icon: 'pi pi-fw pi-book',
-                to: '/PurchaseRequest/PRListtest'
-            }
+            // {
+            //     label: 'PRMaintain',
+            //     icon: 'pi pi-fw pi-book',
+            //     to: '/PurchaseRequest/PRMaintain'
+            // },
+            // {
+            //     label: 'PRListtest',
+            //     icon: 'pi pi-fw pi-book',
+            //     to: '/PurchaseRequest/PRListtest'
+            // }
         ]
     },
     {

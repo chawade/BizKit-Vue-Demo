@@ -7,12 +7,9 @@
       <div class="col-sm-8 flex justify-between mb-8">
         <h4 class="font-bold text-l flex gap-2 items-center"><span class="pi pi-cog"></span>Purchase Request List
         </h4>
-        <router-link to="/PurchaseRequest/PRMaintain">
+        <router-link to="/PurchaseRequest/Maintain">
           <Button icon="pi pi-plus-circle" label="New Purchase Request" severity="success" />
         </router-link>
-        <!-- <div v-if="permission.MODIFY">
-          <Button icon="pi pi-plus-circle" label="New Purchase Request" severity="success" @click="NewPR" />
-        </div> -->
       </div>
 
       <!-- Search Section -->
@@ -107,7 +104,8 @@
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex flex-col gap-2">
                     <label class="font-bold" for="PRNo">PR Date</label>
-                    <Select v-model="selectedPRDate" optionLabel="name" placeholder="Select" class="w-full" />
+                    <DatePicker v-model="selectedPRDate" selectionMode="range" :manual-input="false" id="dateRange"
+                      showButtonBar class="form-input rounded-md shadow-sm" />
                   </div>
                 </div>
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
@@ -125,7 +123,8 @@
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
                   <div class="flex flex-col gap-2">
                     <label class="font-bold" for="PRNo">Require Date</label>
-                    <Select v-model="selectedRequireDate" optionLabel="name" placeholder="Select" class="w-full" />
+                    <DatePicker v-model="selectedRequireDate" selectionMode="range" :manual-input="false" id="dateRange"
+                      showButtonBar class="form-input rounded-md shadow-sm" />
                   </div>
                 </div>
                 <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
@@ -151,9 +150,10 @@
 
       <!-- Table Section -->
       <div class="table-scrollable table-list">
-        <DataTable v-model:selection="selectedItems" :value="request" :rows="10" dataKey="PurchaseRequestNo"
-          :paginator="true" :rowsPerPageOptions="[5, 10, 25]" scrollable scrollHeight="400px"
-          tableStyle="min-width: 50rem" @row-select="onRowSelect" @row-unselect="onRowUnselect">
+        <DataTable v-model:selection="selectedItems" :value="sortedItems" :rows="10" dataKey="PurchaseRequestNo"
+          :paginator="true" :rowsPerPageOptions="[5, 10, 25]" scrollable scrollHeight="400px" :lazy="true"
+          :total-records="totalRecords" tableStyle="min-width: 50rem" @row-select="onRowSelect"
+          @row-unselect="onRowUnselect" @page="onPageChange" @sort="onSort" :loading="fetchLoading">
           <Column header="">
             <template #body="{ data }">
               <div class="dropdown" @mouseleave="closeDropdown(data)">
@@ -208,6 +208,19 @@
               <i :class="direction === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'" style="margin-left: 8px;"></i>
             </template>
           </Column>
+
+          <template #footer>
+            <div class="p-text-center p-m-4">
+              <MultiSelect v-model="selectedColumns" :options="columns" optionLabel="header" @change="onColumnToggle"
+                display="chip" placeholder="Select Columns" class="w-full" />
+            </div>
+          </template>
+          <template #empty>
+            <div class="p-text-center p-m-4">
+              <Tag style="width: 100%; min-height: 70px" severity="secondary" value="No records available">
+              </Tag>
+            </div>
+          </template>
         </DataTable>
       </div>
     </div>
@@ -215,10 +228,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, type Ref } from 'vue';
+import { ref, onMounted, watch, type Ref, reactive } from 'vue';
 import PurchaseRequestService from '@/Service/purchaseRequestService';
 import type Menu from 'primevue/menu';
+import { computed } from 'vue';
+import type { DataTableSortEvent } from 'primevue/datatable';
+import { Subscription } from 'rxjs';
+import { useToast } from 'primevue/usetoast';
 
+let subscription: Subscription;
 interface Vendor {
   VendorId: number;
   CompanyId: number;
@@ -254,12 +272,37 @@ interface PurchaseRequest {
   selectedItems: boolean;
   TotalAmount: number;
 }
+interface ColumnDef {
+  field: string;
+  header: string;
+  sortable?: boolean;
+  style?: string;
+  filterable?: boolean;
+  filterField?: string;
+}
 
+const selectedColumns = ref<ColumnDef[]>([]);
+const onColumnToggle = (event: { value: ColumnDef[] }) => {
+  selectedColumns.value = event.value;
+};
+const columns = ref<ColumnDef[]>([
+  { field: 'PurchaseRequestNo', header: 'PRNo', sortable: true, style: 'width: 15%' },
+  { field: 'PurchaseRequestDate', header: 'PRDate', sortable: true, style: 'width: 15%' },
+  { field: 'RequireDate', header: 'RequireDate', sortable: true, style: 'width: 15%' },
+  { field: 'Vendor.VendorName', header: 'Vendor', sortable: true, style: 'width: 15%' },
+  { field: 'Project', header: 'Project', sortable: true, style: 'width: 20%; text-align: center;' },
+  { field: 'Department', header: 'Department', sortable: true, style: 'width: 1%' },
+  { field: 'Amount', header: 'Amount', style: 'width: 10%' },
+  { field: 'Status.StatusName', header: 'Status', style: 'width: 10%' }
+]);
+
+const toast = useToast();
 const dropdownVisible: Ref<Record<string, boolean>> = ref({});
 const menu = ref<InstanceType<typeof Menu> | null>(null);
 const selectedItems = ref<number[]>([]);
 const request = ref<PurchaseRequest[]>([]);
 const loading = ref(false);
+const fetchLoading = ref(false);
 const error = ref<string | null>(null);
 const totalPages = ref(1);
 const totalRecords = ref(0);
@@ -279,27 +322,36 @@ const APPROVED = 200;
 const CANCELLED = 2000;
 
 const selectedPurchaseRequestNo = ref<string[]>([]);
-const showAlertMsg = ref(false);
 const selectedVendor = ref([]);
 const selectedStatus = ref([]);
 const selectedPRDate = ref([]);
 const selectedRequireDate = ref([]);
 
 const fetchPurchaseRequests = async () => {
-  try {
-    debugger;
-    loading.value = true;
-    const response = await PurchaseRequestService.getlist(`${pageNumber.value}/${pageSize.value}/${sortBy.value}/${direction.value}/${searchString.value}`)
-
-    request.value = response.Data;
-    // console.log(response);
-    totalRecords.value = response.Pagination.TotalRecords
-    totalPages.value = response.Pagination.TotalPages
-  } catch (err: any) {
-    error.value = `Failed to fetch purchase requests: ${err.message}`;
-  } finally {
-    loading.value = false;
-  }
+  fetchLoading.value = true;
+    const endpoint = `${pageNumber.value}/${pageSize.value}/${sortBy.value}/${direction.value}/${searchString.value}`;
+    request.value = [];
+    totalRecords.value = 0;
+    totalPages.value = 0;
+    subscription = PurchaseRequestService.search(endpoint).subscribe({
+        next: (result) => {
+            if (result.IsSuccess) {
+              request.value = result.Data || [];
+                totalRecords.value = result.Pagination?.TotalRecords ?? 0;
+                totalPages.value = result.Pagination?.TotalPages ?? 0;
+            } else {
+                const statusCode = result.StatusCode.toString() || 'Unknown';
+                const errorMessage = result.Error?.Message || 'An error occurred';
+                toast.add({ severity: 'error', summary: statusCode , detail: errorMessage, life: 2000 });
+            }
+        },
+        error: (error) => {
+            toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+        },
+        complete: () => {
+            fetchLoading.value = false;
+        }
+    });
 };
 
 // const menuaa = ref([
@@ -340,6 +392,9 @@ const onRowUnselect = (event: any) => {
   return purchaserequestNo.value;
 };
 
+const sortedItems = computed(() => {
+  return request.value
+})
 
 const submitForm = async () => {
 
@@ -382,7 +437,7 @@ const searchList = () => {
 };
 // watch(searchString, () => {
 //   // เรียกค้นหาข้อมูลเมื่อมีการกรอกอย่างน้อย 3 ตัวอักษร หรือเมื่อเคลียร์ข้อมูล
-//   if (searchString.value.length >= 1 || searchString.value.length === 0) {
+//   if (searchString.value.length >= 2 || searchString.value.length === 0) {
 //     fetchPurchaseRequests(); // เรียกค้นหาข้อมูล
 //   }
 // });
@@ -406,9 +461,51 @@ const toggleSelectAll = (event: any) => {
   });
 };
 
-const hideDivMSG = () => {
-  showAlertMsg.value = false;
+const onSort = (event: DataTableSortEvent) => {
+  debugger
+  const sortField = event.sortField;
+  const Key = event.sortOrder;
+  switch (Key) {
+    case 1:
+      direction.value = 'ASC';
+      break;
+    default:
+      direction.value = 'DESC';
+      break;
+  }
+
+  switch (sortField) {
+    case 'PurchaseRequestNo':
+      sortBy.value = 'PRNo';
+      break;
+    case 'PurchaseRequestDate':
+      sortBy.value = 'PRDate';
+      break;
+    case 'RequireDate':
+      sortBy.value = 'DeliveryDate';
+      break;
+    case 'Vendor':
+      sortBy.value = 'VendorName';
+      break;
+    case 'Status':
+      sortBy.value = 'Status';
+      break;
+    case 'Amount':
+      sortBy.value = 'Subtotal';
+      break;
+    default:
+      sortBy.value = 'PRDate';
+      break;
+  }
+  fetchPurchaseRequests();
 };
+const onPageChange = (event: { first: number, rows: number, page: number }) => {
+  // Update state   
+  pageNumber.value = event.page + 1;
+  pageSize.value = event.rows;
+  // Handle data loading for the new page (pagination)
+  fetchPurchaseRequests();
+}
 
 const edit = (PurchaseRequestNo: string) => {
   console.log('Edit', PurchaseRequestNo);

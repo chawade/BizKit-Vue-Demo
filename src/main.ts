@@ -54,6 +54,7 @@ import Tooltip from 'primevue/tooltip';
 import BlockUI from "primevue/blockui";
 import ContextMenu from "primevue/contextmenu";
 import Image from "primevue/image";
+import FileUpload from 'primevue/fileupload';
 
 const app: VueApp = createApp(App);
 
@@ -117,7 +118,8 @@ const components = {
   Fluid,
   BlockUI,
   ContextMenu,
-  Image
+  Image,
+  FileUpload
 };
 
 Object.entries(components).forEach(([name, component]) => {
