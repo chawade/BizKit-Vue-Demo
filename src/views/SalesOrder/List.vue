@@ -15,10 +15,10 @@
             </div>
 
             <div class="table-scrollable table-list">
-                <DataTable v-model:selection="selectedItems" :value="sortedItems" :rows="10" dataKey="SalesOrderID"
-                    :loading="fetchLoading" :rowsPerPageOptions="[5, 10, 25]" :paginator="true" :lazy="true"
-                    :totalRecords="totalRecords" scrollHeight="400px" tableStyle="min-width: 50rem" filterDisplay="menu"
-                    @page="onPageChange" @sort="onSort" @row-select="onRowSelect" @row-unselect="onRowUnselect">
+                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'SalesOrderID'" :rows-per-page="pageSize"
+                    :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems" :loading="fetchLoading" :lazy="true"
+                    :totalRecords="totalRecords" @page="onPageChange" selectionMode="multiple"
+                    @update:selection="onRowSelect" @sort="onSort" @search="fetchData" :menu="menuaa">
                     <template #header>
                         <Menubar :model="filteredMenuItems" class="hidden md:flex">
                             <template #start>
@@ -41,7 +41,6 @@
                             <div class="w-full">
                                 <form @submit.prevent="searchDetail">
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <!-- First row -->
                                         <div class="flex flex-col">
                                             <label class="font-bold mb-1" for="SONo">SalesOrder No.</label>
                                             <InputText id="SONo" v-model="searchSo.salesOrderNo" type="text"
@@ -63,7 +62,6 @@
                                             </Select>
                                         </div>
 
-                                        <!-- Second row -->
                                         <div class="flex flex-col">
                                             <label class="font-bold mb-1" for="pickingNo">Picking No.</label>
                                             <InputText id="pickingNo" v-model="searchSo.pickingNo" type="text"
@@ -86,7 +84,6 @@
                                                 class="form-input rounded-md shadow-sm" />
                                         </div>
 
-                                        <!-- Third row -->
                                         <div class="flex flex-col">
                                             <label class="font-bold mb-1" for="purchaseOrderDate">Purchase order
                                                 date</label>
@@ -116,47 +113,24 @@
                             </div>
                         </div>
                     </template>
-                    <Column v-if="selectedColumns.length > 0"  header="" style="width: 5%">
-                        <template #body="{ data }">
-                            <Button type="button" icon="pi pi-cog" class="p-button-text" @click="toggleMenu"
-                                aria-haspopup="true" aria-controls="overlay_menu" />
-                            <Menu ref="menu" id="overlay_menu" :model="menuaa" :popup="true" />
-                        </template>
-                    </Column>
-                    <Column v-if="selectedColumns.length > 0" selectionMode="multiple" headerStyle="width: 3rem"
-                        style="width: 5%"></Column>
-                    <Column v-for="col of selectedColumns" :key="col.field" :field="col.field" :header="col.header"
-                        :sortable="col.sortable" :style="col.style" :showFilterMenu="col.filterable"
-                        :filterField="col.filterField">
-                        <template #body="slotProps" v-if="col.field === 'SalesOrderNumber'">
-                            <router-link :to="`/SalesOrder/Detail/${slotProps.data.SalesOrderNumber}`" custom
-                                v-slot="{ navigate }">
-                                <Button :label="slotProps.data.SalesOrderNumber" link @click="navigate" class="p-0" />
-                            </router-link>
-                        </template>
-                        <template #body="slotProps" v-else-if="col.field === 'Status.StatusName'">
-                            <Tag :value="slotProps.data.Status.StatusName"
-                                :style="{ border: slotProps.data.Status.StatusBorderColor, backgroundColor: slotProps.data.Status.StatusBgColor, color: slotProps.data.Status.StatusFontColor, fontSize: slotProps.data.Status.StatusFontSize }" />
-                        </template>
-                        <template #filter="{ filterModel }" v-if="col.filterable">
-                            <InputText v-model="filterModel.value" type="text" class="p-column-filter"
-                                placeholder="Search" />
-                        </template>
-                    </Column>
-                    <template #footer>
-                        <div class="p-text-center p-m-4">
-                            <MultiSelect v-model="selectedColumns" :options="columns" optionLabel="header"
-                                @change="onColumnToggle" display="chip" placeholder="Select Columns" class="w-full" />
-                        </div>
+
+                    <template #Status="slotProps">
+                        <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.Status.StatusName" :style="{ 
+                                border: slotProps.data.Status.StatusBorderColor, 
+                                backgroundColor: slotProps.data.Status.StatusBgColor, 
+                                color: slotProps.data.Status.StatusFontColor, 
+                                fontSize: slotProps.data.Status.StatusFontSize 
+                            }" />
                     </template>
-                    <template #empty>
-                        <div class="p-text-center p-m-4">
-                            <Tag style="width: 100%; min-height: 70px" severity="secondary"
-                                value="No records available">
-                            </Tag>
-                        </div>
+
+                    <template #SalesOrderNumber="slotProps">
+                        <router-link :to="`/SalesOrder/Detail/${slotProps.data.SalesOrderNumber}`" custom
+                            v-slot="{ navigate }">
+                            <Button :label="slotProps.data.SalesOrderNumber" link @click="navigate" class="p-0" />
+                        </router-link>
                     </template>
-                </DataTable>
+
+                </ItemTable>
             </div>
         </div>
     </div>
@@ -170,6 +144,9 @@ import type { SalesOrderResource, SalesOrderSearch } from '@/Model/SalesOrder';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { Subscription } from 'rxjs';
+import ItemTable from '@/components/ItemTable.vue';
+import type { DataTablePageEvent } from 'primevue/datatable';
+import type { ColumnDef } from '@/Model/GlobalVariable/DataTable';
 
 let subscription: Subscription;
 const searchSo = reactive<SalesOrderSearch>({
@@ -186,22 +163,20 @@ const searchSo = reactive<SalesOrderSearch>({
     remark: ''
 })
 const toast = useToast();
-const dt = ref();
+const isSelectAll = ref(false);
 const router = useRouter();
 const items = ref<SalesOrderResource[]>([]);
 const currentPage = ref(1)
 const totalPages = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(5)
 const searchString = ref('')
 const sortKey = ref('SODate')
 const sortOrder = ref('DESC')
 const totalRecords = ref(0)
-const selectedItems = ref([]);
-const selectedTakingIds = ref<number[]>([]);
+const selectedItems = ref<any[]>([]);
 const loading = ref(false);
 const fetchLoading = ref(true);
 const error = ref(false);
-const menu = ref<InstanceType<typeof Menu> | null>(null);
 const permission = ref({
     APPROVE: true,
     EXPORT: true,
@@ -271,29 +246,18 @@ const onSort = (event: any) => {
     fetchData();
 };
 
-interface ColumnDef {
-  field: string;
-  header: string;
-  sortable?: boolean;
-  style?: string;
-  filterable?: boolean;
-  filterField?: string;
-}
-const selectedColumns = ref<ColumnDef[]>([]);
-const onColumnToggle = (event: { value: ColumnDef[] }) => {
-    selectedColumns.value = event.value;
-};
+
 const columns = ref<ColumnDef[]>([
-      { field: 'SalesOrderNumber', header: 'SalesOrder No.', sortable: true, style: 'width: 15%' },
-      { field: 'SalesOrderDate', header: 'Order Date', sortable: true, style: 'width: 15%' },
-      { field: 'CustomerName', header: 'Customer', sortable: true, style: 'width: 15%' },
-      { field: 'DeliveryDate', header: 'Delivery Date', sortable: true, style: 'width: 15%'},
-      { field: 'Status.StatusName', header: 'Status', sortable: true, style: 'width: 20%; text-align: center;' },
-      { field: 'OrderQuantity', header: 'Order Qty', sortable: true, style: 'width: 1%'},
-      { field: 'PickQuantity', header: 'Pick Qty', style: 'width: 10%'},
-      { field: 'ShipQuantity', header: 'Ship Qty', style: 'width: 10%'},
-      { field: 'PickQuantity - ShipQuantity', header: 'Balance', style: 'width: 10%'},
-      { field: 'TotalAmount', header: 'Total Amount', sortable: true, style: 'width: 15%'}
+      { field: 'SalesOrderNumber', header: 'SalesOrder No.', sortable: true, class: 'text-left' , headerClass: 'w-full min-w-36 text-center font-bold' },
+      { field: 'SalesOrderDate', header: 'Order Date', sortable: true, class: 'width: 15%', headerClass: 'w-full min-w-36 text-center font-bold' },
+      { field: 'CustomerName', header: 'Customer', sortable: true, class: 'width: 15%', headerClass: 'w-full min-w-36 text-center font-bold' },
+      { field: 'DeliveryDate', header: 'Delivery Date', sortable: true, class: 'width: 15%', headerClass: 'w-full min-w-36 text-center font-bold'},
+      { field: 'Status', header:  'Status', sortable: true, class: 'width: 20%; text-align: center;', headerClass: 'w-full min-w-36 text-center font-bold' },
+      { field: 'OrderQuantity', header: 'Order Qty', sortable: true, class: 'width: 1%; text-align: end;', headerClass: 'w-full min-w-20 text-center font-bold'},
+      { field: 'PickQuantity', header: 'Pick Qty', class: 'text-right', headerClass: 'w-full min-w-20 text-center font-bold'},
+      { field: 'ShipQuantity', header: 'Ship Qty', class: 'width: 10%; text-align: end;', headerClass: 'w-full min-w-20 text-center font-bold'},
+      { field: 'PickQuantity - ShipQuantity', header: 'Balance', class: 'width: 10%; text-align: end;', headerClass: 'w-full min-w-20 text-center font-bold'},
+      { field: 'TotalAmount', header: 'Total Amount', sortable: true, class: 'width: 15%; text-align: end;', headerClass: 'w-full min-w-28 text-center font-bold'}
     ]);
 
 const nestedMenuitems = ref([
@@ -338,11 +302,7 @@ const sortedItems = computed(() => {
     return items.value
 })
 
-const toggleMenu = (event: Event) => {
-    menu.value?.toggle(event);
-};
-
-const onPageChange = (event: { first: number, rows: number, page: number }) => {
+const onPageChange = (event: DataTablePageEvent) => {
     // Update state   
     currentPage.value = event.page + 1;
     pageSize.value = event.rows;
@@ -404,6 +364,9 @@ const fetchData = () => {
             toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
         },
         complete: () => {
+            if(isSelectAll.value){
+                selectedItems.value = items.value
+            }
             fetchLoading.value = false;
         }
     });
@@ -423,26 +386,13 @@ const search = () => {
     fetchData()
 }
 
-const onRowSelect = (event: any) => {
-    const takingId = event.data.TakingId;
-    if (!selectedTakingIds.value.includes(takingId)) {
-        selectedTakingIds.value.push(takingId);
-    }
-};
-
-const onRowUnselect = (event: any) => {
-    const takingId = event.data.TakingId;
-    const index = selectedTakingIds.value.indexOf(takingId);
-    if (index > -1) {
-        selectedTakingIds.value.splice(index, 1);
-    }
-    console.log('Selected TakingIds:', selectedTakingIds.value);
-    return selectedTakingIds.value;
+const onRowSelect = (value: any[]) => {
+    selectedItems.value = value;
+    isSelectAll.value = selectedItems.value.length === sortedItems.value.length
 };
 
 onMounted(() => {
     fetchData()
-    selectedColumns.value = [...columns.value];
 })
 
 onUnmounted(() =>{
@@ -450,8 +400,7 @@ onUnmounted(() =>{
 })
 
 watch(selectedItems, (newSelectedItems) => {
-    selectedTakingIds.value = newSelectedItems.map((item: any) => item.TakingId);
-    console.log('Updated Selected TakingIds:', selectedTakingIds.value);
+    
 });
 
 </script>
