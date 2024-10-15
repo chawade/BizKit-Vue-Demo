@@ -2,14 +2,15 @@
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import AuthService from '@/Service/authService';
+import AuthService from '@/service/authService';
 import Checkbox from 'primevue/checkbox';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import Button from 'primevue/button';   
-import { isLoading } from '@/Router';
+import { isLoading } from '@/router';
+import { useToast } from 'primevue/usetoast';
 
-
+const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 const email = ref('');
@@ -19,14 +20,18 @@ const loading = ref(false);
 
 const loginAuth = async () => {
     loading.value = true; // show spinner
-    try {
-        await AuthService.login(email.value, password.value);
-        router.push({ name: 'Dashboard' });
-    } catch (error:any) {
-        errorMessage.value = error.response?.data?.message || 'Login failed';
-    } finally {
-        loading.value = false; // hide spinner
-    }
+    AuthService.login(email.value, password.value).then((result) => {
+        if (result.success) {
+            router.push({ name: 'Dashboard' });
+        } else {
+            toast.add({ severity: 'error', summary: 'Login Failed' , detail: result.message, life: 5000 });
+        }
+    }).catch((error) => {
+        toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 5000 });
+    }).finally(() => {
+        loading.value = false;
+    });
+
 };
 
 onMounted(() => {
@@ -91,6 +96,7 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    <Toast></Toast>
 </template>
 
 <style scoped>

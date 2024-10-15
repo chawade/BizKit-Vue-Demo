@@ -24,7 +24,7 @@ import InputNumber from "primevue/inputnumber";
 import Textarea from "primevue/textarea";
 import StyleClass from 'primevue/styleclass';
 import SelectButton from "primevue/selectbutton";
-import router from "./Router";
+import router from "./router";
 import ConfirmDialog from 'primevue/confirmdialog';
 import Toast from 'primevue/toast';
 import Chart from 'primevue/chart'; 
@@ -54,7 +54,9 @@ import Tooltip from 'primevue/tooltip';
 import BlockUI from "primevue/blockui";
 import ContextMenu from "primevue/contextmenu";
 import Image from "primevue/image";
+import { createPinia } from "pinia";
 
+const pinia = createPinia()
 const app: VueApp = createApp(App);
 
 app.use(router);
@@ -73,55 +75,6 @@ app.directive('tooltip', Tooltip);
 app.directive('styleclass', StyleClass);
 app.use(ToastService);
 app.use(ConfirmationService);
-
-// Register PrimeVue components
-const components = {
-  InputGroup,
-  Menu,
-  InputText,
-  Button,
-  Column,
-  DataTable,
-  Breadcrumb,
-  Checkbox,
-  Password,
-  SelectButton,
-  ConfirmDialog,
-  Toast,
-  Chart,
-  Paginator,
-  Tag,
-  ProgressSpinner,
-  Panel,
-  InputGroupAddon,
-  DatePicker,
-  Select,
-  Menubar,
-  Card,
-  Tabs,
-  TabPanel,
-  TabPanels,
-  TabList,
-  Tab,
-  MegaMenu,
-  ColumnGroup,
-  Row,
-  Badge,
-  InputIcon,
-  IconField,
-  MultiSelect,
-  InputNumber,
-  Textarea,
-  Toolbar,
-  Message,
-  Fluid,
-  BlockUI,
-  ContextMenu,
-  Image
-};
-
-Object.entries(components).forEach(([name, component]) => {
-  app.component(name, component);
-});
+app.use(pinia)
 
 app.mount("#app");

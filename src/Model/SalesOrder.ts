@@ -49,44 +49,50 @@ export interface SalesOrderResource {
 }
 
 export interface SalesOrderItemResource {
-    salesOrderItemID: number;
-    salesOrderNumber: string;
-    companyID: number;
-    lineNumber: number;
-    itemID: number;
-    itemCode: string;
-    itemname: string;
-    deliveryDate: Date;
-    unitCost: number;
-    baseUnitPrice: number;
-    unitPrice: number;
-    avaliableQty: number;
-    orderQty: number;
-    unit: string;
-    unitID: number;
-    baseUnit: string;
-    baseUnitID: number;
-    conversionQty: number;
-    baseUnitQty: number;
-    discountRate: number;
-    discountAmount: number;
-    taxID: number;
-    taxCode: string;
-    taxRate: number;
-    taxAmount: number;
-    lineTotal: number;
-    description: string;
-    image: string;
-    shippedQty: number;
-    shippedAmount: number;
-    balanceQty: number;
-    balanceAmount: number;
-    parentLineId: number;
-    freeItemFlag: boolean;
-    trackStock: boolean;
-    selectItem: SelectItem;
-    DDLItem: any[];
+  SalesOrderItemID: number;
+  SalesOrderNumber: string;
+  CompanyID: number;
+  LineNumber: number;
+  ItemId: number; // Kept the original casing for 'Id'
+  ItemCode: string;
+  ItemName: string; // 'name' stays as originally written
+  DeliveryDate: Date;
+  UnitCost: number;
+  BaseUnitPrice: number;
+  UnitPrice: number;
+  AvaliableQty: number; // Preserved the original spelling
+  OrderQty: number;
+  Unit: string;
+  UnitID: number;
+  BaseUnit: string;
+  BaseUnitID: number;
+  ConversionQty: number;
+  BaseUnitQty: number;
+  DiscountRate: string;
+  DiscountAmount: number;
+  TaxID: number;
+  TaxCode: string;
+  TaxRate: number;
+  TaxAmount: number;
+  LineTotal: number;
+  Description: string;
+  Image: string;
+  ShippedQty: number;
+  ShippedAmount: number;
+  BalanceQty: number;
+  BalanceAmount: number;
+  ParentLineId: number;
+  FreeItemFlag: boolean;
+  TrackStock: boolean;
+
+  SelectTax: any;
+  SelectItem: any;
+  SelectUOM: any;
+  DDLItem: any[];
+  DDLUOM: any[];
+  DDLTAX: any[];
 }
+    
 
 export interface SalesOrderSearch {
     salesOrderNo: string
@@ -132,6 +138,7 @@ export interface SalesOrderSearch {
     InternalMemo: string;
     MemoDate: Date;
     MemoBy: string;
+    Remark?: string;
     IsPriceExcludeVat: boolean;
     SalesOrderItemResource: SalesOrderItemResource[]; // Array of SalesOrderItemResource
 }

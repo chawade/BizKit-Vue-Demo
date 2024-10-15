@@ -100,7 +100,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import type { Ref } from 'vue';
-import StockTakingService from '@/Service/stockTakingService'
+import StockTakingService from '@/service/stockTakingService'
 
 const items = ref([])
 const currentPage = ref<number>(1)

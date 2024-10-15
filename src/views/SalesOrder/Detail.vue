@@ -25,9 +25,11 @@
 
         <div class="text-right">
           <div class="font-bold text-2xl">{{ salesOrder?.SalesOrderNumber }}</div>
-          <Tag :value="salesOrder?.Status.StatusName" :style="{
-            border: salesOrder?.Status.StatusBorderColor, backgroundColor: salesOrder?.Status.StatusBgColor,
-            color: salesOrder?.Status.StatusFontColor, fontSize: salesOrder?.Status.StatusFontSize
+          <Tag class="min-w-28 max-w-28 text-wrap" :value="salesOrder?.Status.StatusName" :style="{
+            backgroundColor: statusTheme(salesOrder?.Status.StatusId ?? 0).bgColor,
+            border: `1px solid ${statusTheme(salesOrder?.Status.StatusId ?? 0).borderColor}`,
+            color: statusTheme(salesOrder?.Status.StatusId ?? 0).fontColor,
+            fontSize: statusTheme(salesOrder?.Status.StatusId ?? 0).fontSize
           }" />
         </div>
       </div>
@@ -135,6 +137,8 @@
               <Tab value="1">Order</Tab>
               <Tab value="2">Pick</Tab>
               <Tab value="3">Ship</Tab>
+              <Tab value="4">Attach File</Tab>
+              <Tab value="5">Edit History</Tab>
             </TabList>
             <TabPanel :lazy="true" value="1" header="Order">
               <div class="row invoice-body mb-8">
@@ -158,10 +162,12 @@
                       <Menubar :model="menuPicking" class="mb-5">
                         <template #end>
                           <div class="flex items-center gap-2">
-                            <Tag :value="salesOrder?.Status.StatusName" :style="{
-                            border: salesOrder?.Status.StatusBorderColor, backgroundColor: salesOrder?.Status.StatusBgColor,
-                            color: salesOrder?.Status.StatusFontColor, fontSize: salesOrder?.Status.StatusFontSize
-                          }" />
+                            <Tag class="min-w-28 max-w-28 text-wrap" :value="salesOrder.Status.StatusName" :style="{
+                            backgroundColor: statusTheme(salesOrder.Status.StatusId ?? 0).bgColor,
+                            border: `1px solid ${statusTheme(salesOrder.Status.StatusId ?? 0).borderColor}`,
+                            color: statusTheme(salesOrder.Status.StatusId ?? 0).fontColor,
+                            fontSize: statusTheme(salesOrder.Status.StatusId ?? 0).fontSize
+                        }" />
                           </div>
                         </template>
                       </Menubar>
@@ -224,6 +230,27 @@
                 eligendi optio cumque nihil impedit quo minus.
               </p>
             </TabPanel>
+            <TabPanel value="4" header="Attach File" :lazy="true">
+              <p class="m-0">
+                At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum
+                deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non
+                provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.
+                Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est
+                eligendi optio cumque nihil impedit quo minus.
+              </p>
+            </TabPanel>
+            <TabPanel value="5" header="Edit History" :lazy="true">
+              <ScrollPanel style="width: 100%; height: 200px">
+                <Timeline :value="operationLog" class="p-5" align="alternate" >
+                  <template #opposite="slotProps">
+                    <small class="text-surface-500 dark:text-surface-400">{{ slotProps.item.ActionDate }}</small>
+                  </template>
+                  <template #content="slotProps" class="w-96">
+                    <Message severity="info">{{ slotProps.item.Action }} by {{ slotProps.item.Email }}</Message>
+                  </template>
+                </Timeline>
+              </ScrollPanel>
+            </TabPanel>
           </Tabs>
         </Suspense>
 
@@ -272,14 +299,16 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import SalesOrderService from '@/Service/salesorderService';
+import SalesOrderService from '@/service/salesorderService';
 import type { SalesOrderResource } from '@/Model/SalesOrder';
 import type { PickingSearch } from '@/Model/Picking';
 import { useToast } from 'primevue/usetoast';
 import { Subscription } from 'rxjs';
+import StatusService from '@/service/statusService';
+import baseService from '@/service/baseService';
 
 let subscription: Subscription;
-
+const statusService = new StatusService();
 const salesOrder = ref<SalesOrderResource>();
 const selectedTakingIds = ref<number[]>([]);
 const selectedItems = ref([]);
@@ -301,6 +330,7 @@ const pickingNo = ref('');
 const shippingNo = ref('');
 const History = ref([]);
 const expandedRowGroups = ref();
+const operationLog = ref();
 const menuPicking = ref([
   {
     label: 'Import Picking',
@@ -373,6 +403,10 @@ const onPageChange = (event: { first: number, rows: number, page: number }) => {
   loadPickData();
 }
 
+const statusTheme = (statusId:number) => {
+    return statusService.getStatusTheme(statusId)
+}
+
 const filteredMenuItems = computed(() => {
   return nestedMenuitems.value.filter(item => {
     if (item.label === 'Approve') {
@@ -417,6 +451,23 @@ const loadPickData = async () => {
       }
     })
 };
+
+const getOperationLog = () => {
+  subscription = baseService.getOperationLog(SalesOrderNo).subscribe({
+    next: (result) =>{
+      if(result.IsSuccess){
+        operationLog.value = result.Data;
+        console.log(operationLog.value);
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  })
+}
 
 const fetchData = async () => {
   fetchLoading.value = true;
@@ -531,6 +582,7 @@ const newStockTaking = () => {
 
 onMounted(() => {
   fetchData()
+  getOperationLog()
 })
 </script>
 
