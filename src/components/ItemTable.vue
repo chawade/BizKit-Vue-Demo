@@ -18,16 +18,17 @@
         <Button link label="ล้างการเลือก" @click="clearSelection" />
       </Tag>
     </template>
-
+    
     <!-- Body -->
     <Column v-if="dataTableStore.selectedColumns.length > 0" header="" style="width: 5%">
       <template #body="{ data }">
         <Button type="button" icon="pi pi-cog" class="p-button-text" @click="toggleMenu" aria-haspopup="true"
-          aria-controls="overlay_menu" />
+        aria-controls="overlay_menu" />
         <Menu ref="menuRef" id="overlay_menu" :model="dataTableStore.menu" :popup="true" />
       </template>
     </Column>
-
+    
+    <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
     <!-- Column rendering loop -->
     <Column v-for="col in dataTableStore.selectedColumns" :key="col.field" :field="col.field" :sortable="col.sortable"
       :style="col.class" :show-filter-menu="col.filterable" :filter-field="col.filterField">
