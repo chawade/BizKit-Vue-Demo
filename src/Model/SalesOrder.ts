@@ -68,7 +68,7 @@ export interface SalesOrderItemResource {
   BaseUnitID: number;
   ConversionQty: number;
   BaseUnitQty: number;
-  DiscountRate: number;
+  DiscountRate: string;
   DiscountAmount: number;
   TaxID: number;
   TaxCode: string;
@@ -81,11 +81,16 @@ export interface SalesOrderItemResource {
   ShippedAmount: number;
   BalanceQty: number;
   BalanceAmount: number;
-  ParentLineId: number; // Kept 'Id' in lowercase
+  ParentLineId: number;
   FreeItemFlag: boolean;
   TrackStock: boolean;
-  SelectItem: SelectItem;
+
+  SelectTax: any;
+  SelectItem: any;
+  SelectUOM: any;
   DDLItem: any[];
+  DDLUOM: any[];
+  DDLTAX: any[];
 }
     
 
@@ -133,6 +138,7 @@ export interface SalesOrderSearch {
     InternalMemo: string;
     MemoDate: Date;
     MemoBy: string;
+    Remark?: string;
     IsPriceExcludeVat: boolean;
     SalesOrderItemResource: SalesOrderItemResource[]; // Array of SalesOrderItemResource
 }

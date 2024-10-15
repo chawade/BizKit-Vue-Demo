@@ -328,12 +328,12 @@ const searchDetail = () => {
     subscription = SalesOrderService.searchDetail(searchSo).subscribe({
         next: (result) => {
             debugger;
-            if (result.IsSuccess) {
-                items.value = result.Data || [];
-                totalRecords.value = result.Pagination?.TotalRecords ?? 0;
-                totalPages.value = result.Pagination?.TotalPages ?? 0;
+            if (result.isSuccess) {
+                items.value = result.data || [];
+                totalRecords.value = result.pagination?.totalRecords ?? 0;
+                totalPages.value = result.pagination?.totalPages ?? 0;
             } else {
-                toast.add({ severity: 'error', summary: result.StatusCode.toString() , detail: result.Error?.Message, life: 2000 });
+                toast.add({ severity: 'error', summary: result.statusCode.toString() , detail: result.error?.message, life: 2000 });
             }
         },
         error: (error) => {
@@ -348,18 +348,15 @@ const searchDetail = () => {
 const fetchData = () => {
     fetchLoading.value = true;
     const endpoint = `${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`;
-    items.value = [];
-    totalRecords.value = 0;
-    totalPages.value = 0;
     subscription = SalesOrderService.search(endpoint).subscribe({
         next: (result) => {
-            if (result.IsSuccess) {
-                items.value = result.Data || [];
-                totalRecords.value = result.Pagination?.TotalRecords ?? 0;
-                totalPages.value = result.Pagination?.TotalPages ?? 0;
+            if (result.isSuccess) {
+                items.value = result.data || [];
+                totalRecords.value = result.pagination?.totalRecords ?? 0;
+                totalPages.value = result.pagination?.totalPages ?? 0;
             } else {
-                const statusCode = result.StatusCode.toString() || 'Unknown';
-                const errorMessage = result.Error?.Message || 'An error occurred';
+                const statusCode = result.statusCode.toString() || 'Unknown';
+                const errorMessage = result.error?.message || 'An error occurred';
                 toast.add({ severity: 'error', summary: statusCode , detail: errorMessage, life: 2000 });
             }
         },

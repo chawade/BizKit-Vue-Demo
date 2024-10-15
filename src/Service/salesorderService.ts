@@ -1,11 +1,11 @@
+import ErrorService from "./errorService";
 import authService from "@/service/authService";
 import { HttpStatusCode, type AxiosInstance, type AxiosResponse } from "axios";
 import type { Error, Result } from "@/Model/Result";
 import { Observable, from, of } from "rxjs";
 import { map, catchError, tap, switchMap } from "rxjs/operators";
-import type { SalesOrderResource, SalesOrderSearch } from "@/Model/SalesOrder";
+import type { SalesOrderResource, SalesOrderSaveResource, SalesOrderSearch } from "@/Model/SalesOrder";
 import type { PickingSearch } from "@/Model/Picking";
-import ErrorService from "./errorService";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/salesorder`;
@@ -78,6 +78,17 @@ class SalesOrderService {
     );
   }
 
+  saveSalesOrder(salesOrder: SalesOrderSaveResource): Observable<Result<any>> {
+    const url = `${baseURL}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.post<Result<any>>(url,salesOrder))
+      ),
+      map((response: AxiosResponse<Result<any>>) => response.data),
+      tap(() => this.errorService.log(`Save SO ${salesOrder.SalesOrderNumber}`)),
+      catchError(this.errorService.handleError<any>("Save sales order"))
+    );
+  }
   
 }
 

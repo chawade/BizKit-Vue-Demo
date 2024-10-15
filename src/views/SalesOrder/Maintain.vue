@@ -110,7 +110,7 @@
                           Term</label>
                         <div class="col-span-12 md:col-span-8">
                           <SelectCustom v-model="selectPaymentTerm" :options="ddlPaymentTerm" :loading="fetchLoading"
-                            placeholder="Select a Warehouse" @filter="getPaymentTermList" optionLabel="name"
+                            placeholder="Select a payment term" @filter="getPaymentTermList" optionLabel="name"
                             dataKey="code" />
                         </div>
                       </div>
@@ -119,7 +119,15 @@
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Sales
                           Person</label>
                         <div class="col-span-12 md:col-span-8">
-                          <InputText id="name3" type="text" />
+                          <SelectCustom v-model="selectPIC" :options="ddlPIC" :loading="fetchLoading"
+                            placeholder="Select a sales person" @filter="getPIC" optionLabel="name" dataKey="code">
+                            <template #option="slotProps">
+                              <div class="flex flex-col gap-2">
+                                <label for="username">{{ slotProps.option.name }}</label>
+                                <small id="username-help">{{ slotProps.option.code }}</small>
+                              </div>
+                            </template>
+                          </SelectCustom>
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
@@ -128,7 +136,7 @@
                           From</label>
                         <div class="col-span-12 md:col-span-8">
                           <SelectCustom v-model="selectWarehouse" :options="ddlWarehouse" :loading="fetchLoading"
-                            placeholder="Select a Warehouse" @filter="getWarehouseList" optionLabel="name"
+                            placeholder="Select a Warehouse" @filter="getWarehouseList" optionLabel="name" @update:model-value="salesOrderSave.WarehouseID = parseInt(selectWarehouse?.code ?? '0');"
                             dataKey="code" :invalid="!selectWarehouse" />
                         </div>
                       </div>
@@ -213,9 +221,10 @@
                         <div class="row invoice-body mb-8">
                           <div class="col-xs-12 table-wrapper">
                             <ContextMenu ref="cm" :model="menuModel" @hide="selectedProduct = null" />
-                            <DataTable :value="salesOrderItem" tableStyle="min-width: 50rem;" contextMenu
-                              v-model:contextMenuSelection="selectedProduct" scrollable scroll-height="30rem"
-                              columnResizeMode="fit" @rowContextmenu="onRowContextMenu" :rowclass="rowClass">
+                            <DataTable :value="salesOrderSave.SalesOrderItemResource" tableStyle="min-width: 50rem;"
+                              contextMenu v-model:contextMenuSelection="selectedProduct" scrollable
+                              scroll-height="30rem" columnResizeMode="fit" @rowContextmenu="onRowContextMenu"
+                              :rowclass="rowClass">
 
                               <template #header>
                                 <Menubar class="hidden md:flex">
@@ -236,11 +245,11 @@
                               <Column field="selectItem" header="Item Code" class="min-w-60">
                                 <template #body="{ data, index }">
 
-                                  <SelectCustom v-model="data.selectItem" :options="data.DDLItem"
+                                  <SelectCustom v-model="data.SelectItem" :options="data.DDLItem"
                                     :disabled="!selectWarehouse" :loading="fetchLoading" placeholder="Select an item"
                                     @filter="(event) => getItemList(event, index)" optionLabel="ItemCode"
                                     dataKey="itemId" :key="`code-${index}`"
-                                    @update:model-value="itemSelecChange(data.selectItem,index)">
+                                    @update:model-value="itemSelecChange(data.SelectItem,index)">
 
                                     <template #option="slotProps">
                                       <Card class="w-[400px] min-w-56">
@@ -297,15 +306,16 @@
                               <Column field="OrderQty" header="Order Qty" class="w-40">
                                 <template #body="{ data, index }">
                                   <InputNumber v-model="data.OrderQty" class="min-w-36" @focus="onFieldFocus(index)"
-                                    @blur="onFieldBlur" :key="`orderQty-${index}`" /> <!-- key added here -->
+                                    @blur="onFieldBlur(index)" @update:modelValue="calculateLineTotal(data)"
+                                    :key="`orderQty-${index}`" /> <!-- key added here -->
                                 </template>
                               </Column>
 
-                              <Column field="selectItem" header="UOM" class="min-w-60">
+                              <Column field="selectUOM" header="UOM" class="min-w-60">
                                 <template #body="{ data, index }">
-                                  <Select placeholder="Select a UOM" @focus="onFieldFocus(index)"
-                                  @blur="onFieldBlur" :key="`UOM-${index}`" ></Select>
-
+                                  <Select placeholder="Select a UOM" v-model="data.SelectUOM" :options="data.DDLUOM"
+                                    optionLabel="ItemName" @update:modelValue="data.Unit = data.SelectUOM.ItemName; data.UnitID = data.SelectUOM.ItemID;" 
+                                    dataKey="ItemID" :key="`UOM-${index}`"></Select>
                                 </template>
                               </Column>
 
@@ -313,36 +323,75 @@
                               <Column field="UnitPrice" header="Unit Price">
                                 <template #body="{ data, index }">
                                   <InputNumber v-model="data.UnitPrice" class="min-w-36" mode="currency" currency="THB"
-                                    @focus="onFieldFocus(index)" @blur="onFieldBlur" :key="`unitPrice-${index}`" />
+                                    locale="th-TH" @focus="onFieldFocus(index)" @blur="onFieldBlur(index)"
+                                    @update:modelValue="calculateLineTotal(data)" :key="`unitPrice-${index}`" />
                                   <!-- key added here -->
                                 </template>
                               </Column>
 
                               <Column field="DiscountRate" header="Discount">
                                 <template #body="{ data, index }">
-                                  <InputNumber v-model="data.DiscountRate" class="min-w-36"
-                                    @focus="onFieldFocus(index)" @blur="onFieldBlur" :key="`DiscountRate-${index}`" />
+                                  <InputText v-model="data.DiscountRate" class="min-w-36" @focus="onFieldFocus(index)"
+                                    @blur="onFieldBlur(index)" @update:modelValue="calculateLineTotal(data)"
+                                    :key="`DiscountRate-${index}`" />
                                   <!-- key added here -->
                                 </template>
                               </Column>
 
                               <Column field="TaxID" header="Vat">
                                 <template #body="{ data, index }">
-                                  <InputNumber v-model="data.TaxID" class="min-w-36"
-                                    @focus="onFieldFocus(index)" @blur="onFieldBlur" :key="`Vat-${index}`" />
+                                  <!-- <InputNumber v-model="data.TaxID" class="min-w-36" @focus="onFieldFocus(index)"
+                                    @blur="onFieldBlur(index)" @update:modelValue="calculateLineTotal(data)" :key="`Vat-${index}`" /> -->
+                                  <Select placeholder="Select a Tax" v-model="data.SelectTax" :options="data.DDLTAX"
+                                    optionLabel="TaxName" @update:modelValue="calculateLineTotal(data)"
+                                    dataKey="TaxCode" :key="`Vat-${index}`"></Select>
                                   <!-- key added here -->
                                 </template>
                               </Column>
 
                               <Column field="LineTotal" header="Total" class="min-w-28">
+                                <template #body="{ data, index }">
+                                  {{ formatCurrency(data.LineTotal) }}
+                                </template>
                               </Column>
-
                             </DataTable>
                           </div>
                         </div>
                       </TabPanel>
                     </Tabs>
                   </Suspense>
+                </div>
+                <div class="flex flex-col gap-x-20 lg:flex-row w-full">
+                  <!-- Left Card -->
+                  <div class="flex flex-col w-full lg:w-1/2 gap-4 p-2">
+                    <div class="flex flex-col gap-2">
+                      <label for="Remark" class="font-semibold">Remark</label>
+                      <Textarea id="Remark" rows="5" cols="30" v-model="salesOrderSave.Remark"
+                        aria-describedby="username-help" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                      <label for="Memo" class="font-semibold">Internal Memo</label>
+                      <Textarea id="Memo" rows="5" cols="30" v-model="salesOrderSave.InternalMemo"
+                        aria-describedby="username-help" />
+                    </div>
+                  </div>
+
+                  <!-- Right Card -->
+                  <div class="flex flex-col w-full lg:w-1/2 gap-4 p-2">
+                    <div class="grid grid-cols-12 gap-2">
+                      <label for="name3"
+                        class="flex items-center font-semibold col-span-12 mb-2 md:col-span-2 md:mb-0">Subtotal</label>
+                      <div class="col-span-12 md:col-span-10">
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-12 gap-2">
+                      <label for="email3"
+                        class="flex items-center font-semibold col-span-12 mb-2 md:col-span-2 md:mb-0">Discount</label>
+                      <div class="col-span-12 md:col-span-10">
+                        <InputText id="email3" type="text" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </Fluid>
             </form>
@@ -367,9 +416,12 @@ import router from '@/router';
 import ItemService from '@/service/ItemService';
 import type { ItemSearch } from '@/Model/Item';
 import DatePicker from 'primevue/datepicker';
-import CustomerService from '@/service/CustomerService';
-import WarehouseService from '@/service/WarehouseService';
-import PaymentTermService from '@/service/PaymentTermService';
+import CustomerService from '@/service/customerService';
+import WarehouseService from '@/service/warehouseService';
+import PaymentTermService from '@/service/paymentTermService';
+import userService from '@/service/userService';
+import taxService from '@/service/taxService';
+import salesorderService from '@/service/salesorderService';
 
 let subscription: Subscription;
 const setStickyButtons = inject<any>('setStickyButtons');
@@ -392,16 +444,14 @@ const SalesOrderNo: string = String(route.params.id);
 const ddlCustomer = ref<SelectItem[]>([]);
 const ddlPaymentTerm = ref<SelectItem[]>([]);
 const ddlWarehouse = ref<SelectItem[]>([]);
-const ddlItem = ref<SelectItem[]>([]);
-
+const ddlPIC = ref<SelectItem[]>([]);
 const fetchLoading = ref(false);
 
 const selectCustomer = ref<SelectItem | null>();
 const selectPaymentTerm = ref<SelectItem | null>();
 const selectWarehouse = ref<SelectItem | null>();
-const selectItem = ref<SelectItem | null>();
+const selectPIC = ref<SelectItem | null>();
 
-const salesOrderItem = ref<SalesOrderItemResource[]>([]);
 const salesOrderSave = ref<SalesOrderSaveResource>({
   SalesOrderID: 0,
   SalesOrderNumber: '',
@@ -441,7 +491,7 @@ const onFieldFocus = (index: number) => {
   focusedRowIndex.value = index;
 };
 
-const onFieldBlur = () => {
+const onFieldBlur = (index: number) => {
   focusedRowIndex.value = null;
 };
 
@@ -463,16 +513,19 @@ const menuModel = ref([
 ]);
 
 const itemSelecChange = (event: SalesOrderItemResource,index: number) =>{
-  console.log(event.ItemId);
   fetchLoading.value = true;
   subscription = ItemService.getitemByItemID(event.ItemId).subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        salesOrderItem.value[index].ItemName = result.Data.ItemName;
-        salesOrderItem.value[index].AvaliableQty = result.Data.AvailableQty;
-        salesOrderItem.value[index].UnitPrice = result.Data.UnitPrice;
+      if (result.isSuccess) {
+        salesOrderSave.value.SalesOrderItemResource[index].ItemId = result.data.itemId;
+        salesOrderSave.value.SalesOrderItemResource[index].ItemCode = result.data.itemCode;
+        salesOrderSave.value.SalesOrderItemResource[index].ItemName = result.data.itemName;
+        salesOrderSave.value.SalesOrderItemResource[index].AvaliableQty = result.data.availableQty;
+        salesOrderSave.value.SalesOrderItemResource[index].UnitPrice = result.data.unitPrice;
+        getUOMByItemId(event.ItemId,index);
+        getTaxList(0,index);
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {
@@ -482,6 +535,35 @@ const itemSelecChange = (event: SalesOrderItemResource,index: number) =>{
       fetchLoading.value = false;
     }
   });
+}
+
+const getTaxList = (taxId: number,index: number) => {
+  subscription = taxService.getTaxList(taxId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        salesOrderSave.value.SalesOrderItemResource[index].DDLTAX = result.data;
+      } 
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    }
+  })
+}
+
+const getUOMByItemId = (itemId: number,index: number) => {
+  subscription = ItemService.getUOMByItemId(itemId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        salesOrderSave.value.SalesOrderItemResource[index].DDLUOM = result.data;
+        console.log(salesOrderSave.value.SalesOrderItemResource[index].DDLUOM);
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    }
+  })
 }
 
 
@@ -502,12 +584,12 @@ const onSelectCustomer = (event: SelectItem) => {
   fetchLoading.value = true;
   subscription = CustomerService.getCustomerById(parseInt(event.code)).subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
+      if (result.isSuccess) {
         if (salesOrderSave.value) {
-          salesOrderSave.value.Customer = result.Data;
+          salesOrderSave.value.Customer = result.data;
         }
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {
@@ -525,10 +607,10 @@ const getCustomerList = async (event: string) => {
   fetchLoading.value = true;
   subscription = CustomerService.getCustomerList(endpoint).subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        ddlCustomer.value = CloneCustomerDDL(result.Data || []);
+      if (result.isSuccess) {
+        ddlCustomer.value = CloneCustomerDDL(result.data || []);
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {
@@ -544,10 +626,10 @@ const getPaymentTermList = async (termId: string) => {
   fetchLoading.value = true;
   subscription = PaymentTermService.getPaymentTermList(parseInt(termId)).subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        ddlPaymentTerm.value = ClonePaymentTermDDL(result.Data || []);
+      if (result.isSuccess) {
+        ddlPaymentTerm.value = ClonePaymentTermDDL(result.data || []);
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {
@@ -563,10 +645,10 @@ const getWarehouseList = async () => {
   fetchLoading.value = true;
   subscription = WarehouseService.getWarehouseList().subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        ddlWarehouse.value = CloneWarehouseDDL(result.Data || []);
+      if (result.isSuccess) {
+        ddlWarehouse.value = CloneWarehouseDDL(result.data || []);
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {
@@ -582,8 +664,8 @@ const fetchData = async () => {
   fetchLoading.value = true;
   subscription = SalesOrderService.get(SalesOrderNo).subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        salesOrderSave.value = result.Data;
+      if (result.isSuccess) {
+        salesOrderSave.value = result.data;
         if (salesOrderSave.value) {
           const customer = salesOrderSave.value.Customer
           const paymentTerm = salesOrderSave.value.PaymentTerm
@@ -611,7 +693,7 @@ const fetchData = async () => {
         }
 
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {
@@ -622,6 +704,26 @@ const fetchData = async () => {
     }
   });
 };
+
+const getPIC = async (name: string) => {
+  fetchLoading.value = true;
+  subscription = userService.getUserList(name).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        debugger
+        ddlPIC.value = CloneUserDDL(result.data || []);
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  })
+}
 
 const getItemList = async (event: string, rowIndex: number) => {
   fetchLoading.value = true;
@@ -637,11 +739,10 @@ const getItemList = async (event: string, rowIndex: number) => {
 
   subscription = ItemService.getitemFilter(search).subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        salesOrderItem.value[rowIndex].DDLItem = result.Data;
-        console.log(salesOrderItem.value[rowIndex].DDLItem)
+      if (result.isSuccess) {
+        salesOrderSave.value.SalesOrderItemResource[rowIndex].DDLItem = result.data;
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {
@@ -680,6 +781,15 @@ const CloneCustomerDDL = (options: Array<any>): Array<SelectItem> => {
   return data.length > 0 ? data : [];
 }
 
+const CloneUserDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.FirstName == "" ? "--All--" : option.FirstName + ' ' + option.LastName,
+    code: option.Email == "" ? "0" : option.Email,
+  }));
+
+  return data.length > 0 ? data : [];
+}
+
 const addRow = () => {
   let soItem: SalesOrderItemResource = {
     SalesOrderItemID: 0,
@@ -701,7 +811,7 @@ const addRow = () => {
     BaseUnitID: 0,
     ConversionQty: 0,
     BaseUnitQty: 0,
-    DiscountRate: 0,
+    DiscountRate: '',
     DiscountAmount: 0,
     TaxID: 0,
     TaxCode: '',
@@ -717,19 +827,60 @@ const addRow = () => {
     ParentLineId: 0,
     FreeItemFlag: false,
     TrackStock: false,
-    SelectItem: {
-      code: '',
-      name: ''
-    },
-    DDLItem: []
+    SelectItem: {},
+    SelectUOM:  {},
+    SelectTax: {},
+    DDLItem: [],
+    DDLUOM: [],
+    DDLTAX: []
   };
 
-  salesOrderItem.value.push(soItem);
+  salesOrderSave.value.SalesOrderItemResource.push(soItem);
 }
 
 const SaveSalesOrder = () => {
-  console.log('save');
+  console.log(salesOrderSave.value);
+  subscription = salesorderService.saveSalesOrder(salesOrderSave.value).subscribe({
+    next: (result) => {
+      if (result.isSuccess) { 
+        debugger
+        router.push({ name: 'SalesOrderDetail', params: result.data})
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
 }
+
+const calculateLineTotal = (data: SalesOrderItemResource) => {
+  const quantity = data.OrderQty || 0;
+  const unitPrice = data.UnitPrice || 0;
+  data.TaxCode = data.SelectTax.TaxCode;
+  data.TaxID = data.SelectTax.TaxId || 0;
+  data.TaxRate = data.SelectTax.Value || 0;
+  data.TaxAmount = data.TaxRate / 100;
+
+  const subtotal = quantity * unitPrice;
+  if (typeof data.DiscountRate === 'string' && data.DiscountRate.includes('%')) {
+    const discountPercentage = parseFloat(data.DiscountRate) || 0;
+    data.DiscountAmount = subtotal * (discountPercentage / 100);
+  } else {
+    data.DiscountAmount = parseFloat(data.DiscountRate as string) || 0;
+  }
+  const vatAmount = (subtotal - data.DiscountAmount) * data.TaxAmount;
+  
+  data.LineTotal = subtotal - data.DiscountAmount + vatAmount;
+};
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(value);
+};
 
 onUnmounted(() => {
   if (subscription)

@@ -143,6 +143,7 @@ const loadSelectedColumns = () => {
 
 // Load selected columns when component mounts
 onMounted(() => {
+  debugger
   loadSelectedColumns();
   dataTableStore.setTotalRecords(props.totalRecords);
 });

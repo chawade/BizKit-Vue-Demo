@@ -5,6 +5,7 @@ import { Observable, from, of } from "rxjs";
 import { map, catchError, tap, switchMap } from "rxjs/operators";
 import ErrorService from "./errorService";
 import type { ItemSearch } from "@/Model/Item";
+import type { SelectItem } from "@/Model/BaseResource";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/item`;
@@ -25,8 +26,8 @@ class ItemService {
           from(axiosInstance.get<Result<any[]>>(url))
         ),
         map((response: AxiosResponse<Result<any[]>>) => response.data),
-        tap(() => this.errorService.log("Fetched customer dropdown")),
-        catchError(this.errorService.handleError<any[]>("customer dropdown"))
+        tap(() => this.errorService.log("Fetched item list")),
+        catchError(this.errorService.handleError<any[]>("item list"))
       );
   }
 
@@ -37,8 +38,8 @@ class ItemService {
           from(axiosInstance.get<Result<any[]>>(url))
         ),
         map((response: AxiosResponse<Result<any[]>>) => response.data),
-        tap(() => this.errorService.log("Fetched customer dropdown")),
-        catchError(this.errorService.handleError<any[]>("customer dropdown"))
+        tap(() => this.errorService.log("Fetched item detail")),
+        catchError(this.errorService.handleError<any[]>("item detail"))
       );
   }
 
@@ -49,8 +50,20 @@ class ItemService {
           from(axiosInstance.post<Result<any[]>>(url,endpoint))
         ),
         map((response: AxiosResponse<Result<any[]>>) => response.data),
-        tap(() => this.errorService.log("Fetched customer dropdown")),
-        catchError(this.errorService.handleError<any[]>("customer dropdown"))
+        tap(() => this.errorService.log("Fetched item dropdown")),
+        catchError(this.errorService.handleError<any[]>("item dropdown"))
+      );
+  }
+
+  getUOMByItemId(itemId: number): Observable<Result<any[]>> {
+    const url = `${baseURL}/uom/${itemId}`;
+    return this.axiosInstance.pipe(
+        switchMap((axiosInstance) =>
+          from(axiosInstance.get<Result<any[]>>(url))
+        ),
+        map((response: AxiosResponse<Result<any[]>>) => response.data),
+        tap(() => this.errorService.log("Fetched UOM dropdown")),
+        catchError(this.errorService.handleError<any[]>("UOM dropdown"))
       );
   }
 
