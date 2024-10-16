@@ -1,4 +1,4 @@
-import authService from "@/Service/authService";
+import authService from "@/service/authService";
 import { HttpStatusCode, type AxiosInstance, type AxiosResponse } from "axios";
 import type { Error, Result } from "@/Model/Result";
 import { Observable, from, of } from "rxjs";

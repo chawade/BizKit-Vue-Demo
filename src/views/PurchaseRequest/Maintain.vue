@@ -367,18 +367,16 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, reactive, onUnmounted, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import SalesOrderService from '@/Service/salesorderService';
 import type { SalesOrderItemResource as PurchaseRequestItemResource, SalesOrderResource, SalesOrderSaveResource as PurchaseRequestSaveResource, SalesOrderSearch } from '@/Model/SalesOrder';
 import { useToast } from 'primevue/usetoast';
-import CustomerService from '@/Service/CustomerService';
 import { Subscription } from 'rxjs';
 import SelectCustom from '@/components/SelectCustom.vue';
 import PriceList from '@/Model/GlobalVariable/PriceList'
-import PaymentTermService from '@/Service/PaymentTermService';
-import WarehouseService from '@/Service/WarehouseService';
+import paymentTermService from '@/service/paymentTermService';
+import warehouseService from '@/service/warehouseService';
 import type { SelectItem } from '@/Model/BaseResource';
-import router from '@/Router';
-import ItemService from '@/Service/ItemService';
+import router from '@/router';
+import ItemService from '@/service/ItemService';
 import type { PurchaseRequestSave as PurchaseRequestItem, PurchaseRequestItemSave, PurchaseRequestSave } from '@/Model/purchaseRequest';
 import PurchaseRequestService from '@/Service/purchaseRequestService';
 
@@ -504,12 +502,12 @@ const deleteProduct = (data: PurchaseRequestItem, index: number) => {
 
 const getPaymentTermList = async (termId: string) => {
   fetchLoading.value = true;
-  subscription = PaymentTermService.getPaymentTermList(parseInt(termId)).subscribe({
+  subscription = paymentTermService.getPaymentTermList(parseInt(termId)).subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        ddlPaymentTerm.value = ClonePaymentTermDDL(result.Data || []);
+      if (result.isSuccess) {
+        ddlPaymentTerm.value = ClonePaymentTermDDL(result.data || []);
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {
@@ -531,11 +529,11 @@ const fetchData = async () => {
           const paymentTerm = purchaseRequestSave.value.PaymentTerm
 
           if (paymentTerm) {
-            getPaymentTermList(paymentTerm.TermId.toString());
+            getPaymentTermList(paymentTerm.termId.toString());
 
             let selectDDL: SelectItem = {
-              code: paymentTerm.TermId.toString(),
-              name: paymentTerm.Description
+              code: paymentTerm.termId.toString(),
+              name: paymentTerm.description
             };
             selectPaymentTerm.value = selectDDL ?? {} as SelectItem;
           }
@@ -557,12 +555,12 @@ const fetchData = async () => {
 
 const getWarehouseList = async () => {
   fetchLoading.value = true;
-  subscription = WarehouseService.getWarehouseList().subscribe({
+  subscription = warehouseService.getWarehouseList().subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        ddlWarehouse.value = CloneWarehouseDDL(result.Data || []);
+      if (result.isSuccess) {
+        ddlWarehouse.value = CloneWarehouseDDL(result.data || []);
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {
@@ -581,10 +579,10 @@ const getItemList = async (event: string, rowIndex: number) => {
   const endpoint = `${pageNumber.value}/${pageSize.value}/${sortBy.value}/${direction.value}/${searchString.value}`;
   subscription = ItemService.getitemList(endpoint).subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        purchaseRequestItem.value[rowIndex].DDLItem = CloneItemDDL(result.Data || []);
+      if (result.isSuccess) {
+        purchaseRequestItem.value[rowIndex].DDLItem = CloneItemDDL(result.data || []);
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {

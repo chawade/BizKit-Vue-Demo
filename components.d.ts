@@ -20,6 +20,7 @@ declare module 'vue' {
     DataTable: typeof import('primevue/datatable')['default']
     DatePicker: typeof import('primevue/datepicker')['default']
     DetailHeader: typeof import('./src/components/DetailHeader.vue')['default']
+    FileUpload: typeof import('primevue/fileupload')['default']
     FloatingConfigurator: typeof import('./src/components/FloatingConfigurator.vue')['default']
     Fluid: typeof import('primevue/fluid')['default']
     IconCommunity: typeof import('./src/components/icons/IconCommunity.vue')['default']

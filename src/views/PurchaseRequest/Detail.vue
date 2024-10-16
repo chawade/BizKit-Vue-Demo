@@ -7,45 +7,46 @@
         createButtonLabel="Create PurchaseRequset" @eidt-pr="editPR" @print-pr="printPR" @approve="approve"
         @reject="reject" @back-to-list="backToList" />
 
-      <DetailHeader title="Purchase Request Detail" :itemNo="request.PurchaseRequestNo" :status="request.Status" />
+      <DetailHeader title="Purchase Request Detail" :itemNo="request.purchaseRequestNo" :status="request.status" />
       <div class="flex flex-col md:flex-row w-full">
         <div class="w-full md:w-1/2">
           <InfoBox title="Vendor Info" :info="{
-            'Name': vendorData.VendorName,
-            'Address': vendorData.Address1,
-            'City': vendorData.City,
-            'State': vendorData.State,
-            'ZipCode': vendorData.ZipCode,
-            'Country': vendorData.Country,
-            'TaxId': vendorData.TaxId || '',
-            'BranchCode': vendorData.BranchCode,
+            'Name': vendorData.vendorName,
+            'Address': vendorData.address1,
+            'City': vendorData.city,
+            'State': vendorData.state,
+            'ZipCode': vendorData.zipCode,
+            'Country': vendorData.country,
+            'TaxId': vendorData.taxId || '',
+            'BranchCode': vendorData.branchCode,
           }" />
         </div>
 
         <div class="w-full md:w-1/2 md:flex md:justify-end">
           <InfoBox title="PurchaseRequest Info" :info="{
-            'Issue Date': new Date(request.PurchaseRequestDate).toLocaleDateString(),
+            'Issue Date': new Date(request.purchaseRequestDate).toLocaleDateString(),
             'Require Date': new Date(requiredDate).toLocaleDateString(),
-            'Reference No.': request.ReferenceNo,
-            'PIC': request.PersonInCharge,
-            'Project': request.ProjectName,
-            'Department': request.DepaermentName
+            'Reference No.': request.referenceNo,
+            'PIC': request.personInCharge,
+            'Project': request.projectName,
+            'Department': request.departmentName
           }" />
         </div>
       </div>
+      
       <ItemTable :items="purchase" :columns="columns" :dataKey="'id'" :loading="fetchLoading" :lazy="false"
-        :totalRecords="purchase.length" :menu="menuaa" tableStyle="min-width: 50rem" />
+        :totalRecords="purchase.length" :menu="menuaa" tableStyle="min-width: 50rem" :pageIdentifier="'PR-Detail'"/>
 
       <div class="flex flex-col md:flex-row w-full">
         <div class="w-full md:w-1/2">
-          <Remark title="Remark" :remark="request.Notes" />
+          <Remark title="Remark" :remark="request.notes" />
         </div>
         <div class="w-full md:w-1/2 md:flex md:justify-end">
           <InfoBox title="Summary" :info="{
-            'Subtotal': request.Subtotal,
-            'VAT': request.TaxAmount,
-            'Other Charges': request.OtherCharges,
-            'Grand Total': request.TotalAmount
+            'Subtotal': request.subtotal,
+            'VAT': request.taxAmount,
+            'Other Charges': request.otherCharges,
+            'Grand Total': request.totalAmount
           }" />
         </div>
       </div>
@@ -136,51 +137,6 @@ interface PurchaseRequestStatus {
   CANCELLED: number;
 }
 
-// interface PurchaseRequest {
-//   PurchaseRequestNo: string;
-//   PurchaseRequestDate: string;
-//   DeliveryDate: string;
-//   ReferenceNo: string;
-//   RequireDate: Date;
-//   PIC: string;
-//   Project: string;
-//   Department: string;
-//   Status: Status;
-//   IssueDate: string;
-//   PersonInCharge: string;
-//   ProjectName: '';
-//   DepaermentName: '';
-//   Notes: string;
-//   Vendor: Vendor;
-//   Subtotal: number;
-//   TaxAmount: number;
-//   OtherCharges: number;
-//   TotalAmount: number;
-// }
-interface Status {
-  StatusId: number;
-  StatusName: string;
-  LocalStatusName: string | null;
-  StatusBgColor: string;
-  StatusBorderColor: string;
-  StatusFontColor: string;
-  StatusFontSize: number;
-}
-
-interface PurchaseRequestItems {
-  id: number;
-  ItemCode: string;
-  ItemName: string;
-  RequiredDate: Date;
-  PurchaseOrderNo: string;
-  ReferenceNo: string;
-  Unit: string;
-  UnitCost: number;
-  VatCode: string;
-  LineTotal: number;
-  Image: any;
-  OrderQty: number;
-}
 interface Vendor {
   VendorId: number;
   VendorCode: string;
@@ -272,17 +228,17 @@ const actions = [
 ];
 
 const columns = [
-  { field: "LineNumber", header: "No" },
-  { field: "ItemCode", header: "Item Code" },
-  { field: "ItemName", header: "Item Name" },
-  { field: "RequiredDate", header: "Required Date", },
-  { field: "PONo", header: "PO No" },
-  { field: "ReferenceNo", header: "Reference No." },
-  { field: "OrderQuantity", header: "Qty" },
-  { field: "Unit", header: "UOM" },
-  { field: "UnitCost", header: "Unit Cost" },
-  { field: "VatCode", header: "VAT" },
-  { field: "LineTotal", header: "Total" }
+  { field: "lineNumber", header: "No" },
+  { field: "itemCode", header: "Item Code" },
+  { field: "itemName", header: "Item Name" },
+  { field: "requiredDate", header: "Required Date", },
+  { field: "poNo", header: "PO No" },
+  { field: "referenceNo", header: "Reference No." },
+  { field: "orderQuantity", header: "Qty" },
+  { field: "unit", header: "UOM" },
+  { field: "unitCost", header: "Unit Cost" },
+  { field: "vatCode", header: "VAT" },
+  { field: "lineTotal", header: "Total" }
 ];
 
 const menuaa = ref([
@@ -330,10 +286,10 @@ const fetchPurchaseRequestDetail = () => {
 
   subscription = PurchaseRequestService.get(prNO).subscribe({
     next: (response) => {
-      if (response.IsSuccess) {
-        request.value = response.Data;
-        vendorId.value = response.Data.Vendor.VendorId; // บันทึกข้อมูลจาก response
-        purchase.value = response.Data.PurchaseRequestItems; // บันทึกข้อมูลจาก response
+      if (response.isSuccess) {
+        request.value = response.data;
+        vendorId.value = response.data.vendor.vendorId; // บันทึกข้อมูลจาก response
+        purchase.value = response.data.purchaseRequestItems; // บันทึกข้อมูลจาก response
         console.log(purchase.value, 'purchase');
 
         fetchVendorData(); // เรียกใช้ฟังก์ชันเพื่อดึงข้อมูล vendor
@@ -341,8 +297,8 @@ const fetchPurchaseRequestDetail = () => {
       } else {
         toast.add({
           severity: 'error',
-          summary: response.StatusCode.toString(),
-          detail: response.Error?.Message,
+          summary: response.statusCode.toString(),
+          detail: response.error?.message,
           life: 2000
         });
       }
@@ -366,14 +322,14 @@ const fetchVendorData = () => {
 
   vendorSubscription = vendorService.get(vendorId.value).subscribe({
     next: (response) => {
-      if (response.IsSuccess) {
-        vendorData.value = response.Data;
+      if (response.isSuccess) {
+        vendorData.value = response.data;
         console.log(vendorData.value, 'VendorData');
       } else {
         toast.add({
           severity: 'error',
-          summary: response.StatusCode.toString(),
-          detail: response.Error?.Message,
+          summary: response.statusCode.toString(),
+          detail: response.error?.message,
           life: 2000
         });
       }
