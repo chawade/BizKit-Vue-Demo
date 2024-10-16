@@ -46,6 +46,7 @@ export interface stockTakingItem {
   diffQuantity: number;
   unit: string;
   notes: string;
+  costMethod: number;
 }
 
 export interface stockTakingHeaderList {

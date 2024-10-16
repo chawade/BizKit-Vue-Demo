@@ -1,10 +1,10 @@
-import authService from '@/service/AuthService';
+import authService from '@/service/authService';
 import { HttpStatusCode, type AxiosInstance, type AxiosResponse } from 'axios';
 import { Observable, from } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import ErrorService from './errorService';
 import type { Result } from '@/Model/Result';
-import type { StockTakingResource } from '@/Model/StockTaking';
+import type { stockTakingHeaderList, stockTakingHeader } from '@/Model/stockTaking';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/stocktaking`;
@@ -27,27 +27,39 @@ class StockTakingService {
     };
   }
 
-  search(endpoint: string): Observable<Result<StockTakingResource[]>> {
+  search(endpoint: string): Observable<Result<stockTakingHeaderList[]>> {
     const url = `${baseURL}/${endpoint}`;
     return this.axiosInstance$.pipe(
       switchMap((axiosInstance) =>
-        from(axiosInstance.get<Result<StockTakingResource[]>>(url, this.getHttpOptions()))
+        from(axiosInstance.get<Result<stockTakingHeaderList[]>>(url, this.getHttpOptions()))
       ),
-      map((response: AxiosResponse<Result<StockTakingResource[]>>) => response.data),
+      map((response: AxiosResponse<Result<stockTakingHeaderList[]>>) => response.data),
       tap(() => this.errorService.log('Fetched stocktaking list')),
-      catchError(this.errorService.handleError<StockTakingResource[]>('search'))
+      catchError(this.errorService.handleError<stockTakingHeaderList[]>('search'))
     );
   }
 
-  get(id: number): Observable<Result<StockTakingResource>> {
+  get(id: number): Observable<Result<stockTakingHeader>> {
     const url = `${baseURL}/${id}`;
     return this.axiosInstance$.pipe(
       switchMap((axiosInstance) =>
-        from(axiosInstance.get<Result<StockTakingResource>>(url, this.getHttpOptions()))
+        from(axiosInstance.get<Result<stockTakingHeader>>(url, this.getHttpOptions()))
       ),
-      map((response: AxiosResponse<Result<StockTakingResource>>) => response.data),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
       tap(() => this.errorService.log(`Fetched stocktaking with id ${id}`)),
-      catchError(this.errorService.handleError<StockTakingResource>(`get id=${id}`))
+      catchError(this.errorService.handleError<stockTakingHeader>(`get id=${id}`))
+    );
+  }
+
+  getStockItemForTaking(warehouseId?: number, locationId?: number): Observable<Result<any>> {
+    const url = `${baseURL}/items/${warehouseId}/${locationId}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<stockTakingHeader>>(url, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log(`Fetched stock items with warehouse id ${warehouseId} and location id ${locationId}`)),
+      catchError(this.errorService.handleError<stockTakingHeader>('get stockI  items for taking'))
     );
   }
 

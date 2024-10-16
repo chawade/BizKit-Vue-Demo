@@ -38,8 +38,8 @@ class WarehouseService {
       );
   }
 
-  getLocationList(): Observable<Result<any[]>> {
-    const url = `${baseURL}/location/1/0/LocationId/ASC`;
+  getLocationByWarehouse(warehouseId?: number): Observable<Result<any[]>> {
+    const url = `${baseURL}/locations/${warehouseId}`;
     return this.axiosInstance.pipe(
         switchMap((axiosInstance) =>
           from(axiosInstance.get<Result<any[]>>(url, this.getHttpOptions()))

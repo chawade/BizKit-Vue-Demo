@@ -40,7 +40,8 @@
                         <div class="col-span-12 md:col-span-8">
                           <SelectCustom v-model="selectWarehouse" :options="warehouse" :loading="fetchLoading"
                             placeholder="Select a Warehouse" @filter="getWarehouseList" optionLabel="name"
-                            dataKey="code" />
+                            dataKey="code" 
+                            @change="handleWarehouseChange(Number(selectWarehouse?.code), Number(selectLocation?.code))" />
                         </div>
                       </div>
                     </div>
@@ -60,8 +61,9 @@
                         <label for="Location"
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Location</label>
                         <div class="col-span-12 md:col-span-8">
-                          <SelectCustom v-model="selectLocation" :options="filteredLocations" :loading="fetchLoading"
-                            placeholder="Select a Location" optionLabel="name" dataKey="code" />
+                          <SelectCustom v-model="selectLocation" :options="location" :loading="fetchLoading"
+                            placeholder="Select a Location" optionLabel="name" dataKey="code" 
+                            @change="handleWarehouseChange(Number(selectWarehouse?.code), Number(selectLocation?.code))" />
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
@@ -69,66 +71,72 @@
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Person
                           In Charge</label>
                         <div class="col-span-12 md:col-span-8">
-                          <SelectCustom v-model="selectUser" :options="user" :loading="fetchLoading"
-                            placeholder="Select a Person" @filter="getUserList" optionLabel="name" dataKey="code" />
+                          <SelectCustom v-model="selectPIC" :options="personInCharge" :loading="fetchLoading"
+                            placeholder="Select a Person" @filter="getPIC" optionLabel="name" dataKey="code" />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <DataTable :value="stockTakingItems" tableStyle="min-width: 50rem" :scrollable="true"
-                  columnResizeMode="fit" :rowclass="rowClass">
+                <DataTable 
+                  :value="stockTakingItems" 
+                  scrollable scrollHeight="400px" 
+                  tableStyle="min-width: 50rem"
+                  :scrollable="true" 
+                  columnResizeMode="fit" 
+                  :rowclass="rowClass" 
+                  class="mb-10">
                   <!-- LineNumber -->
-                  <!-- <Column field="LineNumber" header="No.">
+                  <Column field="lineNumber" header="No.">
                     <template #body="{ index }">
                       {{ index + 1 }}
                     </template>
-</Column> -->
+                  </Column>
 
                   <!-- Item Code Column -->
-                  <Column field="ItemCode" header="Item Code" class="min-w-40">
+                  <Column field="itemCode" header="Item Code" class="min-w-40">
                     <template #body="{ data }">
                       {{ data.itemCode }}
                     </template>
                   </Column>
 
                   <!-- Item Name Column -->
-                  <Column field="ItemName" header="Item Name" class="min-w-40">
+                  <Column field="itemName" header="Item Name" class="min-w-40">
                     <template #body="{ data }">
                       {{ data.itemName }}
                     </template>
                   </Column>
 
                   <!-- Shelf Code Column -->
-                  <Column field="ShelfCode" header="Shelf Name" class="min-w-40">
+                  <Column field="shelfCode" header="Shelf Name" class="min-w-40">
                     <template #body="{ data }">
                       {{ data.shelfCode ?? '' }}
                     </template>
                   </Column>
 
                   <!-- Lot No Column -->
-                  <Column field="LotNo" header="Lot/Serial No." class="min-w-40">
+                  <Column field="lotNo" header="Lot/Serial No." class="min-w-40">
                     <template #body="{ data }">
                       {{ data.lotNo ?? '' }}
                     </template>
                   </Column>
 
                   <!-- Expiry Date Column -->
-                  <Column field="ExpiryDate" header="Expiry Date" class="min-w-40">
+                  <Column field="expiryDate" header="Expiry Date" class="min-w-40">
                     <template #body="{ data }">
                       {{ data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : ' ' }}
                     </template>
                   </Column>
 
                   <!-- Stock Quantity Column -->
-                  <Column field="StockQuantity" header="Stock Qty" class="min-w-40">
+                  <Column field="stockQuantity" header="Stock Qty" class="min-w-40">
                     <template #body="{ data }">
-                      {{ data.stockQuantity }}
+                      {{ data.stockOnHand ?? 0 }}
                     </template>
                   </Column>
 
                   <!-- Actual Quantity Column (Editable) -->
-                  <Column field="ActualQuantity" header="Actual Qty" class="min-w-40">
+                  <Column field="actualQuantity" header="Actual Qty" class="min-w-40">
                     <template #body="{ data, index }">
                       <InputNumber v-model="data.actualQuantity" class="min-w-30" @focus="onFieldFocus(index)"
                         @blur="onFieldBlur" :key="`actualQuantity-${index}`" />
@@ -136,27 +144,34 @@
                   </Column>
 
                   <!-- Adjust Quantity Column -->
-                  <Column field="ActualQuantity" header="Adjust Qty" class="min-w-40">
+                  <Column field="diffQuantity" header="Adjust Qty" class="min-w-40">
                     <template #body="{ data }">
-                      {{ (data.actualQuantity - data.stockOnHand).toFixed(2) }}
+                      {{ (data.actualQuantity - (data.stockOnHand ?? 0)).toFixed(2) }}
                     </template>
                   </Column>
 
                   <!-- Unit Column -->
-                  <Column field="Unit" header="Unit" class="min-w-10">
+                  <Column field="unit" header="Unit" class="min-w-10">
                     <template #body="{ data }">
                       {{ data.unit }}
                     </template>
                   </Column>
 
                   <!-- Notes Column (Editable) -->
-                  <Column field="Notes" header="Notes" class="min-w-40">
+                  <Column field="notes" header="Notes" class="min-w-40">
                     <template #body="{ data, index }">
                       <Textarea v-model="data.notes" rows="2" cols="30" :key="`notes-${index}`" />
                     </template>
                   </Column>
 
                 </DataTable>
+                <div class="grid grid-col-12 gap-2">
+                  <label for="Remark"
+                    class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Remark</label>
+                  <div class="col-span-12 md:col-span-8">
+                    <Textarea v-model="stockTakingSave.remark" rows="2" cols="30" :key="`notes`" />
+                  </div>
+                </div>
               </Fluid>
             </form>
           </template>
@@ -169,15 +184,16 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, reactive, onUnmounted, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import StockTakingService from '@/service/stockTakingService';
-import type { stockTakingHeaderSave, stockTakingItem } from '@/Model/StockTaking';
+import type { stockTakingHeaderSave, stockTakingItem } from '@/Model/stockTaking';
 import { useToast } from 'primevue/usetoast';
 import { Subscription } from 'rxjs';
 import SelectCustom from '@/components/SelectCustom.vue';
-import PriceList from '@/Model/GlobalVariable/PriceList'
+import StockTakingService from '@/service/stockTakingService';
 import warehouseService from '@/service/warehouseService';
+import userService from '@/service/userService';
 import type { SelectItem } from '@/Model/BaseResource';
 import router from '@/router';
+import stockTakingService from '@/service/stockTakingService';
 
 let subscription: Subscription;
 const setStickyButtons = inject<any>('setStickyButtons');
@@ -185,15 +201,6 @@ const setStickyButtons = inject<any>('setStickyButtons');
 const toast = useToast();
 const loading = ref(false);
 const error = ref('');
-const SkipPick = ref(false);
-const ddlPrice = new PriceList().getPriceList();
-const currentPage = ref(1)
-const totalPages = ref(0)
-const pageSize = ref(20)
-const searchString = ref('')
-const sortKey = ref('CustomerName')
-const sortOrder = ref('DESC')
-const totalRecords = ref(0)
 
 const route = useRoute();
 const TakingId: number = Number(route.params.id);
@@ -203,12 +210,11 @@ const personInCharge = ref<SelectItem[]>([]);
 
 const fetchLoading = ref(false);
 
-const selectCustomer = ref<SelectItem | null>();
-const selectPaymentTerm = ref<SelectItem | null>();
 const selectWarehouse = ref<SelectItem | null>();
 const selectLocation = ref<SelectItem | null>();
+const selectPIC = ref<SelectItem | null>();
 
-const stockTakingItems = ref<stockTakingItem[]>([]);
+const stockTakingItems = ref<stockTakingItem[] | null>([]);
 const stockTakingSave = ref<stockTakingHeaderSave>({
   takingId: 0,
   takingNo: '',
@@ -256,14 +262,14 @@ const getWarehouseList = async () => {
   });
 };
 
-const getLocationList = async () => {
-  debugger;
+const getLocationList = async (warehouseId: number) => {
   fetchLoading.value = true;
-  subscription = warehouseService.getLocationList().subscribe({
+  selectLocation.value = null;
+  subscription = warehouseService.getLocationByWarehouse(warehouseId).subscribe({
     next: (result) => {
       if (result.isSuccess) {
         location.value = CloneLocationDDL(result.data || []);
-        console.log('location: ', location.value);
+        console.log('location',location.value)
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -277,12 +283,91 @@ const getLocationList = async () => {
   });
 };
 
-const filteredLocations = computed(() => {
-  if (selectWarehouse.value) {
-    return location.value.filter(loc => loc.warehouseId === selectWarehouse.value?.code);
+const getPIC = async (name: string) => {
+  fetchLoading.value = true;
+  subscription = userService.getUserList(name).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        personInCharge.value = CloneUserDDL(result.data || []);
+        console.log('personInCharge: ', personInCharge.value);
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  })
+}
+
+const getItems = async (warehouseId?: number, locationId?: number) => {
+  fetchLoading.value = true;
+  subscription = stockTakingService.getStockItemForTaking(warehouseId, locationId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        stockTakingItems.value = result.data;
+        console.log('Items',stockTakingItems.value)
+      } else {
+        stockTakingItems.value = null;
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const handleWarehouseChange = (warehouseId: number, locationId: number) => {
+  selectLocation.value = null;
+
+  if (warehouseId) {
+    getLocationList(warehouseId);
+    getItems(warehouseId, undefined);
+  } else {
+    console.error("Invalid warehouseId");
   }
-  return location.value;
-});
+  
+  if (locationId) {
+    getItems(warehouseId, locationId);
+  } else {
+    console.error("Invalid locationId");
+  }
+};
+
+const CloneWarehouseDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.warehouseName == "" ? "--All--" : option.warehouseName,
+    code: option.warehouseID == 0 ? "0" : option.warehouseId.toString(),
+  }));
+
+  return data.length > 0 ? data : [];
+}
+
+const CloneLocationDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.locationName == "" ? "--All--" : option.locationName,
+    code: option.locationId == 0 ? "0" : option.locationId,
+  }));
+
+  return data.length > 0 ? data : [];
+}
+
+const CloneUserDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.FirstName == "" ? "--All--" : option.FirstName + ' ' + option.LastName,
+    code: option.Email == "" ? "0" : option.Email,
+  }));
+
+  return data.length > 0 ? data : [];
+}
+
 
 const fetchData = async () => {
   fetchLoading.value = true;
@@ -290,42 +375,32 @@ const fetchData = async () => {
     next: (result) => {
       if (result.isSuccess) {
         stockTakingSave.value = result.data;
-        debugger;
 
         if (stockTakingSave.value) {
           stockTakingItems.value = result.data.stockTakingItems;
           stockTakingSave.value.takingDate = new Date(stockTakingSave.value.takingDate)
-          const warehouse = stockTakingSave.value.warehouseId
-          const location = stockTakingSave.value.locationId
-          const personInCharge = stockTakingSave.value.personInCharge
 
-          if (warehouse) {
-            getWarehouseList();
-            let selectDDL: SelectItem = {
-              code: warehouse.toString(),
-              name: result.data.WarehouseName
-            };
-            selectWarehouse.value = selectDDL ?? {} as SelectItem;
-          }
+          getWarehouseList();
+          let selectDDLWarehouse: SelectItem = {
+            code: stockTakingSave.value.warehouseId.toString(),
+            name: result.data.warehouseName
+          };
+          selectWarehouse.value = selectDDLWarehouse ?? {} as SelectItem;
 
-          if (location) {
-            getLocationList();
-            let selectDDL: SelectItem = {
-              code: location.toString(),
-              name: result.data.LocationName
-            };
-            selectLocation.value = selectDDL ?? {} as SelectItem;
-          }
-          
-          if (personInCharge) {
-            getLocationList();
-            let selectDDL: SelectItem = {
-              code: personInCharge,
-              name: personInCharge
-            };
-            selectLocation.value = selectDDL ?? {} as SelectItem;
-          }
+          getLocationList(stockTakingSave.value.warehouseId);
+        debugger;
+          let selectDDLLocation: SelectItem = {
+            code: (stockTakingSave.value.locationId ?? 0).toString(),
+            name: result.data.locationName
+          };
+          selectLocation.value = selectDDLLocation ?? {} as SelectItem;
 
+          getPIC('');
+          let selectDDLPic: SelectItem = {
+            code: stockTakingSave.value.personInCharge,
+            name: result.data.personInCharge
+          };
+          selectPIC.value = selectDDLPic ?? {} as SelectItem;
         }
 
       } else {
@@ -341,28 +416,16 @@ const fetchData = async () => {
   });
 };
 
-const CloneWarehouseDDL = (options: Array<any>): Array<SelectItem> => {
-  const data = options.map((option) => ({
-    name: option.WarehouseName == "" ? "--All--" : option.WarehouseName,
-    code: option.WarehouseID == 0 ? "0" : option.WarehouseId.toString(),
-  }));
-
-  return data.length > 0 ? data : [];
-}
-
-const CloneLocationDDL = (options: Array<any>): Array<SelectItem> => {
-  debugger;
-  const data = options.map((option) => ({
-    name: option.LocationName == "" ? "--All--" : option.LocationName,
-    code: option.LocationId == 0 ? "0" : option.LocationId,
-    warehouseId: option.WarehouseId
-  }));
-
-  return data.length > 0 ? data : [];
-}
-
-const SaveStockTaking = () => {
+const Save = () => {
   console.log('save');
+}
+
+const SaveAndAdjust = () => {
+  console.log('save approve');
+}
+
+const SavePlan = () => {
+  console.log('save plan');
 }
 
 onUnmounted(() => {
@@ -377,7 +440,9 @@ onMounted(() => {
   stockTakingSave.value.takingNo = "-- ออกโดยระบบ --";
   if (TakingId != 0) {
     fetchData()
-    console.log('Stock Taking: ', stockTakingSave.value);
+  } else {
+    getWarehouseList()
+    getPIC('')
   }
 
   setStickyButtons([
@@ -386,14 +451,24 @@ onMounted(() => {
       label: 'Save',
       severity: 'info',
       action: () => {
-        SaveStockTaking()
+        Save()
       }
     },
     {
       icon: 'pi pi-check',
-      label: 'Save And Approve',
+      label: 'Save And Adjust',
       severity: 'info',
-      action: () => { /* Save and approve logic */ }
+      action: () => { 
+        SaveAndAdjust()
+       }
+    },
+    {
+      icon: 'pi pi-check',
+      label: 'Save Plan',
+      severity: 'success',
+      action: () => { 
+        SavePlan()
+       }
     },
     {
       icon: 'pi pi-times',
