@@ -13,18 +13,13 @@
   </template>
   
   <script lang="ts" setup>
-  import { computed } from 'vue';
+  import type { StatusResource } from '@/Model/Status';
+import { computed } from 'vue';
   
   const props = defineProps<{
     title: string;
     itemNo: string;
-    status?: {
-      StatusName: string;
-      StatusBgColor: string;
-      StatusFontColor: string;
-      StatusBorderColor: string;
-      StatusFontSize: number;
-    };
+    status: StatusResource;
   }>();
   
   const statusStyle = computed(() => {
