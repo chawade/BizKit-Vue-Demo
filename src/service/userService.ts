@@ -6,9 +6,9 @@ import { map, catchError, tap, switchMap } from "rxjs/operators";
 import ErrorService from "./errorService";
 
 const apiUrl = import.meta.env.VITE_API_URL;
-const baseURL = `${apiUrl}/v1/paymentterm`;
+const baseURL = `${apiUrl}/v1/user`;
 
-class PaymentTermService {
+class UserService {
   private axiosInstance: Observable<AxiosInstance>;;
   private errorService: ErrorService;
 
@@ -17,20 +17,12 @@ class PaymentTermService {
     this.errorService = new ErrorService();
   }
 
-  private getHttpOptions() {
-    return {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache"
-      },
-    };
-  }
-
-  getPaymentTermList(endpoint: number): Observable<Result<any[]>> {
-    const url = `${baseURL}/${endpoint}`;
+  getUserList(endpoint: string): Observable<Result<any[]>> {
+    debugger
+    const url = `${baseURL}/list/${endpoint}`;
     return this.axiosInstance.pipe(
         switchMap((axiosInstance) =>
-          from(axiosInstance.get<Result<any[]>>(url, this.getHttpOptions()))
+          from(axiosInstance.get<Result<any[]>>(url))
         ),
         map((response: AxiosResponse<Result<any[]>>) => response.data),
         tap(() => this.errorService.log("Fetched customer dropdown")),
@@ -39,4 +31,4 @@ class PaymentTermService {
   }
 }
 
-export default new PaymentTermService();
+export default new UserService();

@@ -15,7 +15,7 @@
             </div>
 
             <div class="table-scrollable table-list">
-                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'SalesOrderID'" :rows-per-page="pageSize"
+                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'SalesOrderID'" :rows-per-page="pageSize" :pageIdentifier="'salesOrder'"
                     :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems" :loading="fetchLoading" :lazy="true"
                     :totalRecords="totalRecords" @page="onPageChange" selectionMode="multiple"
                     @update:selection="onRowSelect" @sort="onSort" @search="fetchData" :menu="menuaa">
@@ -115,12 +115,12 @@
                     </template>
 
                     <template #Status="slotProps">
-                        <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.Status.StatusName" :style="{ 
-                                border: slotProps.data.Status.StatusBorderColor, 
-                                backgroundColor: slotProps.data.Status.StatusBgColor, 
-                                color: slotProps.data.Status.StatusFontColor, 
-                                fontSize: slotProps.data.Status.StatusFontSize 
-                            }" />
+                        <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.Status.StatusName" :style="{
+                            backgroundColor: statusTheme(slotProps.data.Status.StatusId).bgColor,
+                            border: `1px solid ${statusTheme(slotProps.data.Status.StatusId).borderColor}`,
+                            color: statusTheme(slotProps.data.Status.StatusId).fontColor,
+                            fontSize: statusTheme(slotProps.data.Status.StatusId).fontSize
+                        }" />
                     </template>
 
                     <template #SalesOrderNumber="slotProps">
@@ -138,7 +138,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, type Ref, reactive, onUnmounted } from 'vue'
-import SalesOrderService from '@/Service/salesorderService'
+import SalesOrderService from '@/service/salesorderService'
 import type Menu from 'primevue/menu';
 import type { SalesOrderResource, SalesOrderSearch } from '@/Model/SalesOrder';
 import { useRouter } from 'vue-router';
@@ -147,6 +147,7 @@ import { Subscription } from 'rxjs';
 import ItemTable from '@/components/ItemTable.vue';
 import type { DataTablePageEvent } from 'primevue/datatable';
 import type { ColumnDef } from '@/Model/GlobalVariable/DataTable';
+import StatusService from '@/service/statusService';
 
 let subscription: Subscription;
 const searchSo = reactive<SalesOrderSearch>({
@@ -162,6 +163,7 @@ const searchSo = reactive<SalesOrderSearch>({
     dateRange: null,
     remark: ''
 })
+const statusService = new StatusService();
 const toast = useToast();
 const isSelectAll = ref(false);
 const router = useRouter();
@@ -296,8 +298,9 @@ const nestedMenuitems = ref([
         ]
     }
 ]);
-
-
+const statusTheme = (statusId:number) => {
+    return statusService.getStatusTheme(statusId)
+}
 const sortedItems = computed(() => {
     return items.value
 })
@@ -325,12 +328,12 @@ const searchDetail = () => {
     subscription = SalesOrderService.searchDetail(searchSo).subscribe({
         next: (result) => {
             debugger;
-            if (result.IsSuccess) {
-                items.value = result.Data || [];
-                totalRecords.value = result.Pagination?.TotalRecords ?? 0;
-                totalPages.value = result.Pagination?.TotalPages ?? 0;
+            if (result.isSuccess) {
+                items.value = result.data || [];
+                totalRecords.value = result.pagination?.totalRecords ?? 0;
+                totalPages.value = result.pagination?.totalPages ?? 0;
             } else {
-                toast.add({ severity: 'error', summary: result.StatusCode.toString() , detail: result.Error?.Message, life: 2000 });
+                toast.add({ severity: 'error', summary: result.statusCode.toString() , detail: result.error?.message, life: 2000 });
             }
         },
         error: (error) => {
@@ -345,18 +348,15 @@ const searchDetail = () => {
 const fetchData = () => {
     fetchLoading.value = true;
     const endpoint = `${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`;
-    items.value = [];
-    totalRecords.value = 0;
-    totalPages.value = 0;
     subscription = SalesOrderService.search(endpoint).subscribe({
         next: (result) => {
-            if (result.IsSuccess) {
-                items.value = result.Data || [];
-                totalRecords.value = result.Pagination?.TotalRecords ?? 0;
-                totalPages.value = result.Pagination?.TotalPages ?? 0;
+            if (result.isSuccess) {
+                items.value = result.data || [];
+                totalRecords.value = result.pagination?.totalRecords ?? 0;
+                totalPages.value = result.pagination?.totalPages ?? 0;
             } else {
-                const statusCode = result.StatusCode.toString() || 'Unknown';
-                const errorMessage = result.Error?.Message || 'An error occurred';
+                const statusCode = result.statusCode.toString() || 'Unknown';
+                const errorMessage = result.error?.message || 'An error occurred';
                 toast.add({ severity: 'error', summary: statusCode , detail: errorMessage, life: 2000 });
             }
         },

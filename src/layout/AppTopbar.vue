@@ -7,8 +7,8 @@ import { useRouter } from 'vue-router';
 import AppConfigurator from './AppConfigurator.vue';
 import type { MenuItem } from 'primevue/menuitem';
 import Menu from 'primevue/menu';
-import authService from '@/Service/authService';
-import { isLoading } from '@/Router';
+import authService from '@/service/authService';
+import { isLoading } from '@/router';
 import { setTimeout } from 'timers/promises';
 
 const router = useRouter();

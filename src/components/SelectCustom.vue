@@ -1,8 +1,8 @@
 <template>
-  <Select :modelValue="modelValue" :options="filteredOptions" :optionLabel="optionLabel" :dataKey="dataKey"
+  <Select :modelValue="modelValue" :options="filteredOptions" :optionLabel="optionLabel" :dataKey="dataKey" :disabled="disabled"
     :placeholder="placeholder" :loading="loading" filter @filter="onFilter" @update:modelValue="onChange">
     <template v-for="(_, slot) in $slots" v-slot:[slot]="scope">
-      <slot :name="slot" v-bind="scope" />
+      <slot :name="slot" v-bind="scope"></slot>
     </template>
   </Select>
 </template>
@@ -19,13 +19,15 @@ interface Props {
   dataKey: any;
   placeholder?: string;
   loading?: boolean;
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: null,
   loading: false,
   optionLabel: 'name',
-  dataKey: 'code'
+  dataKey: 'code',
+  disabled: false
 });
 
 const filteredOptions = ref<SelectItem[]>(props.options);

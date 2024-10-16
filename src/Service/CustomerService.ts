@@ -1,4 +1,4 @@
-import authService from "@/Service/authService";
+import authService from "@/service/authService";
 import type { AxiosInstance, AxiosResponse } from "axios";
 import type { Result } from "@/Model/Result";
 import { Observable, from, of } from "rxjs";

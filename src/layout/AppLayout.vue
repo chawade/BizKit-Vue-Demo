@@ -6,9 +6,10 @@ import AppSidebar from './AppSidebar.vue';
 import AppTopbar from './AppTopbar.vue';
 import Title from './Title.vue';
 import Landing from '@/pages/Landing.vue';
-import { isLoading } from '@/Router';
+import { isLoading } from '@/router';
 import FooterButton from './FooterButton.vue';
 import { useRoute } from 'vue-router';
+import { RouterView } from 'vue-router'
 
 const { layoutConfig, layoutState, isSidebarActive, resetMenu } = useLayout();
 const outsideClickListener = ref<((event: MouseEvent) => void) | null>(null);

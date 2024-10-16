@@ -1,4 +1,4 @@
-import authService from "./authService";
+import authService from '@/service/authService';
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const baseURL = `${apiUrl}/v1/stocktaking`;
