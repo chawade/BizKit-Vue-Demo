@@ -85,7 +85,7 @@ class SalesOrderService {
         from(axiosInstance.post<Result<any>>(url,salesOrder))
       ),
       map((response: AxiosResponse<Result<any>>) => response.data),
-      tap(() => this.errorService.log(`Save SO ${salesOrder.SalesOrderNumber}`)),
+      tap(() => this.errorService.log(`Save SO ${salesOrder.salesOrderNumber}`)),
       catchError(this.errorService.handleError<any>("Save sales order"))
     );
   }

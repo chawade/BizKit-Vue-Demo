@@ -1,9 +1,9 @@
 export class StatusResource {
-    StatusId?: number ;
-    StatusName?: string;
-    LocalStatusName?: string;
-    StatusBgColor?: string;
-    StatusBorderColor?: string;
-    StatusFontColor?: string;
-    StatusFontSize?: number;
+    statusId?: number ;
+    statusName?: string;
+    localStatusName?: string;
+    statusBgColor?: string;
+    statusBorderColor?: string;
+    statusFontColor?: string;
+    statusFontSize?: number;
 }

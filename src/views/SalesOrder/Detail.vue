@@ -24,12 +24,12 @@
         </div>
 
         <div class="text-right">
-          <div class="font-bold text-2xl">{{ salesOrder?.SalesOrderNumber }}</div>
-          <Tag class="min-w-28 max-w-28 text-wrap" :value="salesOrder?.Status.StatusName" :style="{
-            backgroundColor: statusTheme(salesOrder?.Status.StatusId ?? 0).bgColor,
-            border: `1px solid ${statusTheme(salesOrder?.Status.StatusId ?? 0).borderColor}`,
-            color: statusTheme(salesOrder?.Status.StatusId ?? 0).fontColor,
-            fontSize: statusTheme(salesOrder?.Status.StatusId ?? 0).fontSize
+          <div class="font-bold text-2xl">{{ salesOrder?.salesOrderNumber }}</div>
+          <Tag class="min-w-28 max-w-28 text-wrap" :value="salesOrder?.status.statusName" :style="{
+            backgroundColor: statusTheme(salesOrder?.status.statusId ?? 0).bgColor,
+            border: `1px solid ${statusTheme(salesOrder?.status.statusId ?? 0).borderColor}`,
+            color: statusTheme(salesOrder?.status.statusId ?? 0).fontColor,
+            fontSize: statusTheme(salesOrder?.status.statusId ?? 0).fontSize
           }" />
         </div>
       </div>
@@ -47,25 +47,25 @@
             </template>
             <template #content>
               <div class="row stattic-info">
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.CustomerName }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.customerName }}</span>
               </div>
               <div class="flex flex-col gap-2 w-full">
                 <div class="font-bold text-xl">Billing Info</div>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.BillingAddress1 }} {{
-                  salesOrder?.Customer.BillingAddress2 }}</span>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.BillingAmphur }}</span>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.BillingProvince }}</span>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.BillingCountry }}</span>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.BillingPostalCode }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.billingAddress1 }} {{
+                  salesOrder?.customer.billingAddress2 }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.billingAmphur }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.billingProvince }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.billingCountry }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.billingPostalCode }}</span>
               </div>
               <div class="flex flex-col gap-2">
                 <div class="font-bold text-xl">Shipping Info</div>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.ShippingAddress1 }}</span>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.ShippingAddress2 }}</span>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.ShippingAmphur }}</span>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.ShippingProvince }}</span>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.ShippingCountry }}</span>
-                <span class="col-sm-6 font-normal">{{ salesOrder?.Customer.ShippingPostalCode }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.shippingAddress1 }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.shippingAddress2 }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.shippingAmphur }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.shippingProvince }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.shippingCountry }}</span>
+                <span class="col-sm-6 font-normal">{{ salesOrder?.customer.shippingPostalCode }}</span>
               </div>
             </template>
           </Card>
@@ -85,35 +85,35 @@
               <div class="flex flex-col">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-center mt-2 lg:ml-2 xl:ml-5 xl:w-full">
                   <label class="font-bold mb-1 lg:mb-1 lg:w-1/3" for="SalesOrderDate">Sales order date</label>
-                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.SalesOrderDate }}</span>
+                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.salesOrderDate }}</span>
                 </div>
 
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-center mt-2 lg:ml-2 xl:ml-5 xl:w-full">
                   <label class="font-bold mb-1 lg:mb-1 lg:w-1/3" for="SONo">Delivery Date</label>
-                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.DeliveryDate }}</span>
+                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.deliveryDate }}</span>
                 </div>
 
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-center mt-2 lg:ml-2 xl:ml-5 xl:w-full">
                   <label class="font-bold mb-1 lg:mb-1 lg:w-1/3" for="AdditionalField1">Payment Term</label>
-                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.PaymentTermDescription }}</span>
+                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.paymentTermDescription }}</span>
                 </div>
 
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-center mt-2 lg:ml-2 xl:ml-5 xl:w-full">
                   <label class="font-bold mb-1 lg:mb-1 lg:w-1/3" for="AdditionalField2">Due Date</label>
-                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.DueDate }}</span>
+                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.dueDate }}</span>
                 </div>
 
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-center mt-2 lg:ml-2 xl:ml-5 xl:w-full">
                   <label class="font-bold mb-1 lg:mb-1 lg:w-1/3" for="AdditionalField3">Warehouse</label>
-                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.WarehouseName }}</span>
+                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.warehouseName }}</span>
                 </div>
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-center mt-2 lg:ml-2 xl:ml-5 xl:w-full">
                   <label class="font-bold mb-1 lg:mb-1 lg:w-1/3" for="AdditionalField3">Person in charge</label>
-                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.PersonInCharge }}</span>
+                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.personInCharge }}</span>
                 </div>
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-center mt-2 lg:ml-2 xl:ml-5 xl:w-full">
                   <label class="font-bold mb-1 lg:mb-1 lg:w-1/3" for="AdditionalField3">Reference No.</label>
-                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.ReferenceNo }}</span>
+                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.referenceNo }}</span>
                 </div>
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-center mt-2 lg:ml-2 xl:ml-5 xl:w-full">
                   <label class="font-bold mb-1 lg:mb-1 lg:w-1/3" for="AdditionalField3">Skip Pick & Ship</label>
@@ -121,7 +121,7 @@
                 </div>
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-center mt-2 lg:ml-2 xl:ml-5 xl:w-full">
                   <label class="font-bold mb-1 lg:mb-1 lg:w-1/3" for="AdditionalField3">Subject</label>
-                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.Subject }}</span>
+                  <span class="mt-1 lg:mt-0 lg:ml-2 flex-grow">{{ salesOrder?.subject }}</span>
                 </div>
               </div>
             </template>
@@ -143,13 +143,13 @@
             <TabPanel :lazy="true" value="1" header="Order">
               <div class="row invoice-body mb-8">
                 <div class="col-xs-12 table-wrapper">
-                  <DataTable :value="salesOrder.SalesOrderItems" tableStyle="min-width: 50rem">
-                    <Column field="LineNumber" header="No."></Column>
-                    <Column field="ItemCode" header="Item Code"></Column>
-                    <Column field="DeliveryDate" header="Delivery Date"></Column>
-                    <Column field="OrderQty" header="Order Qty"></Column>
-                    <Column field="Unit" header="Unit"></Column>
-                    <Column field="UnitPrice" header="Unit Price"></Column>
+                  <DataTable :value="salesOrder.salesOrderItems" tableStyle="min-width: 50rem">
+                    <Column field="lineNumber" header="No."></Column>
+                    <Column field="itemCode" header="Item Code"></Column>
+                    <Column field="deliveryDate" header="Delivery Date"></Column>
+                    <Column field="orderQty" header="Order Qty"></Column>
+                    <Column field="unit" header="Unit"></Column>
+                    <Column field="unitPrice" header="Unit Price"></Column>
                   </DataTable>
                 </div>
               </div>
@@ -162,12 +162,12 @@
                       <Menubar :model="menuPicking" class="mb-5">
                         <template #end>
                           <div class="flex items-center gap-2">
-                            <Tag class="min-w-28 max-w-28 text-wrap" :value="salesOrder.Status.StatusName" :style="{
-                            backgroundColor: statusTheme(salesOrder.Status.StatusId ?? 0).bgColor,
-                            border: `1px solid ${statusTheme(salesOrder.Status.StatusId ?? 0).borderColor}`,
-                            color: statusTheme(salesOrder.Status.StatusId ?? 0).fontColor,
-                            fontSize: statusTheme(salesOrder.Status.StatusId ?? 0).fontSize
-                        }" />
+                            <Tag class="min-w-28 max-w-28 text-wrap" :value="salesOrder?.status.statusName" :style="{
+                              backgroundColor: statusTheme(salesOrder?.status.statusId ?? 0).bgColor,
+                              border: `1px solid ${statusTheme(salesOrder?.status.statusId ?? 0).borderColor}`,
+                              color: statusTheme(salesOrder?.status.statusId ?? 0).fontColor,
+                              fontSize: statusTheme(salesOrder?.status.statusId ?? 0).fontSize
+                            }" />
                           </div>
                         </template>
                       </Menubar>
@@ -177,38 +177,35 @@
                 </template>
                 <template #content>
                   <DataTable v-model:expandedRowGroups="expandedRowGroups" v-model:selection="selectedItems"
-                    :value="pickItems" :rows="10" dataKey="PickingID" :loading="fetchLoading" :lazy="true"
+                    :value="pickItems" :rows="10" dataKey="pickingID" :loading="fetchLoading" :lazy="true"
                     :totalRecords="totalRecords" :rowsPerPageOptions="[5, 10, 25]" scrollable :paginator="true"
                     @row-select="onRowSelect" @row-unselect="onRowUnselect" @page="onPageChange" expandableRowGroups
-                    rowGroupMode="subheader" groupRowsBy="ItemCode" @rowgroup-expand="onRowGroupExpand"
+                    rowGroupMode="subheader" groupRowsBy="itemCode" @rowgroup-expand="onRowGroupExpand"
                     @rowgroup-collapse="onRowGroupCollapse" sortMode="single" sortField="ItemCode" :sortOrder="1"
                     tableStyle="width: 100%">
                     <template #groupheader="slotProps">
-                      <span class="align-middle ml-2 font-bold leading-normal"> {{ slotProps.data.ItemCode }} - {{
-                        slotProps.data.Description }}</span>
+                      <span class="align-middle ml-2 font-bold leading-normal"> {{ slotProps.data.itemCode }} - {{
+                        slotProps.data.description }}</span>
                     </template>
                     <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
-                    <Column field="LineNumber" header="Line No." style="width: 10%">
+                    <Column field="lineNumber" header="Line No." style="width: 10%">
                       <template #body="slotProps">
                         {{ (slotProps.index + 1) }} <!-- Adjusting the index to start from 1 -->
                       </template>
                     </Column>
-                    <Column field="LotNo" header="Lot No." style="width: 15%"></Column>
-                    <Column field="WarehouseName" header="Warehouse" style="width: 20%"></Column>
-                    <Column field="ShelfCode" header="Shelf" style="width: 15%"></Column>
-                    <Column field="Available" header="Available Qty" style="width: 15%"></Column>
-                    <Column field="PickedQty" header="Picked Qty" style="width: 15%"></Column>
-                    <Column field="StatusName" header="Status" style="width: 10%">
+                    <Column field="lotNo" header="Lot No." style="width: 15%"></Column>
+                    <Column field="warehouseName" header="Warehouse" style="width: 20%"></Column>
+                    <Column field="shelfCode" header="Shelf" style="width: 15%"></Column>
+                    <Column field="available" header="Available Qty" style="width: 15%"></Column>
+                    <Column field="pickedQty" header="Picked Qty" style="width: 15%"></Column>
+                    <Column field="status" header="Status" style="width: 10%">
                       <template #body="slotProps">
-                        <span :style="{
-                        backgroundColor: slotProps.data.StatusBgColor,
-                        color: slotProps.data.StatusFontColor,
-                        padding: '2px 4px',
-                        borderRadius: '3px',
-                        fontSize: `${slotProps.data.StatusFontSize}px`
-                      }">
-                          {{ slotProps.data.StatusName }}
-                        </span>
+                        <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.statusName" :style="{
+                              backgroundColor: statusTheme(slotProps.data.statusId ?? 0).bgColor,
+                              border: `1px solid ${statusTheme(slotProps.data.statusId ?? 0).borderColor}`,
+                              color: statusTheme(slotProps.data.statusId ?? 0).fontColor,
+                              fontSize: statusTheme(slotProps.data.statusId ?? 0).fontSize
+                            }" />
                       </template>
                     </Column>
                     <template #empty>
@@ -241,7 +238,7 @@
             </TabPanel>
             <TabPanel value="5" header="Edit History" :lazy="true">
               <ScrollPanel style="width: 100%; height: 200px">
-                <Timeline :value="operationLog" class="p-5" align="alternate" >
+                <Timeline :value="operationLog" class="p-5" align="alternate">
                   <template #opposite="slotProps">
                     <small class="text-surface-500 dark:text-surface-400">{{ slotProps.item.ActionDate }}</small>
                   </template>
@@ -267,16 +264,16 @@
           </template>
           <template #content>
             <DataTable :value="History" tableStyle="min-width: 50rem">
-              <Column field="LineNumber" header="No."></Column>
-              <Column field="PickingNo" header="Picking No.">
+              <Column field="lineNumber" header="No."></Column>
+              <Column field="pickingNo" header="Picking No.">
                 <template #body="{ data }">
-                  <Button :label="data.PickingNo" link
-                    @click="pickingNo = data.PickingNo; activeIndex = '2'; loadPickData()" class="p-0" />
+                  <Button :label="data.pickingNo" link
+                    @click="pickingNo = data.pickingNo; activeIndex = '2'; loadPickData()" class="p-0" />
                 </template>
               </Column>
-              <Column field="ShippingNo" header="Shipping No.">
+              <Column field="shippingNo" header="Shipping No.">
                 <template #body="{ data }">
-                  <Button :label="data.ShippingNo" link @click="shippingNo = data.ShippingNo" class="p-0" />
+                  <Button :label="data.shippingNo" link @click="shippingNo = data.ShippingNo" class="p-0" />
                 </template>
               </Column>
               <template #empty>
@@ -336,14 +333,14 @@ const menuPicking = ref([
     label: 'Import Picking',
     icon: 'pi pi-file-import',
     command: () => {
-      router.push(`/SalesOrder/Maintain/${salesOrder.value?.SalesOrderId}`)
+      router.push(`/SalesOrder/Maintain/${salesOrder.value?.salesOrderId}`)
     }
   },
   {
     label: 'Create Picking',
     icon: 'pi pi-plus-circle',
     command: () => {
-      router.push(`/SalesOrder/Maintain/${salesOrder.value?.SalesOrderId}`)
+      router.push(`/SalesOrder/Maintain/${salesOrder.value?.salesOrderId}`)
     }
   }
 
@@ -354,7 +351,7 @@ const nestedMenuitems = ref([
     label: 'Edit',
     icon: 'pi pi-pencil',
     command: () => {
-      router.push(`/SalesOrder/Maintain/${salesOrder.value?.SalesOrderNumber}`)
+      router.push(`/SalesOrder/Maintain/${salesOrder.value?.salesOrderNumber}`)
     }
   },
   {
@@ -410,7 +407,7 @@ const statusTheme = (statusId:number) => {
 const filteredMenuItems = computed(() => {
   return nestedMenuitems.value.filter(item => {
     if (item.label === 'Approve') {
-      return salesOrder.value?.Status.StatusId === 100; // Show "Approve" only if status is 100
+      return salesOrder.value?.status.statusId === 100; // Show "Approve" only if status is 100
     }
     return true; // Show other items regardless of status
   });
@@ -435,12 +432,12 @@ const loadPickData = async () => {
 
     subscription = SalesOrderService.getPikcing(search).subscribe({
       next(result) {
-        if (result.IsSuccess) {
-          pickItems.value = result.Data;
-          totalRecords.value = result.Pagination?.TotalRecords ?? 0;
-          totalPages.value = result.Pagination?.TotalPages ?? 0;
+        if (result.isSuccess) {
+          pickItems.value = result.data;
+          totalRecords.value = result.pagination?.totalRecords ?? 0;
+          totalPages.value = result.pagination?.totalPages ?? 0;
         } else {
-          toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+          toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
         }
       },
       error: (error) => {
@@ -455,8 +452,8 @@ const loadPickData = async () => {
 const getOperationLog = () => {
   subscription = baseService.getOperationLog(SalesOrderNo).subscribe({
     next: (result) =>{
-      if(result.IsSuccess){
-        operationLog.value = result.Data;
+      if(result.isSuccess){
+        operationLog.value = result.data;
         console.log(operationLog.value);
       }
     },
@@ -473,15 +470,16 @@ const fetchData = async () => {
   fetchLoading.value = true;
   subscription = SalesOrderService.get(SalesOrderNo).subscribe({
     next: (result) => {
-      if (result.IsSuccess) {
-        salesOrder.value = result.Data;
-        totalRecords.value = result.Pagination?.TotalRecords ?? 0;
-        totalPages.value = result.Pagination?.TotalPages ?? 0;
+      if (result.isSuccess) {
+        salesOrder.value = result.data;
+        totalRecords.value = result.pagination?.totalRecords ?? 0;
+        totalPages.value = result.pagination?.totalPages ?? 0;
 
         subscription = SalesOrderService.getPickShipHistory(SalesOrderNo).subscribe({
           next(result) {
-            if (result.IsSuccess) {
-              History.value = result.Data;
+            if (result.isSuccess) {
+              History.value = result.data;
+              console.log(History.value)
             } 
           },
           error: (error) => {
@@ -490,7 +488,7 @@ const fetchData = async () => {
         })
 
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
     error: (error) => {

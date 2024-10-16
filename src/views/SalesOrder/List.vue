@@ -15,9 +15,9 @@
             </div>
 
             <div class="table-scrollable table-list">
-                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'SalesOrderID'" :rows-per-page="pageSize" :pageIdentifier="'salesOrder'"
+                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'salesOrderID'" :rows-per-page="pageSize" :pageIdentifier="'salesOrder'"
                     :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems" :loading="fetchLoading" :lazy="true"
-                    :totalRecords="totalRecords" @page="onPageChange" selectionMode="multiple"
+                    :totalRecords="totalRecords" @page="onPageChange"
                     @update:selection="onRowSelect" @sort="onSort" @search="fetchData" :menu="menuaa">
                     <template #header>
                         <Menubar :model="filteredMenuItems" class="hidden md:flex">
@@ -114,20 +114,20 @@
                         </div>
                     </template>
 
-                    <template #Status="slotProps">
-                        <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.Status.StatusName" :style="{
-                            backgroundColor: statusTheme(slotProps.data.Status.StatusId).bgColor,
-                            border: `1px solid ${statusTheme(slotProps.data.Status.StatusId).borderColor}`,
-                            color: statusTheme(slotProps.data.Status.StatusId).fontColor,
-                            fontSize: statusTheme(slotProps.data.Status.StatusId).fontSize
+                    <template #status="slotProps">
+                        <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.status.statusName" :style="{
+                            backgroundColor: statusTheme(slotProps.data.status.statusId).bgColor,
+                            border: `1px solid ${statusTheme(slotProps.data.status.statusId).borderColor}`,
+                            color: statusTheme(slotProps.data.status.statusId).fontColor,
+                            fontSize: statusTheme(slotProps.data.status.statusId).fontSize
                         }" />
                     </template>
 
-                    <template #SalesOrderNumber="slotProps">
-                        <router-link :to="`/SalesOrder/Detail/${slotProps.data.SalesOrderNumber}`" custom
+                    <template #salesOrderNumber="slotProps">
+                        <RouterLink :to="`/SalesOrder/Detail/${slotProps.data.salesOrderNumber}`" custom
                             v-slot="{ navigate }">
-                            <Button :label="slotProps.data.SalesOrderNumber" link @click="navigate" class="p-0" />
-                        </router-link>
+                            <Button :label="slotProps.data.salesOrderNumber" link @click="navigate" class="p-0" />
+                        </RouterLink>
                     </template>
 
                 </ItemTable>
@@ -148,6 +148,7 @@ import ItemTable from '@/components/ItemTable.vue';
 import type { DataTablePageEvent } from 'primevue/datatable';
 import type { ColumnDef } from '@/Model/GlobalVariable/DataTable';
 import StatusService from '@/service/statusService';
+import { useDataTableStore } from '@/store/useDataTableStore';
 
 let subscription: Subscription;
 const searchSo = reactive<SalesOrderSearch>({
@@ -167,9 +168,9 @@ const statusService = new StatusService();
 const toast = useToast();
 const isSelectAll = ref(false);
 const router = useRouter();
+const dataTableStore = useDataTableStore();
 const items = ref<SalesOrderResource[]>([]);
 const currentPage = ref(1)
-const totalPages = ref(1)
 const pageSize = ref(5)
 const searchString = ref('')
 const sortKey = ref('SODate')
@@ -250,16 +251,16 @@ const onSort = (event: any) => {
 
 
 const columns = ref<ColumnDef[]>([
-      { field: 'SalesOrderNumber', header: 'SalesOrder No.', sortable: true, class: 'text-left' , headerClass: 'w-full min-w-36 text-center font-bold' },
-      { field: 'SalesOrderDate', header: 'Order Date', sortable: true, class: 'width: 15%', headerClass: 'w-full min-w-36 text-center font-bold' },
-      { field: 'CustomerName', header: 'Customer', sortable: true, class: 'width: 15%', headerClass: 'w-full min-w-36 text-center font-bold' },
-      { field: 'DeliveryDate', header: 'Delivery Date', sortable: true, class: 'width: 15%', headerClass: 'w-full min-w-36 text-center font-bold'},
-      { field: 'Status', header:  'Status', sortable: true, class: 'width: 20%; text-align: center;', headerClass: 'w-full min-w-36 text-center font-bold' },
-      { field: 'OrderQuantity', header: 'Order Qty', sortable: true, class: 'width: 1%; text-align: end;', headerClass: 'w-full min-w-20 text-center font-bold'},
-      { field: 'PickQuantity', header: 'Pick Qty', class: 'text-right', headerClass: 'w-full min-w-20 text-center font-bold'},
-      { field: 'ShipQuantity', header: 'Ship Qty', class: 'width: 10%; text-align: end;', headerClass: 'w-full min-w-20 text-center font-bold'},
-      { field: 'PickQuantity - ShipQuantity', header: 'Balance', class: 'width: 10%; text-align: end;', headerClass: 'w-full min-w-20 text-center font-bold'},
-      { field: 'TotalAmount', header: 'Total Amount', sortable: true, class: 'width: 15%; text-align: end;', headerClass: 'w-full min-w-28 text-center font-bold'}
+      { field: 'salesOrderNumber', header: 'SalesOrder No.', sortable: true, class: 'text-left' , headerClass: 'w-full min-w-36 text-center font-bold' },
+      { field: 'salesOrderDate', header: 'Order Date', sortable: true, class: 'width: 15%', headerClass: 'w-full min-w-36 text-center font-bold' },
+      { field: 'customerName', header: 'Customer', sortable: true, class: 'width: 15%', headerClass: 'w-full min-w-36 text-center font-bold' },
+      { field: 'deliveryDate', header: 'Delivery Date', sortable: true, class: 'width: 15%', headerClass: 'w-full min-w-36 text-center font-bold'},
+      { field: 'status', header:  'Status', sortable: true, class: 'width: 20%; text-align: center;', headerClass: 'w-full min-w-36 text-center font-bold' },
+      { field: 'orderQuantity', header: 'Order Qty', sortable: true, class: 'width: 1%; text-align: end;', headerClass: 'w-full min-w-20 text-center font-bold'},
+      { field: 'pickQuantity', header: 'Pick Qty', class: 'text-right', headerClass: 'w-full min-w-20 text-center font-bold'},
+      { field: 'shipQuantity', header: 'Ship Qty', class: 'width: 10%; text-align: end;', headerClass: 'w-full min-w-20 text-center font-bold'},
+      { field: 'pickQuantity - ShipQuantity', header: 'Balance', class: 'width: 10%; text-align: end;', headerClass: 'w-full min-w-20 text-center font-bold'},
+      { field: 'totalAmount', header: 'Total Amount', sortable: true, class: 'width: 15%; text-align: end;', headerClass: 'w-full min-w-28 text-center font-bold'}
     ]);
 
 const nestedMenuitems = ref([
@@ -330,8 +331,7 @@ const searchDetail = () => {
             debugger;
             if (result.isSuccess) {
                 items.value = result.data || [];
-                totalRecords.value = result.pagination?.totalRecords ?? 0;
-                totalPages.value = result.pagination?.totalPages ?? 0;
+                dataTableStore.setTotalRecords(result.pagination?.totalRecords ?? 0);
             } else {
                 toast.add({ severity: 'error', summary: result.statusCode.toString() , detail: result.error?.message, life: 2000 });
             }
@@ -352,8 +352,7 @@ const fetchData = () => {
         next: (result) => {
             if (result.isSuccess) {
                 items.value = result.data || [];
-                totalRecords.value = result.pagination?.totalRecords ?? 0;
-                totalPages.value = result.pagination?.totalPages ?? 0;
+                dataTableStore.setTotalRecords(result.pagination?.totalRecords ?? 0);
             } else {
                 const statusCode = result.statusCode.toString() || 'Unknown';
                 const errorMessage = result.error?.message || 'An error occurred';

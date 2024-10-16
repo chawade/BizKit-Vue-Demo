@@ -1,6 +1,6 @@
 export interface PaymentTermListResource {
-  TermId: number;
-  Term: number;
-  Description: string;
+  termId: number;
+  term: number;
+  description: string;
 }
   

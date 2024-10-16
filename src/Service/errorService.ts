@@ -10,10 +10,10 @@ export default class ErrorService {
     error?: Error
   ): Result<T> {
     return {
-      IsSuccess: success,
-      StatusCode: statusCode,
-      Data: data,
-      Error: error,
+      isSuccess: success,
+      statusCode: statusCode,
+      data: data,
+      error: error,
     };
   }
 
@@ -26,20 +26,20 @@ export default class ErrorService {
       if (error.response) {
         // The request was made and the server responded with a status code out of the range of 2xx
         errorResponse = {
-          Code: error.response.data?.Code || error.response.status,
-          Message: error.response.data?.Message || "An error occurred",
+          code: error.response.data?.Code || error.response.status,
+          message: error.response.data?.Message || "An error occurred",
         };
       } else if (error.request) {
         // The request was made but no response was received
         errorResponse = {
-          Code: "NO_RESPONSE",
-          Message: "No response received from server",
+          code: "NO_RESPONSE",
+          message: "No response received from server",
         };
       } else {
         // Something happened in setting up the request that triggered an Error
         errorResponse = {
-          Code: "UNKNOWN",
-          Message: error.message || "An unknown error occurred",
+          code: "UNKNOWN",
+          message: error.message || "An unknown error occurred",
         };
       }
 
