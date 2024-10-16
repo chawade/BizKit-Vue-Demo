@@ -110,8 +110,8 @@
                           Term</label>
                         <div class="col-span-12 md:col-span-8">
                           <SelectCustom v-model="selectPaymentTerm" :options="ddlPaymentTerm" :loading="fetchLoading"
-                            placeholder="Select a payment term" @filter="getPaymentTermList" optionLabel="name"
-                            dataKey="code" />
+                            placeholder="Select a payment term" @update:model-value="onSelectPaymentTerm"
+                            optionLabel="description" dataKey="termId" />
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
@@ -120,7 +120,7 @@
                           Person</label>
                         <div class="col-span-12 md:col-span-8">
                           <SelectCustom v-model="selectPIC" :options="ddlPIC" :loading="fetchLoading"
-                            placeholder="Select a sales person" @filter="getPIC" optionLabel="name" dataKey="code">
+                            placeholder="Select a sales person" optionLabel="name" dataKey="code">
                             <template #option="slotProps">
                               <div class="flex flex-col gap-2">
                                 <label for="username">{{ slotProps.option.name }}</label>
@@ -136,7 +136,8 @@
                           From</label>
                         <div class="col-span-12 md:col-span-8">
                           <SelectCustom v-model="selectWarehouse" :options="ddlWarehouse" :loading="fetchLoading"
-                            placeholder="Select a Warehouse" @filter="getWarehouseList" optionLabel="name" @update:model-value="salesOrderSave.warehouseID = parseInt(selectWarehouse?.code ?? '0');"
+                            placeholder="Select a Warehouse" optionLabel="name"
+                            @update:model-value="salesOrderSave.warehouseID = parseInt(selectWarehouse?.code ?? '0');"
                             dataKey="code" :invalid="!selectWarehouse" />
                         </div>
                       </div>
@@ -286,35 +287,38 @@
                               <!-- Item Name Column with unique key -->
                               <Column field="itemName" header="Description" class="min-w-60">
                                 <template #body="{ data, index }">
-                                  <Textarea v-model="data.ItemName" rows="2" cols="30" :key="`itemName-${index}`" />
+                                  <Textarea v-model="data.itemName" rows="2" cols="30" :key="`itemName-${index}`" />
                                   <!-- key added here -->
                                 </template>
                               </Column>
 
                               <Column field="deliveryDate" header="Delivery Date" class="min-w-60">
                                 <template #body="{ data, index }">
-                                  <DatePicker v-model="data.deliveryDate" @focus="onFieldFocus(index)" showButtonBar
-                                    showIcon fluid :manual-input="false" @blur="onFieldBlur" variant="filled"
-                                    :key="`DeliveryDate-${index}`" />
+                                  <DatePicker v-model="data.deliveryDate" showButtonBar showIcon fluid
+                                    :manual-input="false" variant="filled" :key="`DeliveryDate-${index}`" />
                                 </template>
                               </Column>
 
-                              <Column field="avaliableQty" header="Available Qty" class="min-w-36">
+                              <Column field="availableQty" header="Available Qty" class="min-w-36">
+                                <template #body="{ data, index }">
+                                  {{ data.availableQty }}
+                                </template>
                               </Column>
 
                               <!-- Order Qty Column with unique key -->
                               <Column field="orderQty" header="Order Qty" class="w-40">
                                 <template #body="{ data, index }">
                                   <InputNumber v-model="data.orderQty" class="min-w-36" @focus="onFieldFocus(index)"
-                                    @blur="onFieldBlur(index)" @update:modelValue="calculateLineTotal(data)"
-                                    :key="`orderQty-${index}`" /> <!-- key added here -->
+                                    @update:modelValue="calculateLineTotal(data)" :key="`orderQty-${index}`" />
+                                  <!-- key added here -->
                                 </template>
                               </Column>
 
                               <Column field="selectUOM" header="UOM" class="min-w-60">
                                 <template #body="{ data, index }">
                                   <Select placeholder="Select a UOM" v-model="data.SelectUOM" :options="data.DDLUOM"
-                                    optionLabel="ItemName" @update:modelValue="data.Unit = data.SelectUOM.ItemName; data.UnitID = data.SelectUOM.ItemID;" 
+                                    optionLabel="itemName"
+                                    @update:modelValue="data.unit = data.SelectUOM.itemName; data.unitID = data.SelectUOM.itemID;"
                                     dataKey="itemID" :key="`UOM-${index}`"></Select>
                                 </template>
                               </Column>
@@ -323,7 +327,7 @@
                               <Column field="unitPrice" header="Unit Price">
                                 <template #body="{ data, index }">
                                   <InputNumber v-model="data.unitPrice" class="min-w-36" mode="currency" currency="THB"
-                                    locale="th-TH" @focus="onFieldFocus(index)" @blur="onFieldBlur(index)"
+                                    locale="th-TH" @focus="onFieldFocus(index)"
                                     @update:modelValue="calculateLineTotal(data)" :key="`unitPrice-${index}`" />
                                   <!-- key added here -->
                                 </template>
@@ -331,8 +335,8 @@
 
                               <Column field="discountRate" header="Discount">
                                 <template #body="{ data, index }">
-                                  <InputText v-model="data.discountRate" class="min-w-36" @focus="onFieldFocus(index)"
-                                    @blur="onFieldBlur(index)" @update:modelValue="calculateLineTotal(data)"
+                                  <InputText v-model="data.discountRate" class="min-w-36" @input="formatNumber(data)"
+                                    @keypress="onKeyPress" @update:modelValue="calculateLineTotal(data)"
                                     :key="`DiscountRate-${index}`" />
                                   <!-- key added here -->
                                 </template>
@@ -340,10 +344,8 @@
 
                               <Column field="taxID" header="Vat">
                                 <template #body="{ data, index }">
-                                  <!-- <InputNumber v-model="data.TaxID" class="min-w-36" @focus="onFieldFocus(index)"
-                                    @blur="onFieldBlur(index)" @update:modelValue="calculateLineTotal(data)" :key="`Vat-${index}`" /> -->
                                   <Select placeholder="Select a Tax" v-model="data.SelectTax" :options="data.DDLTAX"
-                                    optionLabel="TaxName" @update:modelValue="calculateLineTotal(data)"
+                                    optionLabel="taxName" @update:modelValue="calculateLineTotal(data)"
                                     dataKey="taxCode" :key="`Vat-${index}`"></Select>
                                   <!-- key added here -->
                                 </template>
@@ -361,7 +363,7 @@
                     </Tabs>
                   </Suspense>
                 </div>
-                <div class="flex flex-col gap-x-20 lg:flex-row w-full">
+                <div class="flex flex-col gap-x-20 lg:flex-row w-full p-10">
                   <!-- Left Card -->
                   <div class="flex flex-col w-full lg:w-1/2 gap-4 p-2">
                     <div class="flex flex-col gap-2">
@@ -378,17 +380,22 @@
 
                   <!-- Right Card -->
                   <div class="flex flex-col w-full lg:w-1/2 gap-4 p-2">
-                    <div class="grid grid-cols-12 gap-2">
+                    <div class="grid grid-cols-8">
                       <label for="name3"
-                        class="flex items-center font-semibold col-span-12 mb-2 md:col-span-2 md:mb-0">Subtotal</label>
-                      <div class="col-span-12 md:col-span-10">
+                        class="flex items-center font-semibold col-span-8 md:col-span-4 mb-2 md:mb-0">Subtotal</label>
+                      <div class="col-span-8 md:col-span-4 text-right">
+                        {{ calculateFooter.subtotal }}
                       </div>
                     </div>
-                    <div class="grid grid-cols-12 gap-2">
+                    <div class="grid grid-cols-8">
                       <label for="email3"
-                        class="flex items-center font-semibold col-span-12 mb-2 md:col-span-2 md:mb-0">Discount</label>
-                      <div class="col-span-12 md:col-span-10">
-                        <InputText id="email3" type="text" />
+                        class="flex items-center font-semibold col-span-8 md:col-span-4 mb-2 md:mb-0">Discount</label>
+                      <div class="col-span-8 md:col-span-4">
+                        <InputGroup>
+                          <InputNumber id="email3" type="text" />
+                          <InputGroupAddon>%</InputGroupAddon>
+                          <InputNumber id="email3" type="text" />
+                        </InputGroup>
                       </div>
                     </div>
                   </div>
@@ -416,12 +423,15 @@ import router from '@/router';
 import ItemService from '@/service/ItemService';
 import type { ItemSearch } from '@/Model/Item';
 import DatePicker from 'primevue/datepicker';
-import CustomerService from '@/service/CustomerService';
-import WarehouseService from '@/service/WarehouseService';
-import PaymentTermService from '@/service/PaymentTermService';
+import CustomerService from '@/service/customerService';
+import WarehouseService from '@/service/warehouseService';
+import PaymentTermService from '@/service/paymentTermService';
 import userService from '@/service/userService';
 import taxService from '@/service/taxService';
 import salesorderService from '@/service/salesorderService';
+import type { InputNumberBlurEvent } from 'primevue/inputnumber';
+import type { InputTextPassThroughAttributes } from 'primevue/inputtext';
+import type { PaymentTermListResource } from '@/Model/PaymentTerm';
 
 let subscription: Subscription;
 const setStickyButtons = inject<any>('setStickyButtons');
@@ -442,13 +452,13 @@ const totalRecords = ref(0)
 const route = useRoute();
 const SalesOrderNo: string = String(route.params.id);
 const ddlCustomer = ref<SelectItem[]>([]);
-const ddlPaymentTerm = ref<SelectItem[]>([]);
+const ddlPaymentTerm = ref<PaymentTermListResource[]>([]);
 const ddlWarehouse = ref<SelectItem[]>([]);
 const ddlPIC = ref<SelectItem[]>([]);
 const fetchLoading = ref(false);
 
 const selectCustomer = ref<SelectItem | null>();
-const selectPaymentTerm = ref<SelectItem | null>();
+const selectPaymentTerm = ref<PaymentTermListResource | null>();
 const selectWarehouse = ref<SelectItem | null>();
 const selectPIC = ref<SelectItem | null>();
 
@@ -482,6 +492,7 @@ const salesOrderSave = ref<SalesOrderSaveResource>({
   memoBy: '',
   isPriceExcludeVat: false,
   priceTier: 0,
+  adjustment: 0,
   salesOrderItemResource: []
 });
 const cm = ref();
@@ -491,9 +502,34 @@ const onFieldFocus = (index: number) => {
   focusedRowIndex.value = index;
 };
 
-const onFieldBlur = (index: number) => {
-  focusedRowIndex.value = null;
+const onKeyPress = (event: KeyboardEvent): void => {
+  debugger
+  const charCode = event.which ? event.which : event.keyCode;
+  if (
+    (charCode < 48 || charCode > 57) && // 0-9
+    charCode !== 37 && // %
+    charCode !== 46 // .
+  ) {
+    event.preventDefault();
+  }
 };
+
+const formatNumber = (data: any): void => {
+  debugger
+  // Ensure only numbers and decimals are present
+  const value = (data.discountRate ?? '0').replace(/[^\d.]/g, '');
+  let formattedValue = '';
+  // Format to 0,000
+  if(value != ''){
+    formattedValue = parseFloat(value)
+    .toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  }
+  data.discountRate = formattedValue;
+};
+
 
 const rowClass = (data: SalesOrderItemResource, index: number) => {
   return {
@@ -512,11 +548,26 @@ const menuModel = ref([
   }
 ]);
 
+const onSelectPaymentTerm = () => {
+  debugger
+  salesOrderSave.value.paymentTerm = selectPaymentTerm.value || null;
+  if (salesOrderSave.value.paymentTerm) {
+    const selectedTermDays = salesOrderSave.value.paymentTerm.term || 0;
+    
+    // Update dueDate by adding the term days to the current date
+    const newDueDate = new Date(); // Create a new Date instance (or use an existing one)
+    newDueDate.setDate(newDueDate.getDate() + selectedTermDays);
+    
+    salesOrderSave.value.dueDate = newDueDate;
+  }
+}
+
 const itemSelecChange = (event: SalesOrderItemResource,index: number) =>{
   fetchLoading.value = true;
   subscription = ItemService.getitemByItemID(event.itemId).subscribe({
     next: (result) => {
       if (result.isSuccess) {
+        debugger
         salesOrderSave.value.salesOrderItemResource[index].itemId = result.data.itemId;
         salesOrderSave.value.salesOrderItemResource[index].itemCode = result.data.itemCode;
         salesOrderSave.value.salesOrderItemResource[index].itemName = result.data.itemName;
@@ -622,12 +673,12 @@ const getCustomerList = async (event: string) => {
   });
 };
 
-const getPaymentTermList = async (termId: string) => {
+const getPaymentTermList = async () => {
   fetchLoading.value = true;
-  subscription = PaymentTermService.getPaymentTermList(parseInt(termId)).subscribe({
+  subscription = PaymentTermService.getPaymentTermList(0).subscribe({
     next: (result) => {
       if (result.isSuccess) {
-        ddlPaymentTerm.value = ClonePaymentTermDDL(result.data || []);
+        ddlPaymentTerm.value = result.data;
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -681,13 +732,8 @@ const fetchData = async () => {
           }
 
           if (paymentTerm) {
-            getPaymentTermList(paymentTerm.TermId.toString());
-
-            let selectDDL: SelectItem = {
-              code: paymentTerm.TermId.toString(),
-              name: paymentTerm.Description
-            };
-            selectPaymentTerm.value = selectDDL ?? {} as SelectItem;
+            getPaymentTermList();
+            selectPaymentTerm.value = paymentTerm;
           }
 
         }
@@ -754,19 +800,10 @@ const getItemList = async (event: string, rowIndex: number) => {
   });
 }
 
-const ClonePaymentTermDDL = (options: Array<any>): Array<SelectItem> => {
-  const data = options.map((option) => ({
-    name: option.Description == "" ? "--All--" : option.Description,
-    code: option.TermId == 0 ? "0" : option.TermId.toString(),
-  }));
-
-  return data.length > 0 ? data : [];
-}
-
 const CloneWarehouseDDL = (options: Array<any>): Array<SelectItem> => {
   const data = options.map((option) => ({
-    name: option.WarehouseName == "" ? "--All--" : option.WarehouseName,
-    code: option.WarehouseID == 0 ? "0" : option.WarehouseId.toString(),
+    name: option.warehouseName == "" ? "--All--" : option.warehouseName,
+    code: option.warehouseID == 0 ? "0" : option.warehouseId.toString(),
   }));
 
   return data.length > 0 ? data : [];
@@ -774,8 +811,8 @@ const CloneWarehouseDDL = (options: Array<any>): Array<SelectItem> => {
 
 const CloneCustomerDDL = (options: Array<any>): Array<SelectItem> => {
   const data = options.map((option) => ({
-    name: option.CustomerName == "" ? "--All--" : option.CustomerName,
-    code: option.CustomerId == 0 ? "0" : option.CustomerID.toString(),
+    name: option.customerName == "" ? "--All--" : option.customerName,
+    code: option.customerId == 0 ? "0" : option.customerID.toString(),
   }));
 
   return data.length > 0 ? data : [];
@@ -783,8 +820,8 @@ const CloneCustomerDDL = (options: Array<any>): Array<SelectItem> => {
 
 const CloneUserDDL = (options: Array<any>): Array<SelectItem> => {
   const data = options.map((option) => ({
-    name: option.FirstName == "" ? "--All--" : option.FirstName + ' ' + option.LastName,
-    code: option.Email == "" ? "0" : option.Email,
+    name: option.firstName == "" ? "--All--" : option.firstName + ' ' + option.lastName,
+    code: option.email == "" ? "0" : option.email,
   }));
 
   return data.length > 0 ? data : [];
@@ -878,6 +915,22 @@ const calculateLineTotal = (data: SalesOrderItemResource) => {
   data.lineTotal = subtotal - data.discountAmount + vatAmount;
 };
 
+const calculateFooter = computed(() => {
+  const subtotal = salesOrderSave.value?.salesOrderItemResource?.reduce((sum, item) => sum + item.lineTotal, 0) || 0;
+  const discountAmount = (subtotal * (salesOrderSave.value.discountRate || 0)) / 100;
+  const netPriceBeforeVAT = subtotal - discountAmount;
+  const taxAmount = salesOrderSave.value.salesOrderItemResource.reduce((sum, item) => sum + item.taxAmount, 0) || 0;
+  const grandTotal = netPriceBeforeVAT + taxAmount + (salesOrderSave.value.otherCharges || 0) + (salesOrderSave.value.adjustment) || 0;
+
+  return {
+    subtotal,
+    discountAmount,
+    netPriceBeforeVAT,
+    taxAmount,
+    grandTotal
+  };
+})
+
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(value);
 };
@@ -891,6 +944,9 @@ onUnmounted(() => {
 })
 onMounted(() => {
   salesOrderSave.value.salesOrderNumber = "-- ออกโดยระบบ --";
+  getPaymentTermList();
+  getPIC('');
+  getWarehouseList();
   if (SalesOrderNo != '') {
     fetchData()
   }

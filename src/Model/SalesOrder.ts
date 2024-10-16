@@ -140,5 +140,6 @@ export interface SalesOrderSearch {
     memoBy: string;
     remark?: string;
     isPriceExcludeVat: boolean;
+    adjustment: number;
     salesOrderItemResource: SalesOrderItemResource[]; // Array of SalesOrderItemResource
 }
