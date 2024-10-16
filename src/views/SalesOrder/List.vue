@@ -15,9 +15,9 @@
             </div>
 
             <div class="table-scrollable table-list">
-                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'salesOrderID'" :rows-per-page="pageSize" :pageIdentifier="'salesOrder'"
-                    :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems" :loading="fetchLoading" :lazy="true"
-                    :totalRecords="totalRecords" @page="onPageChange"
+                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'salesOrderID'" :rows-per-page="pageSize" 
+                    :pageIdentifier="'salesOrder'" :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems" 
+                    :loading="fetchLoading" :lazy="true" :totalRecords="totalRecords" @page="onPageChange"
                     @update:selection="onRowSelect" @sort="onSort" @search="fetchData" :menu="menuaa">
                     <template #header>
                         <Menubar :model="filteredMenuItems" class="hidden md:flex">

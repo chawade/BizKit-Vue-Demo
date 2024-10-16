@@ -85,6 +85,7 @@ export interface SalesOrderItemResource {
   freeItemFlag: boolean;
   trackStock: boolean;
 
+  discountRateMode: boolean;
   SelectTax: any;
   SelectItem: any;
   SelectUOM: any;
@@ -141,5 +142,12 @@ export interface SalesOrderSearch {
     remark?: string;
     isPriceExcludeVat: boolean;
     adjustment: number;
+    adjustmentLabel: string;
+    subTotal: number;
+    netAmount: number;
+    amountBeforeVat: number;
+    taxAmount: number;
+    grandTotal: number;
+    baseVatAmount: number;
     salesOrderItemResource: SalesOrderItemResource[]; // Array of SalesOrderItemResource
 }

@@ -2,8 +2,8 @@ import AppLayout from '@/layout/AppLayout.vue'
 import authService from '@/service/authService';
 import { ref } from 'vue';
 import { createRouter, createWebHistory, useRoute, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router';
-import { stockTakingRouter } from '@/Router/stock.module/stockTakingRouter';
-import { salesOrderRouter } from '@/Router/sales.module/salesOrderRouter';
+import { stockTakingRouter } from '@/router/stock.module/stockTakingRouter';
+import { salesOrderRouter } from '@/router/sales.module/salesOrderRouter';
 
 export const isLoading = ref(false);
 

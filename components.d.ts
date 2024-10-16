@@ -19,7 +19,9 @@ declare module 'vue' {
     ContextMenu: typeof import('primevue/contextmenu')['default']
     DataTable: typeof import('primevue/datatable')['default']
     DatePicker: typeof import('primevue/datepicker')['default']
+    DatePickerThai: typeof import('./src/components/DatePickerThai.vue')['default']
     DetailHeader: typeof import('./src/components/DetailHeader.vue')['default']
+    Divider: typeof import('primevue/divider')['default']
     FloatingConfigurator: typeof import('./src/components/FloatingConfigurator.vue')['default']
     Fluid: typeof import('primevue/fluid')['default']
     IconCommunity: typeof import('./src/components/icons/IconCommunity.vue')['default']
@@ -54,6 +56,8 @@ declare module 'vue' {
     Textarea: typeof import('primevue/textarea')['default']
     Timeline: typeof import('primevue/timeline')['default']
     Toast: typeof import('primevue/toast')['default']
+    ToggleButton: typeof import('primevue/togglebutton')['default']
+    Toolbar: typeof import('primevue/toolbar')['default']
   }
   export interface ComponentCustomProperties {
     StyleClass: typeof import('primevue/styleclass')['default']

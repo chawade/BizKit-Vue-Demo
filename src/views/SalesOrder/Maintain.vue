@@ -221,20 +221,29 @@
                       <TabPanel :lazy="true" value="1" header="Order">
                         <div class="row invoice-body mb-8">
                           <div class="col-xs-12 table-wrapper">
+                            <TransitionGroup name="fade" tag="div">
+
+                            </TransitionGroup>
                             <ContextMenu ref="cm" :model="menuModel" @hide="selectedProduct = null" />
                             <DataTable :value="salesOrderSave.salesOrderItemResource" tableStyle="min-width: 50rem;"
-                              contextMenu v-model:contextMenuSelection="selectedProduct" scrollable
-                              scroll-height="30rem" columnResizeMode="fit" @rowContextmenu="onRowContextMenu"
-                              :rowclass="rowClass">
+                              @rowReorder="onRowReorder" contextMenu v-model:contextMenuSelection="selectedProduct"
+                              scrollable :reorderableColumns="true" scroll-height="30rem" columnResizeMode="fit"
+                              @rowContextmenu="onRowContextMenu" :rowclass="rowClass">
 
                               <template #header>
-                                <Menubar class="hidden md:flex">
+                                <Toolbar>
+                                  <template #start>
+                                    <Select v-model="selectisPriceExcludeVat" :options="isPriceExcludeVat"
+                                      @update:model-value="salesOrderSave.isPriceExcludeVat = selectisPriceExcludeVat.code"
+                                      optionLabel="name" dataKey="code" class="min-w-52" />
+                                  </template>
                                   <template #end>
                                     <Button type="button" icon="pi pi-plus-circle" label="Add" raised @click="addRow" />
-                                  </template>
-                                </Menubar>
-                              </template>
 
+                                  </template>
+                                </Toolbar>
+                              </template>
+                              <Column rowReorder headerStyle="width: 3rem" :reorderableColumn="false" />
                               <!-- LineNumber -->
                               <Column field="LineNumber" header="No.">
                                 <template #body="{ data, index }">
@@ -243,14 +252,18 @@
                               </Column>
 
                               <!-- Item Code Column with unique key -->
-                              <Column field="selectItem" header="Item Code" class="min-w-60">
+                              <Column field="selectItem" class="min-w-60">
+                                <template #header>
+                                  <div class="w-full font-bold text-center">
+                                    Item Code
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
-
                                   <SelectCustom v-model="data.SelectItem" :options="data.DDLItem"
                                     :disabled="!selectWarehouse" :loading="fetchLoading" placeholder="Select an item"
                                     @filter="(event) => getItemList(event, index)" optionLabel="itemCode"
                                     dataKey="itemId" :key="`code-${index}`"
-                                    @update:model-value="itemSelecChange(data.SelectItem,index)">
+                                    @update:model-value="itemSelecChange(data.SelectItem, index)">
 
                                     <template #option="slotProps">
                                       <Card class="w-[400px] min-w-56">
@@ -270,11 +283,11 @@
                                             </div>
                                             <div><i class="pi pi-user text-primary" aria-hidden="true"></i><b> Customer
                                                 Item Code : </b>
-                                              <Tag severity="info" :value=" slotProps.option.customerItemCode || '-'" />
+                                              <Tag severity="info" :value="slotProps.option.customerItemCode || '-'" />
                                             </div>
                                             <div><i class="pi pi-info text-primary" aria-hidden="true"></i><b> Available
                                                 Qty(All) : </b>
-                                              <Tag severity="info" :value=" slotProps.option.availableQty || '-'" />
+                                              <Tag severity="info" :value="slotProps.option.availableQty || '-'" />
                                             </div>
                                           </div>
                                         </template>
@@ -285,36 +298,64 @@
                               </Column>
 
                               <!-- Item Name Column with unique key -->
-                              <Column field="itemName" header="Description" class="min-w-60">
+                              <Column field="itemName" class="min-w-60">
+                                <template #header>
+                                  <div class="w-full font-bold text-center">
+                                    item Name
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
                                   <Textarea v-model="data.itemName" rows="2" cols="30" :key="`itemName-${index}`" />
                                   <!-- key added here -->
                                 </template>
                               </Column>
 
-                              <Column field="deliveryDate" header="Delivery Date" class="min-w-60">
+                              <Column field="deliveryDate" class="min-w-60">
+                                <template #header>
+                                  <div class="w-full font-bold text-center">
+                                    Delivery Date
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
                                   <DatePicker v-model="data.deliveryDate" showButtonBar showIcon fluid
                                     :manual-input="false" variant="filled" :key="`DeliveryDate-${index}`" />
                                 </template>
                               </Column>
 
-                              <Column field="availableQty" header="Available Qty" class="min-w-36">
+                              <Column field="availableQty" class="min-w-36">
+                                <template #header>
+                                  <div class="w-full font-bold text-right">
+                                    Available Qty
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
-                                  {{ data.availableQty }}
+                                  <div class="text-end">
+                                    {{ data.availableQty }}
+                                  </div>
                                 </template>
                               </Column>
 
                               <!-- Order Qty Column with unique key -->
-                              <Column field="orderQty" header="Order Qty" class="w-40">
+                              <Column field="orderQty" class="w-40">
+                                <template #header>
+                                  <div class="w-full font-bold text-right">
+                                    Order Qty
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
-                                  <InputNumber v-model="data.orderQty" class="min-w-36" @focus="onFieldFocus(index)"
+                                  <InputNumber v-model="data.orderQty" :minFractionDigits="2" :maxFractionDigits="5"
+                                    class="min-w-36" @focus="onFieldFocus(index)" :inputStyle="{ textAlign: 'right' }"
                                     @update:modelValue="calculateLineTotal(data)" :key="`orderQty-${index}`" />
                                   <!-- key added here -->
                                 </template>
                               </Column>
 
-                              <Column field="selectUOM" header="UOM" class="min-w-60">
+                              <Column field="selectUOM" class="min-w-60">
+                                <template #header>
+                                  <div class="w-full font-bold text-center">
+                                    UOM
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
                                   <Select placeholder="Select a UOM" v-model="data.SelectUOM" :options="data.DDLUOM"
                                     optionLabel="itemName"
@@ -324,25 +365,47 @@
                               </Column>
 
                               <!-- Unit Price Column with unique key -->
-                              <Column field="unitPrice" header="Unit Price">
+                              <Column field="unitPrice">
+                                <template #header>
+                                  <div class="w-full font-bold text-center">
+                                    Unit Price
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
                                   <InputNumber v-model="data.unitPrice" class="min-w-36" mode="currency" currency="THB"
-                                    locale="th-TH" @focus="onFieldFocus(index)"
+                                    locale="th-TH" @focus="onFieldFocus(index)" :inputStyle="{ textAlign: 'right' }"
                                     @update:modelValue="calculateLineTotal(data)" :key="`unitPrice-${index}`" />
                                   <!-- key added here -->
                                 </template>
                               </Column>
 
-                              <Column field="discountRate" header="Discount">
+                              <Column field="discountRate">
+                                <template #header>
+                                  <div class="w-full font-bold text-center">
+                                    Discount
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
-                                  <InputText v-model="data.discountRate" class="min-w-36" @input="formatNumber(data)"
-                                    @keypress="onKeyPress" @update:modelValue="calculateLineTotal(data)"
-                                    :key="`DiscountRate-${index}`" />
+                                  <InputGroup>
+                                    <InputNumber v-model="data.discountRate" :inputStyle="{ textAlign: 'right' }"
+                                      :minFractionDigits="2" :maxFractionDigits="5"
+                                      :currency="data.discountRateMode ? 'THB' : undefined"
+                                      :suffix="data.discountRateMode ? '%' : undefined" class="min-w-32"
+                                      @update:modelValue="calculateLineTotal(data)" :key="`DiscountRate-${index}`" />
+                                    <ToggleButton @change="calculateLineTotal(data)" v-model="data.discountRateMode"
+                                      onLabel="On" offLabel="Off" off-icon="pi pi-percentage"
+                                      onIcon="pi pi-percentage" />
+                                  </InputGroup>
                                   <!-- key added here -->
                                 </template>
                               </Column>
 
-                              <Column field="taxID" header="Vat">
+                              <Column field="taxID">
+                                <template #header>
+                                  <div class="w-full font-bold text-center">
+                                    Vat
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
                                   <Select placeholder="Select a Tax" v-model="data.SelectTax" :options="data.DDLTAX"
                                     optionLabel="taxName" @update:modelValue="calculateLineTotal(data)"
@@ -351,9 +414,16 @@
                                 </template>
                               </Column>
 
-                              <Column field="lineTotal" header="Total" class="min-w-28">
+                              <Column field="lineTotal">
+                                <template #header>
+                                  <div class="w-full font-bold text-right">
+                                    Total
+                                  </div>
+                                </template>
                                 <template #body="{ data, index }">
-                                  {{ formatCurrency(data.lineTotal) }}
+                                  <div class="min-w-28 text-right">
+                                    {{ formatCurrency(data.lineTotal) }}
+                                  </div>
                                 </template>
                               </Column>
                             </DataTable>
@@ -379,26 +449,83 @@
                   </div>
 
                   <!-- Right Card -->
-                  <div class="flex flex-col w-full lg:w-1/2 gap-4 p-2">
-                    <div class="grid grid-cols-8">
-                      <label for="name3"
-                        class="flex items-center font-semibold col-span-8 md:col-span-4 mb-2 md:mb-0">Subtotal</label>
-                      <div class="col-span-8 md:col-span-4 text-right">
-                        {{ calculateFooter.subtotal }}
+                  <Card>
+                    <template #content>
+                      <div class="flex flex-col w-full gap-4 p-2">
+                        <div class="grid grid-cols-8 items-center gap-2">
+                          <label for="name3" class="font-semibold col-span-4">Subtotal</label>
+                          <Message class="col-span-4" severity="secondary">
+                            <template #container>
+                              <div class="text-right p-2 mr-1">
+                                {{ formatCurrency(calculateFooter.subtotal) }}
+                              </div>
+                            </template>
+                          </Message>
+                        </div>
+                        <div class="grid grid-cols-8 items-center gap-2">
+                          <label for="email3" class="font-semibold col-span-4">Discount</label>
+                          <div class="col-span-4">
+                            <InputGroup>
+                              <InputNumber class="max-w-16" :inputStyle="{ textAlign: 'right' }" :max="100" 
+                              :min="0" v-model="salesOrderSave.discountRate" />
+                              <InputGroupAddon>%</InputGroupAddon>
+                              <InputNumber :inputStyle="{ textAlign: 'right' }" v-model="salesOrderSave.discountAmount"
+                                mode="currency" currency="THB" locale="th-TH" />
+                            </InputGroup>
+                          </div>
+                        </div>
+                        <div class="grid grid-cols-8 items-center gap-2">
+                          <label for="name3" class="font-semibold col-span-4">Net Amount</label>
+                          <Message class="col-span-4" severity="secondary">
+                            <template #container>
+                              <div class="text-right p-2 mr-1">
+
+                                {{ formatCurrency(calculateFooter.netAmount) }}
+                              </div>
+                            </template>
+                          </Message>
+                        </div>
+                        <div class="grid grid-cols-8 items-center gap-2">
+                          <label for="email3" class="font-semibold col-span-4">Amount before VAT</label>
+                          <Message class="col-span-4" severity="secondary">
+                            <template #container>
+                              <div class="text-right p-2 mr-1">
+                                {{ formatCurrency(calculateFooter.baseVatAmount) }}
+                              </div>
+                            </template>
+                          </Message>
+                        </div>
+                        <div class="grid grid-cols-8 items-center gap-2">
+                          <label for="email3" class="font-semibold col-span-4">Tax</label>
+                          <Message class="col-span-4" severity="secondary">
+                            <template #container>
+                              <div class="text-right p-2 mr-1">
+                                {{ formatCurrency(calculateFooter.taxAmount) }}
+                              </div>
+                            </template>
+                          </Message>
+                        </div>
+                        <div class="grid grid-cols-8 items-center gap-2">
+                          <label for="email3" class="font-semibold col-span-4">Other Charges</label>
+                          <div class="col-span-4">
+                            <InputNumber :inputStyle="{ textAlign: 'right' }" v-model="salesOrderSave.otherCharges"
+                              mode="currency" currency="THB" locale="th-TH" />
+                          </div>
+                        </div>
+                        <div class="grid grid-cols-8 h-full items-center gap-2">
+                          <label for="email3" class="font-bold col-span-4">Grand Total</label>
+                          <Message class="col-span-4" severity="secondary">
+                            <template #container>
+                              <div class="text-right p-2 mr-1">
+                                {{ formatCurrency(calculateFooter.grandTotal) }}
+                              </div>
+                            </template>
+                          </Message>
+                        </div>
                       </div>
-                    </div>
-                    <div class="grid grid-cols-8">
-                      <label for="email3"
-                        class="flex items-center font-semibold col-span-8 md:col-span-4 mb-2 md:mb-0">Discount</label>
-                      <div class="col-span-8 md:col-span-4">
-                        <InputGroup>
-                          <InputNumber id="email3" type="text" />
-                          <InputGroupAddon>%</InputGroupAddon>
-                          <InputNumber id="email3" type="text" />
-                        </InputGroup>
-                      </div>
-                    </div>
-                  </div>
+                    </template>
+                  </Card>
+
                 </div>
               </Fluid>
             </form>
@@ -429,9 +556,8 @@ import PaymentTermService from '@/service/paymentTermService';
 import userService from '@/service/userService';
 import taxService from '@/service/taxService';
 import salesorderService from '@/service/salesorderService';
-import type { InputNumberBlurEvent } from 'primevue/inputnumber';
-import type { InputTextPassThroughAttributes } from 'primevue/inputtext';
 import type { PaymentTermListResource } from '@/Model/PaymentTerm';
+import type { DataTableRowReorderEvent } from 'primevue/datatable';
 
 let subscription: Subscription;
 const setStickyButtons = inject<any>('setStickyButtons');
@@ -439,15 +565,12 @@ const setStickyButtons = inject<any>('setStickyButtons');
 const toast = useToast();
 const loading = ref(false);
 const error = ref('');
-const SkipPick = ref(false);
 const ddlPrice = new PriceList().getPriceList();
 const currentPage = ref(1)
-const totalPages = ref(0)
 const pageSize = ref(20)
 const searchString = ref('')
 const sortKey = ref('CustomerName')
 const sortOrder = ref('DESC')
-const totalRecords = ref(0)
 
 const route = useRoute();
 const SalesOrderNo: string = String(route.params.id);
@@ -461,6 +584,14 @@ const selectCustomer = ref<SelectItem | null>();
 const selectPaymentTerm = ref<PaymentTermListResource | null>();
 const selectWarehouse = ref<SelectItem | null>();
 const selectPIC = ref<SelectItem | null>();
+
+const selectisPriceExcludeVat = ref<SelectItem>({
+  code: true, name: 'Price excludes VAT'
+});
+const isPriceExcludeVat = reactive<SelectItem[]>([
+  { code: true, name: 'Price excludes VAT' },
+  { code: false, name: 'Price includes VAT' }
+])
 
 const salesOrderSave = ref<SalesOrderSaveResource>({
   salesOrderID: 0,
@@ -490,9 +621,16 @@ const salesOrderSave = ref<SalesOrderSaveResource>({
   internalMemo: '',
   memoDate: new Date(),
   memoBy: '',
-  isPriceExcludeVat: false,
+  isPriceExcludeVat: true,
   priceTier: 0,
   adjustment: 0,
+  adjustmentLabel: 'Adjustment',
+  subTotal: 0,
+  netAmount: 0,
+  amountBeforeVat: 0,
+  taxAmount: 0,
+  grandTotal: 0,
+  baseVatAmount: 0,
   salesOrderItemResource: []
 });
 const cm = ref();
@@ -501,35 +639,6 @@ const focusedRowIndex = ref<number | null>(null);
 const onFieldFocus = (index: number) => {
   focusedRowIndex.value = index;
 };
-
-const onKeyPress = (event: KeyboardEvent): void => {
-  debugger
-  const charCode = event.which ? event.which : event.keyCode;
-  if (
-    (charCode < 48 || charCode > 57) && // 0-9
-    charCode !== 37 && // %
-    charCode !== 46 // .
-  ) {
-    event.preventDefault();
-  }
-};
-
-const formatNumber = (data: any): void => {
-  debugger
-  // Ensure only numbers and decimals are present
-  const value = (data.discountRate ?? '0').replace(/[^\d.]/g, '');
-  let formattedValue = '';
-  // Format to 0,000
-  if(value != ''){
-    formattedValue = parseFloat(value)
-    .toLocaleString('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    });
-  }
-  data.discountRate = formattedValue;
-};
-
 
 const rowClass = (data: SalesOrderItemResource, index: number) => {
   return {
@@ -549,32 +658,32 @@ const menuModel = ref([
 ]);
 
 const onSelectPaymentTerm = () => {
-  debugger
+
   salesOrderSave.value.paymentTerm = selectPaymentTerm.value || null;
   if (salesOrderSave.value.paymentTerm) {
     const selectedTermDays = salesOrderSave.value.paymentTerm.term || 0;
-    
+
     // Update dueDate by adding the term days to the current date
     const newDueDate = new Date(); // Create a new Date instance (or use an existing one)
     newDueDate.setDate(newDueDate.getDate() + selectedTermDays);
-    
+
     salesOrderSave.value.dueDate = newDueDate;
   }
 }
 
-const itemSelecChange = (event: SalesOrderItemResource,index: number) =>{
+const itemSelecChange = (event: SalesOrderItemResource, index: number) => {
   fetchLoading.value = true;
   subscription = ItemService.getitemByItemID(event.itemId).subscribe({
     next: (result) => {
       if (result.isSuccess) {
-        debugger
+
         salesOrderSave.value.salesOrderItemResource[index].itemId = result.data.itemId;
         salesOrderSave.value.salesOrderItemResource[index].itemCode = result.data.itemCode;
         salesOrderSave.value.salesOrderItemResource[index].itemName = result.data.itemName;
         salesOrderSave.value.salesOrderItemResource[index].availableQty = result.data.availableQty;
         salesOrderSave.value.salesOrderItemResource[index].unitPrice = result.data.unitPrice;
-        getUOMByItemId(event.itemId,index);
-        getTaxList(0,index);
+        getUOMByItemId(event.itemId, index);
+        getTaxList(0, index);
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -588,12 +697,12 @@ const itemSelecChange = (event: SalesOrderItemResource,index: number) =>{
   });
 }
 
-const getTaxList = (taxId: number,index: number) => {
+const getTaxList = (taxId: number, index: number) => {
   subscription = taxService.getTaxList(taxId).subscribe({
     next: (result) => {
       if (result.isSuccess) {
         salesOrderSave.value.salesOrderItemResource[index].DDLTAX = result.data;
-      } 
+      }
     },
     error: (error) => {
       toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
@@ -601,7 +710,7 @@ const getTaxList = (taxId: number,index: number) => {
   })
 }
 
-const getUOMByItemId = (itemId: number,index: number) => {
+const getUOMByItemId = (itemId: number, index: number) => {
   subscription = ItemService.getUOMByItemId(itemId).subscribe({
     next: (result) => {
       if (result.isSuccess) {
@@ -629,6 +738,10 @@ const deleteProduct = (data: SalesOrderItemResource, index: number) => {
   salesOrderSave.value.salesOrderItemResource.splice(index, 1);
   toast.add({ severity: 'error', summary: 'Row Deleted', detail: `Line ${index + 1}`, life: 3000 });
   selectedProduct.value = null;
+};
+
+const onRowReorder = (event: DataTableRowReorderEvent) => {
+  salesOrderSave.value.salesOrderItemResource = event.value;
 };
 
 const onSelectCustomer = (event: SelectItem) => {
@@ -756,7 +869,7 @@ const getPIC = async (name: string) => {
   subscription = userService.getUserList(name).subscribe({
     next: (result) => {
       if (result.isSuccess) {
-        debugger
+
         ddlPIC.value = CloneUserDDL(result.data || []);
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
@@ -780,7 +893,7 @@ const getItemList = async (event: string, rowIndex: number) => {
     sortDirection: sortOrder.value,
     pageNo: currentPage.value,
     pageSize: pageSize.value,
-    warehouseID:  selectWarehouse == null ? 0 : parseInt(selectWarehouse.value?.code ?? '0')
+    warehouseID: selectWarehouse == null ? 0 : parseInt(selectWarehouse.value?.code ?? '0')
   };
 
   subscription = ItemService.getitemFilter(search).subscribe({
@@ -864,8 +977,9 @@ const addRow = () => {
     parentLineId: 0,
     freeItemFlag: false,
     trackStock: false,
+    discountRateMode: false,
     SelectItem: {},
-    SelectUOM:  {},
+    SelectUOM: {},
     SelectTax: {},
     DDLItem: [],
     DDLUOM: [],
@@ -879,9 +993,9 @@ const SaveSalesOrder = () => {
   console.log(salesOrderSave.value);
   subscription = salesorderService.saveSalesOrder(salesOrderSave.value).subscribe({
     next: (result) => {
-      if (result.isSuccess) { 
-        debugger
-        router.push({ name: 'SalesOrderDetail', params: result.data})
+      if (result.isSuccess) {
+
+        router.push({ name: 'SalesOrderDetail', params: result.data })
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -898,41 +1012,88 @@ const SaveSalesOrder = () => {
 const calculateLineTotal = (data: SalesOrderItemResource) => {
   const quantity = data.orderQty || 0;
   const unitPrice = data.unitPrice || 0;
-  data.taxCode = data.SelectTax.TaxCode;
-  data.taxId = data.SelectTax.TaxId || 0;
-  data.taxRate = data.SelectTax.Value || 0;
-  data.taxAmount = data.taxRate / 100;
+  data.taxCode = data.SelectTax.taxCode;
+  data.taxId = data.SelectTax.taxId || 0;
+  data.taxRate = data.SelectTax.value || 0;
+  data.lineTotal = quantity * unitPrice;
 
-  const subtotal = quantity * unitPrice;
-  if (typeof data.discountRate === 'string' && data.discountRate.includes('%')) {
+  if (data.discountRateMode) {
     const discountPercentage = parseFloat(data.discountRate) || 0;
-    data.discountAmount = subtotal * (discountPercentage / 100);
+    data.discountAmount = data.lineTotal * (discountPercentage / 100);
   } else {
     data.discountAmount = parseFloat(data.discountRate as string) || 0;
   }
-  const vatAmount = (subtotal - data.discountAmount) * data.taxAmount;
-  
-  data.lineTotal = subtotal - data.discountAmount + vatAmount;
+
+  data.lineTotal = data.lineTotal - data.discountAmount;
+  data.taxAmount = (salesOrderSave.value.isPriceExcludeVat
+    ? data.lineTotal
+    : (data.lineTotal * 100) / (100 + data.taxRate)) *
+    (data.taxRate / 100);
 };
 
 const calculateFooter = computed(() => {
-  const subtotal = salesOrderSave.value?.salesOrderItemResource?.reduce((sum, item) => sum + item.lineTotal, 0) || 0;
-  const discountAmount = (subtotal * (salesOrderSave.value.discountRate || 0)) / 100;
-  const netPriceBeforeVAT = subtotal - discountAmount;
-  const taxAmount = salesOrderSave.value.salesOrderItemResource.reduce((sum, item) => sum + item.taxAmount, 0) || 0;
-  const grandTotal = netPriceBeforeVAT + taxAmount + (salesOrderSave.value.otherCharges || 0) + (salesOrderSave.value.adjustment) || 0;
+  debugger
+  const salesOrder = salesOrderSave.value;
+  let subtotal = salesOrder?.salesOrderItemResource?.reduce((sum, item) => sum + item.lineTotal, 0) || 0;
+  let netAmount = 0;
+  let taxAmount = 0;
+  let baseVatAmount = 0;
+  let grandTotal = 0;
+
+  if (subtotal > 0) {
+    // Calculate discount rate based on either discountRate or discountAmount
+    const discRate = salesOrder.discountRate > 0
+      ? salesOrder.discountRate
+      : (salesOrder.discountAmount > 0
+        ? (salesOrder.discountAmount / subtotal) * 100
+        : 0);
+
+    // Calculate the amount before VAT (items without taxRate)
+    netAmount = subtotal - salesOrder.discountAmount;
+
+    // Calculate total taxAmount
+    taxAmount = salesOrder.salesOrderItemResource.reduce((sum, item) => sum + item.taxAmount, 0) || 0;
+
+    // Calculate base VAT amount
+    baseVatAmount = salesOrder.salesOrderItemResource.reduce((sum, item) => sum + (item.taxRate > 0
+      ? (salesOrder.isPriceExcludeVat ? item.lineTotal : item.lineTotal * 100 / (100 + item.taxRate))
+      : 0), 0) || 0;
+
+    // Apply discount rate to VAT and tax amounts
+    baseVatAmount *= (1 - discRate / 100);
+    taxAmount *= (1 - discRate / 100);
+
+    // Calculate grandTotal considering whether price includes VAT
+    grandTotal = subtotal
+      + (salesOrder.otherCharges || 0)
+      - salesOrder.discountAmount
+      + (salesOrder.isPriceExcludeVat ? taxAmount : 0);
+
+    // Set computed values back to salesOrder object
+    salesOrder.subTotal = subtotal;
+    salesOrder.baseVatAmount = baseVatAmount;
+    salesOrder.netAmount = netAmount;// Updated this part
+    salesOrder.taxAmount = taxAmount;
+    salesOrder.grandTotal = grandTotal;
+  }
 
   return {
     subtotal,
-    discountAmount,
-    netPriceBeforeVAT,
+    netAmount,
     taxAmount,
-    grandTotal
+    grandTotal,
+    baseVatAmount
   };
-})
+});
+
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(value);
+};
+
+const convertToBuddhistEra = (date: Date): Date => {
+  const beYear = date.getFullYear() + 543;
+  return new Date(beYear, date.getMonth(), date.getDate());
 };
 
 onUnmounted(() => {
@@ -949,6 +1110,10 @@ onMounted(() => {
   getWarehouseList();
   if (SalesOrderNo != '') {
     fetchData()
+  } else {
+    for (let index = 0; index < 3; index++) {
+      addRow();
+    }
   }
 
   setStickyButtons([

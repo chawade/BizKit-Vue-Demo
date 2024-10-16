@@ -10,5 +10,5 @@ export interface BaseResource {
 
 export interface SelectItem {
   name: string;
-  code: string;
+  code: any;
 }
