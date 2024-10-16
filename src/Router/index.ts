@@ -2,8 +2,6 @@ import AppLayout from '@/layout/AppLayout.vue'
 import authService from '@/service/authService';
 import { ref } from 'vue';
 import { createRouter, createWebHistory, useRoute, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router';
-import { stockTakingRouter } from '@/Router/stock.module/stockTakingRouter';
-import { salesOrderRouter } from '@/Router/sales.module/salesOrderRouter';
 
 export const isLoading = ref(false);
 
@@ -25,8 +23,49 @@ const router = createRouter({
                     meta: { breadcrumb: 'Home' },
                     component: () => import('@/views/Dashboard/Dashboard.vue')
                 },
-                ...stockTakingRouter,   
-                ...salesOrderRouter,
+                {
+                    path: '/StockTaking/List',
+                    name: 'StockTaking',
+                    meta: { module: 'Inventory', breadcrumb: 'Stock Taking' },
+                    component: () => import('@/views/stockTaking/List.vue')
+                },
+                {
+                    path: '/StockTaking/Detail/:id',
+                    name: 'StockTakingDetail',
+                    meta: { parent: 'StockTaking', breadcrumb: 'Stock Taking Detail' },
+                    component: () => import('@/views/stockTaking/Detail.vue'),
+                    props: true,
+                },
+                {
+                    path: '/StockTaking/Maintain/:id?',
+                    name: 'StockTakingMaintain',
+                    meta: { parent: 'StockTaking', breadcrumb: 'Add/Edit Stock Taking' },
+                    component: () => import('@/views/stockTaking/Maintain.vue'),
+                    props: true,
+                },
+                {
+                    path: '/SalesOrder/List',
+                    name: 'SalesOrder',
+                    meta: { module: 'SalesOrder', breadcrumb: 'Sales Order' },
+                    component: () => import('@/views/SalesOrder/List.vue'),
+                    props: true,
+                },
+                {
+                    path: '/SalesOrder/Detail/:id',
+                    name: 'SalesOrderDetail',
+                    meta: { parent: 'SalesOrder', breadcrumb: 'Sales Order Detail' },
+                    component: () => import('@/views/SalesOrder/Detail.vue'),
+                    props: true,
+                },
+                {
+                    path: '/SalesOrder/Maintain/:id?',
+                    name: 'SalesOrderMaintain',
+                    meta: { 
+                        parent: 'SalesOrder',  breadcrumb: 'Add/Edit Sales Order'
+                      },
+                    component: () => import('@/views/SalesOrder/Maintain.vue'),
+                    props: true,
+                  }
             ]
         }
     ]

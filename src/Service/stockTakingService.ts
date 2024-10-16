@@ -1,77 +1,86 @@
-import authService from '@/service/authService';
-const apiUrl = import.meta.env.VITE_API_URL;
+import authService from '@/service/AuthService';
+import { HttpStatusCode, type AxiosInstance, type AxiosResponse } from 'axios';
+import { Observable, from } from 'rxjs';
+import { map, catchError, switchMap, tap } from 'rxjs/operators';
+import ErrorService from './errorService';
+import type { Result } from '@/Model/Result';
+import type { StockTakingResource } from '@/Model/StockTaking';
 
+const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/stocktaking`;
 
 class StockTakingService {
-  private axiosInstance : any | undefined ;
+  private axiosInstance$: Observable<AxiosInstance>;
+  private errorService: ErrorService;
 
   constructor() {
-    this.initializeAxiosInstance();
+    this.axiosInstance$ = from(authService.getAuthenticatedAxiosInstance());
+    this.errorService = new ErrorService();
   }
 
-  private async initializeAxiosInstance() {
-    this.axiosInstance = await authService.getAuthenticatedAxiosInstance();
+  private getHttpOptions() {
+    return {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+      },
+    };
   }
 
-  private async request(method: string, endpoint: string, data?: any) {
-    debugger;
-    try {
-      const url = `${baseURL}/${endpoint}`;
-      const config = {
-        headers: { 'Content-Type': 'application/json' },
-      };
-
-      let response;
-      if (method === 'get') {
-        response = await this.axiosInstance.get(url, config);
-      } else if (method === 'put') {
-        response = await this.axiosInstance.put(url, data, config);
-      } else {
-        throw new Error('Unsupported HTTP method');
-      }
-
-      if (!response.data) {
-        throw new Error('Network response was not ok');
-      }
-      return response.data;
-    } catch (error: any) {
-      console.error('API request failed:', error);
-      throw error;
-    }
+  search(endpoint: string): Observable<Result<StockTakingResource[]>> {
+    const url = `${baseURL}/${endpoint}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<StockTakingResource[]>>(url, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<StockTakingResource[]>>) => response.data),
+      tap(() => this.errorService.log('Fetched stocktaking list')),
+      catchError(this.errorService.handleError<StockTakingResource[]>('search'))
+    );
   }
 
-  async search(endpoint: string) {
-    return this.request('get', endpoint);
+  get(id: number): Observable<Result<StockTakingResource>> {
+    const url = `${baseURL}/${id}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<StockTakingResource>>(url, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<StockTakingResource>>) => response.data),
+      tap(() => this.errorService.log(`Fetched stocktaking with id ${id}`)),
+      catchError(this.errorService.handleError<StockTakingResource>(`get id=${id}`))
+    );
   }
 
-  async get(id: number) {
-    return this.request('get', `${id}`);
-  }
-
-  private async put(action: string, endpoint?: string, docIds?: number[], status?: number) {
+  private put(action: string, docIds?: number[], status?: number): Observable<Result<any>> {
+    const url = `${baseURL}/${action}`;
     const data = { DocId: docIds, Status: status };
-    return this.request('put', `${action}${endpoint}`, data);
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.put<Result<any>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<any>>) => response.data),
+      tap(() => this.errorService.log(`Updated status for action ${action}`)),
+      catchError(this.errorService.handleError<any>(`put action=${action}`))
+    );
   }
 
-  async updateStatus(docId: number[], status?: number ) {
-    return this.put('status', '', docId, status);
+  updateStatus(docIds: number[], status?: number): Observable<Result<any>> {
+    return this.put('status', docIds, status);
   }
 
-  async approve(endpoint: string, docId: number[]) {
-    return this.put('approve', endpoint, docId, undefined);
-  }
-  
-  async approves(docId: number[]) {
-    return this.put('approves', '', docId, undefined);
+  approve(docIds: number[]): Observable<Result<any>> {
+    return this.put('approve', docIds);
   }
 
-  async cancelApprove(endpoint: string, docId: number[]) {
-    return this.put('cancelApprove', endpoint, docId, undefined);
+  approves(docId: number[]) {
+    return this.put('approves', docId);
+  }
+  cancelApprove(docIds: number[]): Observable<Result<any>> {
+    return this.put(`cancelApprove/${docIds}`, docIds);
   }
 
-  async cancel(endpoint: string, docId: number[]) {
-    return this.put('cancel', endpoint, docId, undefined);
+  cancel(docIds: number[]): Observable<Result<any>> {
+    return this.put('cancel', docIds);
   }
 }
 

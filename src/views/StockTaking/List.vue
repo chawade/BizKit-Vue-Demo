@@ -1,6 +1,6 @@
+// StockTakingList.vue
 <template>
-    <div v-if="loading">Loading...</div>
-    <div v-else-if="error">{{ error }}</div>
+    <div v-if="error">{{ error }}</div>
     <div v-else>
         <div class="card">
             <div class="col-sm-8 flex justify-between mb-8">
@@ -9,6 +9,8 @@
                     <Button icon="pi pi-plus-circle" label="Create Stock Taking" severity="success" />
                 </router-link>
             </div>
+
+            <!-- Action buttons and search -->
             <div class="row">
                 <div class="col-sm-8 mb-5">
                     <div v-if="permission.EXPORT" class="grid gap-2" role="group">
@@ -34,64 +36,33 @@
             </div>
 
             <div class="table-scrollable table-list">
-                <DataTable v-model:selection="selectedItems" :value="sortedItems" :rows="10" dataKey="TakingId"
-                    :paginator="true" :rowsPerPageOptions="[5, 10, 25]" scrollable scrollHeight="400px"
-                    tableStyle="min-width: 50rem" @row-select="onRowSelect" @row-unselect="onRowUnselect">
-                    <Column header="">
-                        <template #body="{ data }">
-                            <div class="dropdown" @mouseleave="closeDropdown(data)">
-                                <Button icon="pi pi-cog" class="p-button-text" @click="toggleDropdown(data)"
-                                    aria-label="Menu" />
-                                <div v-if="dropdownVisible[data.TakingId]" class="dropdown-menu">
-                                    <ul class="dropdown-list">
-                                        <li><router-link :to="`/StockTaking/Detail/${data.TakingId}`">{{ 'Detail'
-                                                }}</router-link></li>
-                                        <li v-if="permission.MODIFY && data.StatusCode !== TAKING && data.StatusCode < APPROVED"
-                                            @click="handleAction(data, 'edit')">{{ 'Edit' }}</li>
-                                        <li v-if="permission.MODIFY" @click="handleAction(data, 'copy')">{{ 'Copy' }}
-                                        </li>
-                                        <li v-if="permission.PRINT && data.StatusCode !== CANCELLED"
-                                            @click="handleAction(data, 'print')">{{ 'Print' }}</li>
-                                        <li v-if="permission.MODIFY && data.StatusCode < APPROVED"
-                                            @click="handleAction(data, 'cancel')" class="text-danger">
-                                            <span><i class="fa fa-trash-o"></i> {{ 'Cancel' }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </template>
-                    </Column>
-                    <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
-                    <Column field="TakingNo" header="TakingNo" sortable style="width: 15%">
-                        <template #body="{ data }">
-                            <router-link :to="`/StockTaking/Detail/${data.TakingId}`" custom v-slot="{ navigate }">
-                                <Button :label="data.TakingNo" link @click="navigate" class="p-0" />
-                            </router-link>
-                        </template>
-                    </Column>
-                    <Column field="TakingDate" header="TakingDate" sortable style="width: 20%"></Column>
-                    <Column field="WarehouseName" header="Warehouse" sortable style="width: 20%"></Column>
-                    <Column field="LocationName" header="Location" sortable style="width: 20%"></Column>
-                    <Column field="PersonInCharge" header="Person In Charge" sortable style="width: 20%"></Column>
-                    <Column field="Status" header="Status" style="width: 15%;">
-                        <template #body="slotProps">
-                            <span @click="sortBy(slotProps.data.Status.StatusName)" :style="{
-                                backgroundColor: slotProps.data.Status.StatusBgColor,
-                                color: slotProps.data.Status.StatusFontColor,
-                                border: `1px solid ${slotProps.data.Status.StatusBorderColor}`,
-                                fontSize: `${slotProps.data.Status.StatusFontSize}px`,
-                                padding: '0.25rem 0.5rem',
-                                borderRadius: '4px',
-                                display: 'inline-block',
-                                cursor: 'pointer'
-                            }">
-                                {{ slotProps.data.Status.StatusName }}
-                            </span>
-                            <i :class="sortOrder === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'"
-                                style="margin-left: 8px;"></i>
-                        </template>
-                    </Column>
-                </DataTable>
+                <ItemTable 
+                    :data="sortedItems" 
+                    :columns="columns" 
+                    tableStyle="min-width: 50rem" 
+                    :selectable="true"
+                    v-model:selectedItems="selectedItems" 
+                    @rowSelect="onRowSelect" 
+                    @rowUnselect="onRowUnselect"
+                    :rows="10" 
+                    scrollHeight="400px" 
+                    dataKey="TakingId">
+                    <template #header>
+                        <Column header="">
+                            <template #body="{ data }">
+                                <!-- <DropdownMenu :data="data" :permission="permission" @action="handleAction" /> -->
+                            </template>
+                        </Column>
+                    </template>
+                    <template #TakingNo="{ data }">
+                        <router-link :to="`/StockTaking/Detail/${data.TakingId}`" custom v-slot="{ navigate }">
+                            <Button :label="data.TakingNo" link @click="navigate" class="p-0" />
+                        </router-link>
+                    </template>
+                    <template #Status="{ data }">
+                        <!-- <StatusBadge :status="data.Status" @click="sortBy(data.Status.StatusName)" /> -->
+                    </template>
+                </ItemTable>
             </div>
         </div>
     </div>
@@ -99,8 +70,10 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import type { Ref } from 'vue';
-import StockTakingService from '@/service/stockTakingService'
+import { useRoute, useRouter } from 'vue-router';
+import StockTakingService from '@/service/stockTakingService';
+import ItemTable from '@/components/ItemTable.vue';
+import { firstValueFrom } from 'rxjs';
 
 const items = ref([])
 const currentPage = ref<number>(1)
@@ -112,9 +85,10 @@ const sortOrder = ref<string>('DESC')
 const totalRecords = ref<number>(0)
 const selectedItems = ref<number[]>([]);
 const selectedTakingIds = ref<number[]>([]);
-const dropdownVisible: Ref<Record<string, boolean>> = ref({});
 const loading = ref<boolean>(false);
 const error = ref(false);
+const router = useRouter();
+const route = useRoute();
 
 const permission = ref({
     APPROVE: true,
@@ -123,34 +97,42 @@ const permission = ref({
     PRINT: true
 });
 
-const TAKING = 175;
-const APPROVED = 200;
-const CANCELLED = 2000;
-
 const sortedItems = computed(() => {
     return items.value
 })
 
-const fetchData = async () => {
-    try {
-        const response = await StockTakingService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
-        console.log('Search result:', response);
-        items.value = response.Data
-        totalRecords.value = response.Pagination.TotalRecords
-        totalPages.value = response.Pagination.TotalPages
-    } catch (error) {
-        console.error('Error fetching data:', error)
-    }
-}
+const columns = [
+    { field: 'TakingNo', header: 'Taking No', sortable: true, customBody: true },
+    { field: 'TakingDate', header: 'Taking Date', sortable: true },
+    { field: 'WarehouseName', header: 'Warehouse', sortable: true },
+    { field: 'LocationName', header: 'Location', sortable: true },
+    { field: 'PersonInCharge', header: 'Person In Charge', sortable: true },
+    { field: 'Status', header: 'Status', customBody: true }
+];
 
-const approves = async () => {
-    try {
-        loading.value = true;
-        await StockTakingService.approves(selectedTakingIds.value);
-        fetchData();
-    } catch (error) {
-        console.error('Error fetching data:', error)
-    }
+
+const fetchData = async () => {
+  try {
+    const response = await firstValueFrom(
+      StockTakingService.search(`${currentPage.value}/${pageSize.value}/${sortKey.value}/${sortOrder.value}/${searchString.value}`)
+    );
+    
+    console.log('Search result:', response);
+    items.value = response.Data;
+    totalRecords.value = response.Pagination.TotalRecords;
+    totalPages.value = response.Pagination.TotalPages;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
+
+const approves = async (docIds: number[]) => {
+  try {
+    const response = await firstValueFrom(StockTakingService.approves(docIds));
+    console.log('Approved stock taking:', response);
+  } catch (error) {
+    console.error('Error approving stock taking:', error);
+  }
 };
 
 const exportToCSV = () => {
@@ -166,62 +148,35 @@ const search = () => {
     fetchData()
 }
 
-const edit = (takingId: number) => {
-    console.log('Edit', takingId);
-};
-
-const copy = (takingId: number) => {
-    console.log('Copy', takingId);
-};
-
-const print = (takingId: number) => {
-    console.log('Print', takingId);
-};
-
-const cancel = (takingId: number, takingDateEn: any) => {
-    console.log('Cancel', takingId, takingDateEn);
-};
-
-const handleAction = (data: { TakingId: number; TakingDateEn: any; StatusCode: number }, action: any) => {
+const handleAction = (data: any, action: string) => {
     switch (action) {
+        case 'detail':
+            router.push(`/StockTaking/Detail/${data.TakingId}`);
+            break;
         case 'edit':
-            edit(data.TakingId);
             break;
         case 'copy':
-            copy(data.TakingId);
             break;
         case 'print':
-            print(data.TakingId);
             break;
         case 'cancel':
-            cancel(data.TakingId, data.TakingDateEn);
             break;
     }
 };
 
-const toggleDropdown = (data: { TakingId: number; }) => {
-    dropdownVisible.value[data.TakingId] = !dropdownVisible.value[data.TakingId];
-};
-
-const closeDropdown = (data: { TakingId: number; }) => {
-    dropdownVisible.value[data.TakingId] = false;
-};
-
-const onRowSelect = (event: any) => {
-    const takingId = event.data.TakingId;
+const onRowSelect = (data: any) => {
+    const takingId = data.TakingId;
     if (!selectedTakingIds.value.includes(takingId)) {
         selectedTakingIds.value.push(takingId);
     }
 };
 
-const onRowUnselect = (event: any) => {
-    const takingId = event.data.TakingId;
+const onRowUnselect = (data: any) => {
+    const takingId = data.TakingId;
     const index = selectedTakingIds.value.indexOf(takingId);
     if (index > -1) {
         selectedTakingIds.value.splice(index, 1);
     }
-    console.log('Selected TakingIds:', selectedTakingIds.value);
-    return selectedTakingIds.value;
 };
 
 const sortBy = (key: string) => {
@@ -243,12 +198,11 @@ const goToPage = (page: number) => {
 }
 
 onMounted(() => {
-    fetchData()
-})
+    fetchData();
+});
 
 watch(selectedItems, (newSelectedItems) => {
     selectedTakingIds.value = newSelectedItems.map((item: any) => item.TakingId);
-    console.log('Updated Selected TakingIds:', selectedTakingIds.value);
 });
 
 </script>

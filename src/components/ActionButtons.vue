@@ -8,7 +8,7 @@
         <div class="col-sm-4 text-right">
             <slot name="create-button">
                 <router-link :to="createRoute">
-                    <Button icon="pi pi-plus-circle" :label="createButtonLabel" severity="success" />
+                    <Button icon="pi pi-plus-circle" :label="createButtonLabel" severity="primary" />
                 </router-link>
             </slot>
         </div>
