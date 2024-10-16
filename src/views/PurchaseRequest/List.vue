@@ -1,305 +1,188 @@
 <template>
-  <div v-if="loading">Loading...</div>
+  <div v-if="loading" class="justify-center"
+    style="width: 100%; height: 100%; text-align: center; vertical-align: middle;">
+    <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="8" fill="transparent" animationDuration=".5s"
+      aria-label="Custom ProgressSpinner" />
+  </div>
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
     <div class="card">
-      <!-- Header Section -->
       <div class="col-sm-8 flex justify-between mb-8">
-        <h4 class="font-bold text-l flex gap-2 items-center"><span class="pi pi-cog"></span>Purchase Request List
-        </h4>
+        <h4 class="font-bold text-l flex gap-2 items-center"><span class="pi pi-cog"></span>Purchase Request List</h4>
         <router-link to="/PurchaseRequest/Maintain">
           <Button icon="pi pi-plus-circle" label="New Purchase Request" severity="success" />
         </router-link>
       </div>
 
-      <!-- Search Section -->
-      <div class="row">
-        <div class="col-sm-8 mb-5">
-          <div v-if="permission.EXPORT" class="grid gap-2" role="group">
-            <div class="col-span-full lg:col-span-8 flex flex-wrap gap-2">
-              <Button label="Approve" severity="success" class="w-full sm:w-auto" @click="Approve" />
-              <Button label="ExportCSV" severity="info" class="w-full sm:w-auto" @click="exportToCSV" />
-              <Button label="ExportExcel" severity="info" class="w-full sm:w-auto" @click="exportToExcel" />
-            </div>
-            <div class="col-span-full lg:col-span-2 mt-2 lg:mt-0 lg:col-start-9">
-              <span class="p-input-icon-right w-full">
-                <InputGroup>
-                  <InputText v-model="searchString" class="w-full" placeholder="Request No., Vendor Name, Status" />
-                  <Button icon="pi pi-search" severity="info" @click="searchList" />
-                  <Button icon="pi pi-bars" class="p-button-text" severity="info"
-                    v-styleclass="{ selector: '#searchDetail', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }" />
-                </InputGroup>
-              </span>
-            </div>
-          </div>
-        </div>
-        <div id="searchDetail"
-          class="config-panel hidden right-0 w-full p-4 bg-surface-0 dark:bg-surface-900 border border-surface rounded-border origin-top shadow-[0px_3px_5px_rgba(0,0,0,0.02),0px_0px_2px_rgba(0,0,0,0.05),0px_1px_4px_rgba(0,0,0,0.08)]">
-          <div class="lg:w-3/3 border-b-1 rounded-md shadow p-5">
-            <form @submit.prevent="submitForm">
-              <!-- First row -->
-              <div class="flex flex-col lg:flex-row lg:justify-center">
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-bold" for="PRNo">PR No.</label>
-                    <InputText id="username" aria-describedby="username-help" placeholder="PR No." />
-                  </div>
-                </div>
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-bold" for="PRNo">Vendor</label>
-                    <Select v-model="selectedVendor" optionLabel="name" placeholder="Select" class="w-full" />
-                  </div>
-                </div>
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-bold" for="PRNo">Status</label>
-                    <Select v-model="selectedStatus" optionLabel="name" placeholder="Select" class="w-full" />
-                  </div>
-                </div>
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-bold" for="PRNo">Reference No.</label>
-                    <InputText id="username" aria-describedby="username-help" placeholder="Reference No." />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Second row -->
-              <div class="flex flex-col mt-4 lg:flex-row lg:justify-center">
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-bold" for="PRNo">Remark</label>
-                    <InputText id="username" aria-describedby="username-help" />
-                  </div>
-                </div>
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-bold" for="PRNo">Item Code</label>
-                    <InputText id="username" aria-describedby="username-help" />
-                  </div>
-                </div>
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-bold" for="PRNo">Item Name</label>
-                    <InputText id="username" aria-describedby="username-help" />
-                  </div>
-                </div>
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex gap-2 w-full">
-                    <div class="flex flex-col gap-2 w-1/2">
-                      <label class="font-bold" for="amountFrom">Amount From</label>
-                      <InputText id="amountFrom" aria-describedby="amountFrom-help" class="w-full" />
-                    </div>
-                    <div class="flex flex-col gap-2 w-1/2">
-                      <label class="font-bold" for="amountTo">To</label>
-                      <InputText id="amountTo" aria-describedby="amountTo-help" class="w-full" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Third row -->
-              <div class="flex flex-col mt-4 lg:flex-row lg:justify-center">
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-bold" for="PRNo">PR Date</label>
-                    <DatePicker v-model="selectedPRDate" selectionMode="range" :manual-input="false" id="dateRange"
-                      showButtonBar class="form-input rounded-md shadow-sm" />
-                  </div>
-                </div>
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex gap-2 w-full">
-                    <div class="flex flex-col gap-2 w-1/2">
-                      <label class="font-bold" for="amountFrom">From</label>
-                      <InputText id="amountFrom" aria-describedby="amountFrom-help" class="w-full" />
-                    </div>
-                    <div class="flex flex-col gap-2 w-1/2">
-                      <label class="font-bold" for="amountTo">To</label>
-                      <InputText id="amountTo" aria-describedby="amountTo-help" class="w-full" />
-                    </div>
-                  </div>
-                </div>
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-bold" for="PRNo">Require Date</label>
-                    <DatePicker v-model="selectedRequireDate" selectionMode="range" :manual-input="false" id="dateRange"
-                      showButtonBar class="form-input rounded-md shadow-sm" />
-                  </div>
-                </div>
-                <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                  <div class="flex gap-2 w-full">
-                    <div class="flex flex-col gap-2 w-1/2">
-                      <label class="font-bold" for="amountFrom">From</label>
-                      <InputText id="amountFrom" aria-describedby="amountFrom-help" class="w-full" />
-                    </div>
-                    <div class="flex flex-col gap-2 w-1/2">
-                      <label class="font-bold" for="amountTo">To</label>
-                      <InputText id="amountTo" aria-describedby="amountTo-help" class="w-full" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="flex-col items-start mt-2 lg:flex-row gap-4 lg:ml-2 xl:ml-5 xl:w-[40%]">
-                <Button label="Detail Search" severity="info" />
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- Table Section -->
       <div class="table-scrollable table-list">
-        <DataTable v-model:selection="selectedItems" :value="sortedItems" :rows="10" dataKey="PurchaseRequestNo"
-          :paginator="true" :rowsPerPageOptions="[5, 10, 25]" scrollable scrollHeight="400px" :lazy="true"
-          :total-records="totalRecords" tableStyle="min-width: 50rem" @row-select="onRowSelect"
-          @row-unselect="onRowUnselect" @page="onPageChange" @sort="onSort" :loading="fetchLoading">
-          <Column header="">
-            <template #body="{ data }">
-              <div class="dropdown" @mouseleave="closeDropdown(data)">
-                <Button icon="pi pi-cog" class="p-button-text" @click="toggleDropdown(data)" aria-label="Menu" />
-                <div v-if="dropdownVisible[data.PurchaseRequestNo]" class="dropdown-menu">
-                  <ul class="dropdown-list">
-                    <li><router-link :to="`/PurchaseRequest/Detail/${data.PurchaseRequestNo}`">{{ 'Detail'
-                        }}</router-link></li>
-                    <li v-if="permission.MODIFY && data.StatusCode !== TAKING && data.StatusCode < APPROVED"
-                      @click="handleAction(data, 'edit')">{{ 'Edit' }}</li>
-                    <li v-if="permission.MODIFY" @click="handleAction(data, 'copy')">{{ 'Copy' }}
-                    </li>
-                    <li v-if="permission.PRINT && data.StatusCode !== CANCELLED" @click="handleAction(data, 'print')">{{
-                      'Print' }}</li>
-                    <li v-if="permission.MODIFY && data.StatusCode < APPROVED" @click="handleAction(data, 'cancel')"
-                      class="text-danger">
-                      <span><i class="fa fa-trash-o"></i> {{ 'Cancel' }}</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </template>
-          </Column>
-          <Column selectionMode="multiple" headerStyle="width: 3rem" style="width: 5%"></Column>
-          <Column field="PurchaseRequestNo" header="PRNo" sortable>
-            <template #body="{ data }">
-              <router-link :to="`/PurchaseRequest/Detail/${data.PurchaseRequestNo}`" custom v-slot="{ navigate }">
-                <Button :label="data.PurchaseRequestNo" link @click="navigate" class="p-0" />
-              </router-link>
-            </template>
-          </Column>
-          <Column field="PurchaseRequestDate" header="PRDate" sortable></Column>
-          <Column field="RequireDate" header="RequireDate" sortable></Column>
-          <Column field="Vendor.VendorName" header="Vendor" sortable></Column>
-          <Column field="Project" header="Project"></Column>
-          <Column field="Department" header="Department"></Column>
-          <Column field="Amount" header="Amount" sortable class="text-right"></Column>
-          <Column field="Status.StatusName" header="Status">
-            <template #body="slotProps">
-              <span @click="SortBy(slotProps.data.Status.StatusName)" :style="{
-                backgroundColor: slotProps.data.Status.StatusBgColor,
-                color: slotProps.data.Status.StatusFontColor,
-                border: `1px solid ${slotProps.data.Status.StatusBorderColor}`,
-                fontSize: `${slotProps.data.Status.StatusFontSize}px`,
-                padding: '0.25rem 0.5rem',
-                borderRadius: '4px',
-                display: 'inline-block',
-                cursor: 'pointer'
-              }">
-                {{ slotProps.data.Status.StatusName }}
-              </span>
-              <i :class="direction === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc'" style="margin-left: 8px;"></i>
-            </template>
-          </Column>
+        <ItemTable :items="sortedItems" :columns="columns" :dataKey="'PurchaseRequestNo'" :rows-per-page="pageSize"
+          :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems" :loading="fetchLoading" :lazy="true"
+          :totalRecords="totalRecords" @page="onPageChange" selectionMode="multiple" @update:selection="onRowSelect"
+          @sort="onSort" @search="fetchPurchaseRequests" :menu="menuaa">
+          <template #header>
+            <Menubar :model="filteredMenuItems" class="hidden md:flex">
+              <template #start>
+                <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined @click="clearSearch" />
+              </template>
+              <template #end>
+                <IconField>
+                  <InputGroup>
+                    <InputText v-model="searchString" placeholder="PR No., Vendor Name, Status" />
+                    <Button icon="pi pi-search" severity="info" @click="searchList" />
+                    <Button icon="pi pi-bars" class="p-button-text" severity="info"
+                      v-styleclass="{ selector: '#searchDetail', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }" />
+                  </InputGroup>
+                </IconField>
+              </template>
+            </Menubar>
+            <div id="searchDetail"
+              class="config-panel hidden w-full p-4 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+              <div class="w-full">
+                <form @submit.prevent="submitForm">
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="PRNo">PR No.</label>
+                      <InputText id="PRNo" v-model="searchPR.PRNo" type="text"
+                        class="form-input rounded-md shadow-sm" />
+                    </div>
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="vendor">Vendor</label>
+                      <Select v-model="searchPR.Vendor" id="vendor" class="form-select rounded-md shadow-sm">
+                      </Select>
+                    </div>
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="status">Status</label>
+                      <Select v-model="searchPR.Status" id="status" class="form-select rounded-md shadow-sm">
+                      </Select>
+                    </div>
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="referenceNo">Reference No.</label>
+                      <InputText id="referenceNo" v-model="searchPR.ReferenceNo" type="text"
+                        class="form-input rounded-md shadow-sm" />
+                    </div>
 
-          <template #footer>
-            <div class="p-text-center p-m-4">
-              <MultiSelect v-model="selectedColumns" :options="columns" optionLabel="header" @change="onColumnToggle"
-                display="chip" placeholder="Select Columns" class="w-full" />
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="remark">Remark</label>
+                      <InputText id="remark" v-model="searchPR.Remark" type="text"
+                        class="form-input rounded-md shadow-sm" />
+                    </div>
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="itemCode">Item Code</label>
+                      <InputText id="itemCode" v-model="searchPR.ItemCode" type="text"
+                        class="form-input rounded-md shadow-sm" />
+                    </div>
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="itemName">Item Name</label>
+                      <InputText id="itemName" v-model="searchPR.ItemName" type="text"
+                        class="form-input rounded-md shadow-sm" />
+                    </div>
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="amount">Amount</label>
+                      <div class="flex gap-2">
+                        <InputText id="amountFrom" v-model="searchPR.stringTotalFrom" type="text"
+                          class="form-input rounded-md shadow-sm w-1/2" placeholder="From" />
+                        <InputText id="amountTo" v-model="searchPR.stringTotalTo" type="text"
+                          class="form-input rounded-md shadow-sm w-1/2" placeholder="To" />
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="PRDate">PR Date</label>
+                      <DatePicker v-model="searchPR.PeriodFrom" selectionMode="range" :manual-input="false" id="PRDate"
+                        showButtonBar class="form-input rounded-md shadow-sm" />
+                    </div>
+                    <div class="flex flex-col">
+                      <label class="font-bold mb-1" for="requireDate">Require Date</label>
+                      <DatePicker v-model="searchPR.DeliveryDateFrom" selectionMode="range" :manual-input="false"
+                        id="requireDate" showButtonBar class="form-input rounded-md shadow-sm" />
+                    </div>
+                    <div class="flex items-end">
+                      <Button type="submit" label="Detail Search" severity="info"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              </div>
             </div>
           </template>
-          <template #empty>
-            <div class="p-text-center p-m-4">
-              <Tag style="width: 100%; min-height: 70px" severity="secondary" value="No records available">
-              </Tag>
-            </div>
+
+          <template #Status="slotProps">
+            <Tag class="min-w-28 max-w-28 text-wrap" :value="slotProps.data.Status.StatusName" :style="{
+              border: slotProps.data.Status.StatusBorderColor,
+              backgroundColor: slotProps.data.Status.StatusBgColor,
+              color: slotProps.data.Status.StatusFontColor,
+              fontSize: slotProps.data.Status.StatusFontSize
+            }" />
           </template>
-        </DataTable>
+
+          <template #Vendor="slotProps">
+            {{ slotProps.data.Vendor?.VendorName ?? '' }}
+          </template>
+
+          <template #PurchaseRequestNo="slotProps">
+            <router-link :to="`/PurchaseRequest/Detail/${slotProps.data.PurchaseRequestNo}`" custom
+              v-slot="{ navigate }">
+              <Button :label="slotProps.data.PurchaseRequestNo" link @click="navigate" class="p-0" />
+            </router-link>
+          </template>
+
+        </ItemTable>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, type Ref, reactive } from 'vue';
+import { ref, onMounted, watch, type Ref, reactive, onUnmounted } from 'vue';
 import PurchaseRequestService from '@/Service/purchaseRequestService';
 import type Menu from 'primevue/menu';
 import { computed } from 'vue';
 import type { DataTableSortEvent } from 'primevue/datatable';
 import { Subscription } from 'rxjs';
 import { useToast } from 'primevue/usetoast';
+import type { PRHeaderSearch, PurchaseRequest } from '@/Model/purchaseRequest';
+import ItemTable from '@/components/ItemTable.vue';
+import type { ColumnDef } from '@/Model/GlobalVariable/DataTable';
 
 let subscription: Subscription;
-interface Vendor {
-  VendorId: number;
-  CompanyId: number;
-  VendorCode: string | null;
-  VendorName: string;
-}
-
-interface Status {
-  StatusId: number;
-  StatusName: string;
-  LocalStatusName: string | null;
-  StatusBgColor: string;
-  StatusBorderColor: string;
-  StatusFontColor: string;
-  StatusFontSize: number;
-}
-
-interface PurchaseRequest {
-  PurchaseRequestNo: string;
-  PurchaseRequestDate: string;
-  RequireDate: string;
-  VendorName: string;
-  Vendor: Vendor | null;
-  Project: string;
-  Department: string;
-  Status: Status;
-  Amount: number;
-  ReferenceNo: string;
-  PRNoSearchPlaceholder: string;
-  Remark: string;
-  ItemCode: string;
-  ItemName: string;
-  selectedItems: boolean;
-  TotalAmount: number;
-}
-interface ColumnDef {
-  field: string;
-  header: string;
-  sortable?: boolean;
-  style?: string;
-  filterable?: boolean;
-  filterField?: string;
-}
+const searchPR = reactive<PRHeaderSearch>({
+  PRNo: '',
+  CompanyID: 0,
+  DetailSearch: false,
+  Status: 0,
+  VendorID: 0,
+  Vendor: ''
+})
 
 const selectedColumns = ref<ColumnDef[]>([]);
 const onColumnToggle = (event: { value: ColumnDef[] }) => {
   selectedColumns.value = event.value;
 };
 const columns = ref<ColumnDef[]>([
-  { field: 'PurchaseRequestNo', header: 'PRNo', sortable: true, style: 'width: 15%' },
-  { field: 'PurchaseRequestDate', header: 'PRDate', sortable: true, style: 'width: 15%' },
-  { field: 'RequireDate', header: 'RequireDate', sortable: true, style: 'width: 15%' },
-  { field: 'Vendor.VendorName', header: 'Vendor', sortable: true, style: 'width: 15%' },
-  { field: 'Project', header: 'Project', sortable: true, style: 'width: 20%; text-align: center;' },
-  { field: 'Department', header: 'Department', sortable: true, style: 'width: 1%' },
-  { field: 'Amount', header: 'Amount', style: 'width: 10%' },
-  { field: 'Status.StatusName', header: 'Status', style: 'width: 10%' }
+  { field: 'PurchaseRequestNo', header: 'PRNo', sortable: true, class: 'width: 15%', headerClass: 'w-full text-center font-bold' },
+  { field: 'PurchaseRequestDate', header: 'PRDate', sortable: true, class: 'width: 15%' , headerClass: 'w-full text-center font-bold' },
+  { field: 'RequireDate', header: 'RequireDate', sortable: true, class: 'width: 15%' , headerClass: 'w-full text-center font-bold' },
+  { field: 'Vendor', header: 'Vendor', sortable: true, class: 'width: 15%' , headerClass: 'w-full text-center font-bold'},
+  { field: 'Project', header: 'Project', sortable: true, class: 'width: 20%; text-align: center;' , headerClass: 'w-full text-center font-bold'},
+  { field: 'Department', header: 'Department', sortable: true, class: 'width: 1%' , headerClass: 'w-full text-center font-bold'},
+  { field: 'Amount', header: 'Amount', sortable: true, class: 'width: 10%' , headerClass: 'w-full text-center font-bold'},
+  { field: 'Status', header: 'Status', sortable: true, class: 'width: 10%' , headerClass: 'w-full text-center font-bold'}
 ]);
 
+const clearSearch = () => {
+  pageNumber.value = 1
+  pageSize.value = 10
+  sortBy.value = 'PRDate'
+  direction.value = 'DESC'
+  searchString.value = ''
+  fetchPurchaseRequests()
+}
+const isSelectAll = ref(false);
 const toast = useToast();
 const dropdownVisible: Ref<Record<string, boolean>> = ref({});
 const menu = ref<InstanceType<typeof Menu> | null>(null);
-const selectedItems = ref<number[]>([]);
+const selectedItems = ref<any[]>([]);
 const request = ref<PurchaseRequest[]>([]);
 const loading = ref(false);
 const fetchLoading = ref(false);
@@ -317,70 +200,105 @@ const permission = ref({
   PRINT: true,
   EXPORT: true
 });
-const TAKING = 175;
-const APPROVED = 200;
-const CANCELLED = 2000;
 
 const selectedPurchaseRequestNo = ref<string[]>([]);
-const selectedVendor = ref([]);
-const selectedStatus = ref([]);
-const selectedPRDate = ref([]);
-const selectedRequireDate = ref([]);
 
 const fetchPurchaseRequests = async () => {
   fetchLoading.value = true;
-    const endpoint = `${pageNumber.value}/${pageSize.value}/${sortBy.value}/${direction.value}/${searchString.value}`;
-    request.value = [];
-    totalRecords.value = 0;
-    totalPages.value = 0;
-    subscription = PurchaseRequestService.search(endpoint).subscribe({
-        next: (result) => {
-            if (result.IsSuccess) {
-              request.value = result.Data || [];
-                totalRecords.value = result.Pagination?.TotalRecords ?? 0;
-                totalPages.value = result.Pagination?.TotalPages ?? 0;
-            } else {
-                const statusCode = result.StatusCode.toString() || 'Unknown';
-                const errorMessage = result.Error?.Message || 'An error occurred';
-                toast.add({ severity: 'error', summary: statusCode , detail: errorMessage, life: 2000 });
-            }
-        },
-        error: (error) => {
-            toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
-        },
-        complete: () => {
-            fetchLoading.value = false;
-        }
-    });
+  const endpoint = `${pageNumber.value}/${pageSize.value}/${sortBy.value}/${direction.value}/${searchString.value}`;
+  request.value = [];
+  console.log(request);
+  totalRecords.value = 0;
+  totalPages.value = 0;
+  subscription = PurchaseRequestService.search(endpoint).subscribe({
+    next: (result) => {
+      if (result.IsSuccess) {
+        request.value = result.Data || [];
+        totalRecords.value = result.Pagination?.TotalRecords ?? 0;
+        totalPages.value = result.Pagination?.TotalPages ?? 0;
+      } else {
+        const statusCode = result.StatusCode.toString() || 'Unknown';
+        const errorMessage = result.Error?.Message || 'An error occurred';
+        toast.add({ severity: 'error', summary: statusCode, detail: errorMessage, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
 };
+const nestedMenuitems = ref([
+  {
+    label: 'Approve',
+    icon: 'pi pi-check-circle',
+    command: () => {
 
-// const menuaa = ref([
-//   {
-//     label: 'Options',
-//     items: [
-//       {
-//         label: 'Detail',
-//         icon: 'pi pi-refresh'
-//       },
-//       {
-//         label: 'Export',
-//         icon: 'pi pi-upload'
-//       },
-//       {
-//         label: 'Cancel',
-//         icon: 'pi pi-trash'
-//       }
-//     ]
-//   }
-// ]);
+    }
+  },
+  {
+    label: 'Generate Invoice',
+    icon: 'pi pi-check-circle',
+    command: () => {
+
+    }
+  },
+  {
+    label: 'Print',
+    icon: 'pi pi-print',
+    command: () => {
+
+    }
+  },
+  {
+    label: 'Export',
+    items: [
+      {
+        label: 'Excel',
+        icon: 'pi pi-fw pi-compass'
+      },
+      {
+        label: 'CSV',
+        icon: 'pi pi-fw pi-map-marker'
+      }
+    ]
+  }
+]);
+const filteredMenuItems = computed(() => {
+  return nestedMenuitems.value.filter(item => {
+    if (item.label === 'Approve' || item.label === 'Generate Invoice' || item.label === 'Print') {
+      return selectedItems.value.length > 0; // Show "Approve" only if status is 100
+    }
+    return true; // Show other items regardless of status
+  });
+});
+const menuaa = ref([
+  {
+    label: 'Options',
+    items: [
+      {
+        label: 'Detail',
+        icon: 'pi pi-refresh'
+      },
+      {
+        label: 'Export',
+        icon: 'pi pi-upload'
+      },
+      {
+        label: 'Cancel',
+        icon: 'pi pi-trash'
+      }
+    ]
+  }
+]);
 const toggleMenu = (event: Event) => {
   menu.value?.toggle(event);
 };
-const onRowSelect = (event: any) => {
-  const purchaserequestNo = event.data.TakingId;
-  if (!selectedPurchaseRequestNo.value.includes(purchaserequestNo)) {
-    selectedPurchaseRequestNo.value.push(purchaserequestNo);
-  }
+const onRowSelect = (value: any[]) => {
+  selectedItems.value = value;
+  isSelectAll.value = selectedItems.value.length === sortedItems.value.length
 };
 const onRowUnselect = (event: any) => {
   const purchaserequestNo = event.data.TakingId;
@@ -558,6 +476,13 @@ const SortBy = (key: string) => {
 // เรียกใช้ฟังก์ชันดึงข้อมูลเมื่อ component ถูก mount
 onMounted(() => {
   fetchPurchaseRequests();
+})
+onUnmounted(() => {
+  subscription.unsubscribe();
+})
+
+watch(selectedItems, (newSelectedItems) => {
+
 });
 </script>
 

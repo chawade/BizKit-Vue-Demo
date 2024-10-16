@@ -17,7 +17,7 @@
             'State': vendorData.State,
             'ZipCode': vendorData.ZipCode,
             'Country': vendorData.Country,
-            'TaxId': vendorData.TaxId,
+            'TaxId': vendorData.TaxId || '',
             'BranchCode': vendorData.BranchCode,
           }" />
         </div>
@@ -33,11 +33,12 @@
           }" />
         </div>
       </div>
-      <ItemTable :items="purchase" :columns="columns" tableStyle="min-width: 50rem" />
+      <ItemTable :items="purchase" :columns="columns" :dataKey="'id'" :loading="fetchLoading" :lazy="false"
+        :totalRecords="purchase.length" :menu="menuaa" tableStyle="min-width: 50rem" />
 
       <div class="flex flex-col md:flex-row w-full">
         <div class="w-full md:w-1/2">
-          <Remark title="Remark" :remark="request.Notes"/>
+          <Remark title="Remark" :remark="request.Notes" />
         </div>
         <div class="w-full md:w-1/2 md:flex md:justify-end">
           <InfoBox title="Summary" :info="{
@@ -123,8 +124,11 @@ import Tabs from 'primevue/tabs';
 import TabPanel from 'primevue/tabpanel';
 import { Subscription } from 'rxjs'; // นำเข้า RxJS Subscription
 import toast from 'primevue/toast';
+import type { PurchaseRequest } from '@/Model/purchaseRequest';
+import type { VendorResource } from '@/Model/vendor';
 
-let subscription: Subscription; 
+let subscription: Subscription;
+let vendorSubscription: Subscription;
 interface PurchaseRequestStatus {
   APPROVED: number;
   REJECTED: number;
@@ -132,27 +136,27 @@ interface PurchaseRequestStatus {
   CANCELLED: number;
 }
 
-interface PurchaseRequest {
-  PurchaseRequestNo: string;
-  PurchaseRequestDate: string;
-  DeliveryDate: string;
-  ReferenceNo: string;
-  RequireDate: Date;
-  PIC: string;
-  Project: string;
-  Department: string;
-  Status: Status;
-  IssueDate: string;
-  PersonInCharge: string;
-  ProjectName: '';
-  DepaermentName: '';
-  Notes: string;
-  Vendor: Vendor;
-  Subtotal: number;
-  TaxAmount: number;
-  OtherCharges: number;
-  TotalAmount: number;
-}
+// interface PurchaseRequest {
+//   PurchaseRequestNo: string;
+//   PurchaseRequestDate: string;
+//   DeliveryDate: string;
+//   ReferenceNo: string;
+//   RequireDate: Date;
+//   PIC: string;
+//   Project: string;
+//   Department: string;
+//   Status: Status;
+//   IssueDate: string;
+//   PersonInCharge: string;
+//   ProjectName: '';
+//   DepaermentName: '';
+//   Notes: string;
+//   Vendor: Vendor;
+//   Subtotal: number;
+//   TaxAmount: number;
+//   OtherCharges: number;
+//   TotalAmount: number;
+// }
 interface Status {
   StatusId: number;
   StatusName: string;
@@ -245,7 +249,7 @@ const comments = ref<Comment[]>([]);;
 const attachedFiles = ref<AttachedFile[]>([]);
 const fetchLoading = ref(true);
 const error = ref<string | null>(null);
-const vendorData = ref<Vendorlist>({} as Vendorlist);
+const vendorData = ref<VendorResource>({} as VendorResource);
 const vendorId = ref<number>(0);
 
 // const updateStatus = async (statusId: number) => {
@@ -280,6 +284,26 @@ const columns = [
   { field: "VatCode", header: "VAT" },
   { field: "LineTotal", header: "Total" }
 ];
+
+const menuaa = ref([
+  {
+    label: 'Options',
+    items: [
+      {
+        label: 'Detail',
+        icon: 'pi pi-refresh'
+      },
+      {
+        label: 'Export',
+        icon: 'pi pi-upload'
+      },
+      {
+        label: 'Cancel',
+        icon: 'pi pi-trash'
+      }
+    ]
+  }
+]);
 const editPR = async () => {
   router.push(`'/PurchaseRequest/PRMaintain/'${prNO}`);
 };
@@ -337,17 +361,35 @@ const fetchPurchaseRequestDetail = () => {
   });
 };
 
-const fetchVendorData = async () => {
-  try {
-    console.log(vendorId.value, 'response');
-    const response = await vendorService.get(vendorId.value);
-    vendorData.value = response.Data;
-    console.log(vendorData.value, 'VendorData');
-  } catch (err: any) {
-    error.value = `Failed to fetch vendor data: ${err.message}`;
-  } finally {
-    fetchLoading.value = false;
-  }
+const fetchVendorData = () => {
+  console.log(vendorId.value, 'response');
+
+  vendorSubscription = vendorService.get(vendorId.value).subscribe({
+    next: (response) => {
+      if (response.IsSuccess) {
+        vendorData.value = response.Data;
+        console.log(vendorData.value, 'VendorData');
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: response.StatusCode.toString(),
+          detail: response.Error?.Message,
+          life: 2000
+        });
+      }
+    },
+    error: (error) => {
+      toast.add({
+        severity: 'error',
+        summary: 'Failed to fetch vendor data',
+        detail: error.message,
+        life: 2000
+      });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
 };
 
 const backToList = async () => {

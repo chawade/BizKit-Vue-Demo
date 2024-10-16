@@ -1,77 +1,41 @@
-import authService from "./authService";
+import authService from "@/Service/authService";
+import { HttpStatusCode, type AxiosInstance, type AxiosResponse } from "axios";
+import type { Error, Result } from "@/Model/Result";
+import { Observable, from, of } from "rxjs";
+import { map, catchError, tap, switchMap } from "rxjs/operators";
+import type { PickingSearch } from "@/Model/Picking";
+import ErrorService from "./errorService";
+import type { VendorResource } from "@/Model/vendor";
 
 const apiUrl = import.meta.env.VITE_API_URL;
-
 const baseURL = `${apiUrl}/v1/vendor`;
 
 class VendorService {
-  private axiosInstance : any | undefined ;
-
+  private axiosInstance$: Observable<AxiosInstance>;
+  private errorService: ErrorService;
   constructor() {
-    this.initializeAxiosInstance();
+    this.axiosInstance$ = from(authService.getAuthenticatedAxiosInstance());
+    this.errorService = new ErrorService();
   }
 
-  private async initializeAxiosInstance() {
-    this.axiosInstance = await authService.getAuthenticatedAxiosInstance();
+  private getHttpOptions() {
+    return {
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache"
+      },
+    };
   }
 
-  private async request(method: string, endpoint: string, data?: any) {
-    try {
-      const url = `${baseURL}/${endpoint}`;
-      const config = {
-        headers: { 'Content-Type': 'application/json' },
-      };
-
-      let response;
-      if (method === 'get') {
-        response = await this.axiosInstance.get(url, config);
-      } else if (method === 'put') {
-        response = await this.axiosInstance.put(url, data, config);
-      } else {
-        throw new Error('Unsupported HTTP method');
-      }
-
-      if (!response.data) {
-        throw new Error('Network response was not ok');
-      }
-      return response.data;
-    } catch (error: any) {
-      console.error('API request failed:', error);
-      throw error;
-    }
-  }
-
-  async search(endpoint: string) {
-    return this.request('get', endpoint);
-  }
-
-  async get(id: number) {
-    return this.request('get', `${id}`);
-  }
-
-  private async put(action: string, endpoint?: string, docIds?: number[], status?: number) {
-    const data = { DocId: docIds, Status: status };
-    return this.request('put', `${action}${endpoint}`, data);
-  }
-
-  async updateStatus(docId: number[], status?: number ) {
-    return this.put('status', '', docId, status);
-  }
-
-  async approve(endpoint: string, docId: number[]) {
-    return this.put('approve', endpoint, docId, undefined);
-  }
-  
-  async approves(docId: number[]) {
-    return this.put('approves', '', docId, undefined);
-  }
-
-  async cancelApprove(endpoint: string, docId: number[]) {
-    return this.put('cancelApprove', endpoint, docId, undefined);
-  }
-
-  async cancel(endpoint: string, docId: number[]) {
-    return this.put('cancel', endpoint, docId, undefined);
+  get(id: number): Observable<Result<VendorResource>> {
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<VendorResource>>(`${baseURL}/${id}`, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<VendorResource>>) => response.data),
+      tap(() => this.errorService.log(`Fetched sales order with id ${id}`)),
+      catchError(this.errorService.handleError<VendorResource>(`get id=${id}`))
+    );
   }
 }
 

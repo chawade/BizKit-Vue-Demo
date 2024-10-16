@@ -1,5 +1,6 @@
 import type { BaseResource, SelectItem } from "./BaseResource";
 import type { PaymentTermListResource } from "./PaymentTerm";
+import type { StatusResource } from "./Status";
 
 export interface PurchaseRequest {
   PurchaseRequestNo: string;
@@ -9,7 +10,7 @@ export interface PurchaseRequest {
   Vendor: Vendor | null;
   Project: string;
   Department: string;
-  Status: Status;
+  Status: StatusResource;
   Amount: number;
   ReferenceNo: string;
   PRNoSearchPlaceholder: string;
@@ -18,6 +19,14 @@ export interface PurchaseRequest {
   ItemName: string;
   selectedItems: boolean;
   TotalAmount: number;
+  IssueDate: string;
+  PersonInCharge: string;
+  ProjectName: '';
+  DepaermentName: '';
+  Notes: string;
+  Subtotal: number;
+  TaxAmount: number;
+  OtherCharges: number;
 }
 
 export interface Vendor {
@@ -144,4 +153,36 @@ export interface PurchaseRequestItemSave {
   ReferenceLineNumber: number;
   DDLItem: SelectItem[];
 }
+
+export interface PRHeaderSearch {
+  CompanyID: number;
+  PeriodFrom?: Date;
+  PeriodTo?: Date;
+  DeliveryDateFrom?: Date;
+  DeliveryDateTo?: Date;
+
+  stringPeriodFrom?: string;
+  stringPeriodTo?: string;
+  stringDeliveryDateFrom?: string;
+  stringDeliveryDateTo?: string;
+  stringTotalFrom?: string;
+  stringTotalTo?: string;
+
+  Remark?: string;
+  PONo?: string;
+  ItemCode?: string;
+  ItemName?: string;
+  TotalFrom?: number;
+  TotalTo?: number;
+  DetailSearch: boolean;
+  PRNo?: string;
+  Status: number;
+  VendorID: number;
+  ReferenceNo?: string;
+  UpdateBy?: string;
+  URL?: string;
+  IPAddress?: string;
+  Vendor: string;
+}
+
 
