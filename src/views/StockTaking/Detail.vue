@@ -9,26 +9,65 @@
         @start-taking="startTaking" @save-plan="savePlan" @approve="approve" @cancel="cancel"
         @cancel-approve="cancelApprove" @edit="edit" @back-to-list="backToList" />
 
-      <DetailHeader title="Stock Taking Detail" :itemNo="stockTakingData.TakingNo" :status="stockTakingData.Status.StatusName" />
+      <DetailHeader title="Stock Taking Detail" :itemNo="stockTakingData.takingNo" :status="stockTakingData.status" />
 
       <InfoBox title="Stock Taking Info" :info="{
-        'Warehouse Name': stockTakingData.WarehouseName,
-        'Location': stockTakingData.LocationName,
-        'Taking Date':  stockTakingData.TakingDate ? new Date(stockTakingData.TakingDate).toLocaleDateString() : ' ',
-        'PIC': stockTakingData.PersonInCharge
+        'Warehouse Name': stockTakingData.warehouseName,
+        'Location': stockTakingData.locationName,
+        'Taking Date': stockTakingData.takingDate ? new Date(stockTakingData.takingDate).toLocaleDateString() : ' ',
+        'PIC': stockTakingData.personInCharge
       }" />
 
-      <ItemTable
-        class="mb-3" 
-        :data="stockTakingData.StockTakingItems" 
-        :columns="columns" 
-        tableStyle="min-width: 50rem"
-        :rows="stockTakingData.StockTakingItems.length"
-        scrollHeight="auto"
-        dataKey="ItemCode"
-      />      
+      <DataTable :value="stockTakingItems" scrollable scrollHeight="400px" tableStyle="min-width: 50rem"
+        columnResizeMode="fit" class="mb-10">
+        <!-- LineNumber -->
+        <Column field="lineNumber" header="No.">
+          <template #body="{ index }">
+            {{ index + 1 }}
+          </template>
+        </Column>
 
-        <Remark title="Remark" :remark="stockTakingData.Remark" />
+        <!-- Item Code Column -->
+        <Column field="itemCode" header="Item Code" class="min-w-40" />
+
+        <!-- Item Name Column -->
+        <Column field="itemName" header="Item Name" class="min-w-40" />
+
+        <!-- Shelf Code Column -->
+        <Column field="shelfCode" header="Shelf Name" class="min-w-40" />
+
+        <!-- Lot No Column -->
+        <Column field="lotNo" header="Lot/Serial No." class="min-w-40" />
+
+        <!-- Expiry Date Column -->
+        <Column field="expiryDate" header="Expiry Date" class="min-w-40">
+          <template #body="{ data }">
+            {{ data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : '' }}
+          </template>
+        </Column>
+
+        <!-- Stock Quantity Column -->
+        <Column field="stockQuantity" header="Stock Qty" class="min-w-40" />
+
+        <!-- Actual Quantity Column -->
+        <Column field="actualQuantity" header="Actual Qty" class="min-w-40" />
+
+        <!-- Adjust Quantity Column -->
+        <Column field="diffQuantity" header="Adjust Qty" class="min-w-40">
+          <template #body="{ data }">
+            {{ data.diffQuantity ?? 0 }}
+          </template>
+        </Column>
+
+        <!-- Unit Column -->
+        <Column field="unit" header="Unit" class="min-w-10" />
+
+        <!-- Notes Column -->
+        <Column field="notes" header="Notes" class="min-w-40" />
+
+      </DataTable>
+
+      <Remark title="Remark" :remark="stockTakingData.remark" />
     </div>
   </div>
 </template>
@@ -36,16 +75,21 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import StockTakingService from '@/service/stockTakingService';
+import type { stockTakingHeader, stockTakingItem } from '@/Model/stockTaking';
+import stockTakingService from '@/service/stockTakingService';
 import ActionButtons from '@/components/ActionButtons.vue';
 import DetailHeader from '@/components/DetailHeader.vue';
 import InfoBox from '@/components/InfoBox.vue';
-import ItemTable from '@/components/ItemTable.vue';
 import Remark from '@/components/Remark.vue';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
+import { useToast } from 'primevue/usetoast';
 
-const stockTakingData = ref();
-const loading = ref(true);
+let subscription: Subscription;
+const toast = useToast();
+const fetchLoading = ref(false);
+
+const stockTakingData = ref<stockTakingHeader>();
+const stockTakingItems = ref<stockTakingItem>();
 const error = ref<string>();
 const route = useRoute();
 const router = useRouter();
@@ -81,30 +125,41 @@ const columns = [
 ];
 
 const fetchData = async (takingId: number) => {
-  try {
-    const response = await firstValueFrom(StockTakingService.get(takingId));
-    console.log('Stock taking by ID:', response);
-    stockTakingData.value = response.Data;
-  } catch (error) {
-    console.error(`Error fetching stock taking by ID ${takingId}:`, error);
-  }
-};
+  subscription = stockTakingService.get(takingId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        stockTakingData.value = result.data;
+        stockTakingItems.value = result.data.stockTakingItems;
+      } else {
+        const statusCode = result.statusCode.toString() || 'Unknown';
+        const errorMessage = result.error?.message || 'An error occurred';
+        toast.add({ severity: 'error', summary: statusCode, detail: errorMessage, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+}
 
 const updateStatus = async (takingId: number[], status?: number) => {
   try {
-    const response = await firstValueFrom(StockTakingService.updateStatus(takingId, status));
+    const response = await firstValueFrom(stockTakingService.updateStatus(takingId, status));
     console.log('Status updated:', response);
   } catch (error) {
     console.error('Error updating status:', error);
   }
 };
 
-const startTaking = () => updateStatus([takingId],175);
+const startTaking = () => updateStatus([takingId], 175);
 const savePlan = () => updateStatus([takingId], 150);
 
 const approve = async (takingId: number[]) => {
   try {
-    const response = await firstValueFrom(StockTakingService.approve(takingId));
+    const response = await firstValueFrom(stockTakingService.approve(takingId));
     console.log('Approved stock taking:', response);
   } catch (error) {
     console.error('Error approving stock taking:', error);
@@ -113,7 +168,7 @@ const approve = async (takingId: number[]) => {
 
 const cancelApprove = async (takingId: number[]) => {
   try {
-    const response = await firstValueFrom(StockTakingService.cancelApprove(takingId));
+    const response = await firstValueFrom(stockTakingService.cancelApprove(takingId));
     console.log('Cancelled approval:', response);
   } catch (error) {
     console.error('Error cancelling approval:', error);
@@ -122,7 +177,7 @@ const cancelApprove = async (takingId: number[]) => {
 
 const cancel = async (takingId: number[]) => {
   try {
-    const response = await firstValueFrom(StockTakingService.cancel(takingId));
+    const response = await firstValueFrom(stockTakingService.cancel(takingId));
     console.log('Cancelled stock taking:', response);
   } catch (error) {
     console.error('Error cancelling stock taking:', error);
@@ -138,7 +193,7 @@ const backToList = async () => {
 }
 
 onMounted(() => {
-    fetchData(takingId);
+  fetchData(takingId);
 });
 </script>
 

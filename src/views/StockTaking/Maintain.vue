@@ -40,8 +40,7 @@
                         <div class="col-span-12 md:col-span-8">
                           <SelectCustom v-model="selectWarehouse" :options="warehouse" :loading="fetchLoading"
                             placeholder="Select a Warehouse" @filter="getWarehouseList" optionLabel="name"
-                            dataKey="code" 
-                            @change="handleWarehouseChange(Number(selectWarehouse?.code), Number(selectLocation?.code))" />
+                            dataKey="code" @change="handleWarehouseChange" />
                         </div>
                       </div>
                     </div>
@@ -62,8 +61,9 @@
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Location</label>
                         <div class="col-span-12 md:col-span-8">
                           <SelectCustom v-model="selectLocation" :options="location" :loading="fetchLoading"
-                            placeholder="Select a Location" optionLabel="name" dataKey="code" 
-                            @change="handleWarehouseChange(Number(selectWarehouse?.code), Number(selectLocation?.code))" />
+                            placeholder="Select a Location" @filter="getLocationList(Number(selectWarehouse?.code))"
+                            optionLabel="name" dataKey="code" @change="handleLocationChange"
+                            :disabled="!selectWarehouse?.code" :showClear="true" />
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
@@ -78,14 +78,8 @@
                     </div>
                   </div>
                 </div>
-                <DataTable 
-                  :value="stockTakingItems" 
-                  scrollable scrollHeight="400px" 
-                  tableStyle="min-width: 50rem"
-                  :scrollable="true" 
-                  columnResizeMode="fit" 
-                  :rowclass="rowClass" 
-                  class="mb-10">
+                <DataTable :value="stockTakingItems" scrollable scrollHeight="400px" tableStyle="min-width: 50rem"
+                  :scrollable="true" columnResizeMode="fit" :rowclass="rowClass" class="mb-10">
                   <!-- LineNumber -->
                   <Column field="lineNumber" header="No.">
                     <template #body="{ index }">
@@ -203,7 +197,7 @@ const loading = ref(false);
 const error = ref('');
 
 const route = useRoute();
-const TakingId: number = Number(route.params.id);
+const takingId: number = Number(route.params.id);
 const location = ref<SelectItem[]>([]);
 const warehouse = ref<SelectItem[]>([]);
 const personInCharge = ref<SelectItem[]>([]);
@@ -216,7 +210,7 @@ const selectPIC = ref<SelectItem | null>();
 
 const stockTakingItems = ref<stockTakingItem[] | null>([]);
 const stockTakingSave = ref<stockTakingHeaderSave>({
-  takingId: 0,
+  takingId: takingId,
   takingNo: '',
   takingDate: new Date(),
   warehouseId: 0,
@@ -248,7 +242,6 @@ const getWarehouseList = async () => {
     next: (result) => {
       if (result.isSuccess) {
         warehouse.value = CloneWarehouseDDL(result.data || []);
-        console.log('warehouse: ', warehouse.value);
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -264,12 +257,11 @@ const getWarehouseList = async () => {
 
 const getLocationList = async (warehouseId: number) => {
   fetchLoading.value = true;
-  selectLocation.value = null;
   subscription = warehouseService.getLocationByWarehouse(warehouseId).subscribe({
     next: (result) => {
       if (result.isSuccess) {
-        location.value = CloneLocationDDL(result.data || []);
-        console.log('location',location.value)
+        location.value = CloneLocationDDL(result.data || [])
+        // if (!stockTakingSave.value.locationId) { selectLocation.value = null; }
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -289,7 +281,16 @@ const getPIC = async (name: string) => {
     next: (result) => {
       if (result.isSuccess) {
         personInCharge.value = CloneUserDDL(result.data || []);
-        console.log('personInCharge: ', personInCharge.value);
+        if (stockTakingSave.value.personInCharge) {
+          let selectedOption = personInCharge.value.find(item => item.code === stockTakingSave.value.personInCharge);
+
+          let selectDDLPic: SelectItem = {
+            name: selectedOption ? selectedOption.name : "-",
+            code: stockTakingSave.value.personInCharge
+          };
+
+          selectPIC.value = selectDDLPic ?? {} as SelectItem;
+        }
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -303,13 +304,13 @@ const getPIC = async (name: string) => {
   })
 }
 
-const getItems = async (warehouseId?: number, locationId?: number) => {
+const getItems = async (warehouseId?: number, locationId: number | null = null) => {
   fetchLoading.value = true;
   subscription = stockTakingService.getStockItemForTaking(warehouseId, locationId).subscribe({
     next: (result) => {
       if (result.isSuccess) {
         stockTakingItems.value = result.data;
-        console.log('Items',stockTakingItems.value)
+        console.log('Items', stockTakingItems.value)
       } else {
         stockTakingItems.value = null;
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
@@ -324,20 +325,22 @@ const getItems = async (warehouseId?: number, locationId?: number) => {
   });
 };
 
-const handleWarehouseChange = (warehouseId: number, locationId: number) => {
+const handleWarehouseChange = (event: any) => {
+  stockTakingItems.value = [];
   selectLocation.value = null;
+  location.value = [];
 
+  const warehouseId = Number(event.value.code);
   if (warehouseId) {
     getLocationList(warehouseId);
-    getItems(warehouseId, undefined);
-  } else {
-    console.error("Invalid warehouseId");
+    getItems(warehouseId);
   }
-  
-  if (locationId) {
-    getItems(warehouseId, locationId);
-  } else {
-    console.error("Invalid locationId");
+};
+
+const handleLocationChange = (event: any) => {
+  const locationId = event.value ? Number(event.value.code) : null;
+  if (selectWarehouse.value) {
+    getItems(Number(selectWarehouse.value.code), locationId);
   }
 };
 
@@ -353,7 +356,7 @@ const CloneWarehouseDDL = (options: Array<any>): Array<SelectItem> => {
 const CloneLocationDDL = (options: Array<any>): Array<SelectItem> => {
   const data = options.map((option) => ({
     name: option.locationName == "" ? "--All--" : option.locationName,
-    code: option.locationId == 0 ? "0" : option.locationId,
+    code: option.locationID == 0 ? "0" : option.locationID,
   }));
 
   return data.length > 0 ? data : [];
@@ -361,17 +364,15 @@ const CloneLocationDDL = (options: Array<any>): Array<SelectItem> => {
 
 const CloneUserDDL = (options: Array<any>): Array<SelectItem> => {
   const data = options.map((option) => ({
-    name: option.FirstName == "" ? "--All--" : option.FirstName + ' ' + option.LastName,
-    code: option.Email == "" ? "0" : option.Email,
+    name: option.firstName == "" ? "--All--" : option.firstName + ' ' + option.lastName,
+    code: option.userID == "" ? "0" : option.userID,
   }));
-
   return data.length > 0 ? data : [];
 }
 
-
 const fetchData = async () => {
   fetchLoading.value = true;
-  subscription = StockTakingService.get(TakingId).subscribe({
+  subscription = StockTakingService.get(takingId).subscribe({
     next: (result) => {
       if (result.isSuccess) {
         stockTakingSave.value = result.data;
@@ -380,29 +381,25 @@ const fetchData = async () => {
           stockTakingItems.value = result.data.stockTakingItems;
           stockTakingSave.value.takingDate = new Date(stockTakingSave.value.takingDate)
 
-          getWarehouseList();
           let selectDDLWarehouse: SelectItem = {
-            code: stockTakingSave.value.warehouseId.toString(),
+            code: result.data.warehouseId.toString(),
             name: result.data.warehouseName
           };
           selectWarehouse.value = selectDDLWarehouse ?? {} as SelectItem;
+          debugger
+          if (stockTakingSave.value.warehouseId) {
+            getLocationList(stockTakingSave.value.warehouseId);
+            let selectDDLLocation: SelectItem = {
+              code: result.data.locationId,
+              name: result.data.locationName
+            }
+            selectLocation.value = selectDDLLocation;
 
-          getLocationList(stockTakingSave.value.warehouseId);
-        debugger;
-          let selectDDLLocation: SelectItem = {
-            code: (stockTakingSave.value.locationId ?? 0).toString(),
-            name: result.data.locationName
-          };
-          selectLocation.value = selectDDLLocation ?? {} as SelectItem;
-
-          getPIC('');
-          let selectDDLPic: SelectItem = {
-            code: stockTakingSave.value.personInCharge,
-            name: result.data.personInCharge
-          };
-          selectPIC.value = selectDDLPic ?? {} as SelectItem;
+            if (result.data.personInCharge) {
+              getPIC('');
+            }
+          }
         }
-
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -416,30 +413,121 @@ const fetchData = async () => {
   });
 };
 
-const Save = () => {
-  console.log('save');
-}
+const prepareDataForSave = () => {
+  const dataToSave: stockTakingHeaderSave = {
+    ...stockTakingSave.value,
+    warehouseId: Number(selectWarehouse.value?.code) || 0,
+    locationId: Number(selectLocation.value?.code) || 0,
+    personInCharge: selectPIC.value?.code || '',
+    stockTakingItems: stockTakingItems.value || []
+  };
+  return dataToSave;
+};
 
-const SaveAndAdjust = () => {
-  console.log('save approve');
-}
+const Save = async () => {
+  const dataToSave = prepareDataForSave();
 
-const SavePlan = () => {
-  console.log('save plan');
-}
+  fetchLoading.value = true;
+  subscription = StockTakingService.save(dataToSave).subscribe({
+    next: async (result) => {
+      if (result.isSuccess) {
+        const takingId = result.data;
+        await router.push(`/StockTaking/Detail/${takingId}`)
+        toast.add({ severity: 'success', summary: 'Saved', detail: 'Stock taking data saved successfully', life: 3000 });
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 3000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error saving data', detail: error, life: 3000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const Update = async () => {
+  const dataToSave = prepareDataForSave();
+
+  fetchLoading.value = true;
+  subscription = StockTakingService.update(takingId, dataToSave).subscribe({
+    next: async (result) => {
+      if (result.isSuccess) {
+        await router.push(`/StockTaking/Detail/${takingId}`)
+        toast.add({ severity: 'success', summary: 'Saved', detail: 'Stock taking data saved successfully', life: 3000 });
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 3000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error saving data', detail: error, life: 3000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const SaveAndAdjust = async () => {
+  const dataToSave = prepareDataForSave();
+
+  fetchLoading.value = true;
+  subscription = StockTakingService.saveAndAdjust(dataToSave).subscribe({
+    next: async (result) => {
+      if (result.isSuccess) {
+        const takingId = result.data;
+        await router.push(`/StockTaking/Detail/${takingId}`)
+        toast.add({ severity: 'success', summary: 'Saved and Adjusted', detail: 'Stock taking data saved and adjusted successfully', life: 3000 });
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 3000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error saving and adjusting data', detail: error, life: 3000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const SavePlan = async () => {
+  const dataToSave = prepareDataForSave();
+
+  fetchLoading.value = true;
+  subscription = StockTakingService.savePlan(dataToSave).subscribe({
+    next: async (result) => {
+      if (result.isSuccess) {
+        const takingId = result.data;
+        await router.push(`/StockTaking/Detail/${takingId}`)
+        toast.add({ severity: 'success', summary: 'Plan Saved', detail: 'Stock taking plan saved successfully', life: 3000 });
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 3000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error saving plan', detail: error, life: 3000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
 
 onUnmounted(() => {
   if (subscription)
     subscription.unsubscribe();
 
   setStickyButtons([]);
-
 })
 
 onMounted(() => {
   stockTakingSave.value.takingNo = "-- ออกโดยระบบ --";
-  if (TakingId != 0) {
+  if (takingId != 0) {
     fetchData()
+    getWarehouseList();
+    getPIC('')
   } else {
     getWarehouseList()
     getPIC('')
@@ -451,24 +539,28 @@ onMounted(() => {
       label: 'Save',
       severity: 'info',
       action: () => {
-        Save()
+        if (takingId <= 0) {
+          Save()
+        } else {
+          Update()
+        }
       }
     },
     {
       icon: 'pi pi-check',
       label: 'Save And Adjust',
       severity: 'info',
-      action: () => { 
+      action: () => {
         SaveAndAdjust()
-       }
+      }
     },
     {
       icon: 'pi pi-check',
       label: 'Save Plan',
       severity: 'success',
-      action: () => { 
+      action: () => {
         SavePlan()
-       }
+      }
     },
     {
       icon: 'pi pi-times',

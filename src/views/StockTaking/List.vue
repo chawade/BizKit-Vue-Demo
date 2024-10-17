@@ -15,10 +15,11 @@
             </div>
 
             <div class="table-scrollable table-list">
-                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'takingId'" :rows-per-page="pageSize"
-                    :pageIdentifier="'stockTaking'" :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems"
-                    :loading="fetchLoading" :lazy="true" :totalRecords="totalRecords" @page="onPageChange"
-                    @update:selection="onRowSelect" @sort="onSort" @search="fetchData" :menu="menuaa">
+                <ItemTable :items="sortedItems" :columns="columns" :dataKey="'takingId'" scrollable
+                    scroll-height="400px" :rows-per-page="pageSize" :pageIdentifier="'StockTaking'"
+                    :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems" :loading="fetchLoading" :lazy="true"
+                    :totalRecords="totalRecords" @page="onPageChange" @update:selection="onRowSelect" @sort="onSort"
+                    @search="fetchData" :menu="actions">
                     <template #header>
                         <Menubar :model="filteredMenuItems" class="hidden md:flex">
                             <template #start>
@@ -82,7 +83,7 @@ const router = useRouter();
 const dataTableStore = useDataTableStore();
 const items = ref<stockTakingHeaderList[]>([]);
 const currentPage = ref(1)
-const pageSize = ref(5)
+const pageSize = ref(10)
 const searchString = ref('')
 const sortKey = ref('takingNo')
 const sortOrder = ref('DESC')
@@ -98,7 +99,7 @@ const permission = ref({
     PRINT: true
 });
 
-const menuaa = ref([
+const actions = ref([
     {
         label: 'Options',
         items: [

@@ -4,7 +4,7 @@ import { Observable, from } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import ErrorService from './errorService';
 import type { Result } from '@/Model/Result';
-import type { stockTakingHeaderList, stockTakingHeader } from '@/Model/stockTaking';
+import type { stockTakingHeaderList, stockTakingHeader, stockTakingHeaderSave } from '@/Model/stockTaking';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/stocktaking`;
@@ -51,7 +51,7 @@ class StockTakingService {
     );
   }
 
-  getStockItemForTaking(warehouseId?: number, locationId?: number): Observable<Result<any>> {
+  getStockItemForTaking(warehouseId?: number, locationId?: number | null): Observable<Result<any>> {
     const url = `${baseURL}/items/${warehouseId}/${locationId}`;
     return this.axiosInstance$.pipe(
       switchMap((axiosInstance) =>
@@ -93,6 +93,55 @@ class StockTakingService {
 
   cancel(docIds: number[]): Observable<Result<any>> {
     return this.put('cancel', docIds);
+  }
+
+  // Maintain
+  save(data: stockTakingHeaderSave): Observable<Result<stockTakingHeader>> {
+    const url = `${baseURL}/`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.post<Result<stockTakingHeader>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log('Saved stock taking data')),
+      catchError(this.errorService.handleError<stockTakingHeader>('save'))
+    );
+  }
+  
+  saveAndAdjust(data: stockTakingHeaderSave): Observable<Result<stockTakingHeader>> {
+    const url = `${baseURL}/create/approve`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.post<Result<stockTakingHeader>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log('Saved and adjusted stock taking data')),
+      catchError(this.errorService.handleError<stockTakingHeader>('saveAndAdjust'))
+    );
+  }
+  
+  savePlan(data: stockTakingHeaderSave): Observable<Result<stockTakingHeader>> {
+    const url = `${baseURL}/create/plan`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.post<Result<stockTakingHeader>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log('Saved stock taking plan')),
+      catchError(this.errorService.handleError<stockTakingHeader>('savePlan'))
+    );
+  }
+  
+  update( id: number, data: stockTakingHeaderSave): Observable<Result<stockTakingHeader>> {
+    const url = `${baseURL}/update/${id}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.put<Result<stockTakingHeader>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log(`Updated stock taking with id ${id}`)),
+      catchError(this.errorService.handleError<stockTakingHeader>('update'))
+    );
   }
 }
 
