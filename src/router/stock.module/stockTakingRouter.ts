@@ -12,14 +12,14 @@ export const stockTakingRouter = [
     {
         path: '/StockTaking/Detail/:id',
         name: 'StockTakingDetail',
-        meta: { parent: 'StockTakingList', breadcrumb: 'Stock Taking Detail' },
+        meta: { parent: 'StockTaking', breadcrumb: 'Stock Taking Detail' },
         component:  Detail,
         props: true,
     },
     {
         path: '/StockTaking/Maintain/:id?',
         name: 'StockTakingMaintain',
-        meta: { parent: 'StockTakingList', breadcrumb: 'Add/Edit Stock Taking' },
+        meta: { parent: 'StockTaking', breadcrumb: 'Add/Edit Stock Taking' },
         component: Maintain,
         props: true,
     }
