@@ -1,11 +1,11 @@
-import Detail from '@/views/StockTaking/Detail.vue';
-import List from '@/views/StockTaking/List.vue';
-import Maintain from '@/views/StockTaking/Maintain.vue';
+import Detail from '@/views/stockTaking/Detail.vue';
+import List from '@/views/stockTaking/List.vue';
+import Maintain from '@/views/stockTaking/Maintain.vue';
 
 export const stockTakingRouter = [
     {
         path: '/StockTaking/List',
-        name: 'StockTakingList',
+        name: 'StockTaking',
         meta: { module: 'Inventory', breadcrumb: 'Stock Taking' },
         component: List
     },

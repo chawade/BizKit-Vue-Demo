@@ -89,7 +89,7 @@ const toast = useToast();
 const fetchLoading = ref(false);
 
 const stockTakingData = ref<stockTakingHeader>();
-const stockTakingItems = ref<stockTakingItem>();
+const stockTakingItems = ref<stockTakingItem[]>([]);
 const error = ref<string>();
 const route = useRoute();
 const router = useRouter();
@@ -111,18 +111,6 @@ const props = defineProps({
     required: true
   }
 });
-
-const columns = [
-  { field: 'ItemCode', header: 'Item Code' },
-  { field: 'ItemName', header: 'Item Name' },
-  { field: 'LotNo', header: 'Lot/Serial No.' },
-  { field: 'ExpiryDate', header: 'Expiry Date' },
-  { field: 'StockQuantity', header: 'Stock Quantity' },
-  { field: 'ActualQuantity', header: 'Actual Quantity' },
-  { field: 'DiffQuantity', header: 'Difference' },
-  { field: 'Unit', header: 'Unit' },
-  { field: 'Remark', header: 'Remark' }
-];
 
 const fetchData = async (takingId: number) => {
   subscription = stockTakingService.get(takingId).subscribe({
@@ -158,30 +146,66 @@ const startTaking = () => updateStatus([takingId], 175);
 const savePlan = () => updateStatus([takingId], 150);
 
 const approve = async (takingId: number[]) => {
-  try {
-    const response = await firstValueFrom(stockTakingService.approve(takingId));
-    console.log('Approved stock taking:', response);
-  } catch (error) {
-    console.error('Error approving stock taking:', error);
-  }
+  subscription = stockTakingService.approve(takingId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        fetchData(takingId[0])
+        toast.add({ severity: 'success', summary: 'success', detail: `Approved with id ${takingId[0]}`, life: 2000 });
+      } else {
+        const statusCode = result.statusCode.toString() || 'Unknown';
+        const errorMessage = result.error?.message || 'An error occurred';
+        toast.add({ severity: 'error', summary: statusCode, detail: errorMessage, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
 };
 
 const cancelApprove = async (takingId: number[]) => {
-  try {
-    const response = await firstValueFrom(stockTakingService.cancelApprove(takingId));
-    console.log('Cancelled approval:', response);
-  } catch (error) {
-    console.error('Error cancelling approval:', error);
-  }
+  subscription = stockTakingService.cancelApprove(takingId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        fetchData(takingId[0])
+        toast.add({ severity: 'success', summary: 'success', detail: `Canceled approval with id ${takingId[0]}`, life: 2000 });
+      } else {
+        const statusCode = result.statusCode.toString() || 'Unknown';
+        const errorMessage = result.error?.message || 'An error occurred';
+        toast.add({ severity: 'error', summary: statusCode, detail: errorMessage, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
 };
 
 const cancel = async (takingId: number[]) => {
-  try {
-    const response = await firstValueFrom(stockTakingService.cancel(takingId));
-    console.log('Cancelled stock taking:', response);
-  } catch (error) {
-    console.error('Error cancelling stock taking:', error);
-  }
+  subscription = stockTakingService.cancel(takingId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        fetchData(takingId[0])
+        toast.add({ severity: 'success', summary: 'success', detail: `Canceled with id ${takingId[0]}`, life: 2000 });
+      } else {
+        const statusCode = result.statusCode.toString() || 'Unknown';
+        const errorMessage = result.error?.message || 'An error occurred';
+        toast.add({ severity: 'error', summary: statusCode, detail: errorMessage, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
 };
 
 const edit = async () => {

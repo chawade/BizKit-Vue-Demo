@@ -261,7 +261,6 @@ const getLocationList = async (warehouseId: number) => {
     next: (result) => {
       if (result.isSuccess) {
         location.value = CloneLocationDDL(result.data || [])
-        // if (!stockTakingSave.value.locationId) { selectLocation.value = null; }
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -282,11 +281,12 @@ const getPIC = async (name: string) => {
       if (result.isSuccess) {
         personInCharge.value = CloneUserDDL(result.data || []);
         if (stockTakingSave.value.personInCharge) {
-          let selectedOption = personInCharge.value.find(item => item.code === stockTakingSave.value.personInCharge);
+
+          let selectedOption = personInCharge.value.find(item => item.name === stockTakingSave.value.personInCharge);
 
           let selectDDLPic: SelectItem = {
-            name: selectedOption ? selectedOption.name : "-",
-            code: stockTakingSave.value.personInCharge
+            name: stockTakingSave.value.personInCharge ? stockTakingSave.value.personInCharge : "-",
+            code: String(selectedOption?.code)
           };
 
           selectPIC.value = selectDDLPic ?? {} as SelectItem;
@@ -386,7 +386,6 @@ const fetchData = async () => {
             name: result.data.warehouseName
           };
           selectWarehouse.value = selectDDLWarehouse ?? {} as SelectItem;
-          debugger
           if (stockTakingSave.value.warehouseId) {
             getLocationList(stockTakingSave.value.warehouseId);
             let selectDDLLocation: SelectItem = {
