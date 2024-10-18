@@ -37,6 +37,18 @@ class WarehouseService {
         catchError(this.errorService.handleError<any[]>("customer dropdown"))
       );
   }
+
+  getLocationByWarehouse(warehouseId?: number): Observable<Result<any[]>> {
+    const url = `${baseURL}/locations/${warehouseId}`;
+    return this.axiosInstance.pipe(
+        switchMap((axiosInstance) =>
+          from(axiosInstance.get<Result<any[]>>(url, this.getHttpOptions()))
+        ),
+        map((response: AxiosResponse<Result<any[]>>) => response.data),
+        tap(() => this.errorService.log("Fetched customer dropdown")),
+        catchError(this.errorService.handleError<any[]>("customer dropdown"))
+      );
+  }
 }
 
 export default new WarehouseService();

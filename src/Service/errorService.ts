@@ -5,13 +5,13 @@ import { Observable, of } from "rxjs";
 export default class ErrorService {
   private createResult<T>(
     success: boolean,
-    statusCode: HttpStatusCode,
+    statuscode: HttpStatusCode,
     data: T | null,
     error?: Error
   ): Result<T> {
     return {
       isSuccess: success,
-      statusCode: statusCode,
+      statusCode: statuscode,
       data: data,
       error: error,
     };
@@ -26,8 +26,8 @@ export default class ErrorService {
       if (error.response) {
         // The request was made and the server responded with a status code out of the range of 2xx
         errorResponse = {
-          code: error.response.data?.Code || error.response.status,
-          message: error.response.data?.Message || "An error occurred",
+          code: error.response.data?.code || error.response.status,
+          message: error.response.data?.message || "An error occurred",
         };
       } else if (error.request) {
         // The request was made but no response was received

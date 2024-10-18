@@ -25,84 +25,8 @@ const router = createRouter({
                     meta: { breadcrumb: 'Home' },
                     component: () => import('@/views/Dashboard/Dashboard.vue')
                 },
-                {
-                    path: '/StockTaking/List',
-                    name: 'StockTakingList',
-                    meta: { module: 'Inventory', breadcrumb: 'Stock Taking' },
-                    component: () => import('@/views/StockTaking/List.vue')
-                },
-                {
-                    path: '/StockTaking/Detail/:id',
-                    name: 'StockTakingDetail',
-                    meta: { parent: 'StockTakingList', breadcrumb: 'Stock Taking Detail' },
-                    component: () => import('@/views/StockTaking/Detail.vue'),
-                    props: true,
-                },
-                {
-                    path: '/StockTaking/Maintain/:id',
-                    name: 'StockTakingMaintain',
-                    meta: { parent: 'StockTakingList', breadcrumb: 'Add/Edit Stock Taking' },
-                    component: () => import('@/views/StockTaking/Maintain.vue'),
-                    props: true,
-                },
-                {
-                    path: '/StockTaking/Maintain/',
-                    name: 'AddStockTaking',
-                    meta: { parent: 'StockTakingList', breadcrumb: 'Add/Edit Stock Taking' },
-                    component: () => import('@/views/StockTaking/Maintain.vue'),
-                    props: true,
-                },
-                {
-                    path: '/SalesOrder/List',
-                    name: 'SalesOrder',
-                    meta: { module: 'SalesOrder', breadcrumb: 'Sales Order' },
-                    component: () => import('@/views/SalesOrder/List.vue'),
-                    props: true,
-                },
-                {
-                    path: '/SalesOrder/Detail/:id',
-                    name: 'SalesOrderDetail',
-                    meta: { parent: 'SalesOrder', breadcrumb: 'Sales Order Detail' },
-                    component: () => import('@/views/SalesOrder/Detail.vue'),
-                    props: true,
-                },
-                {
-                    path: '/SalesOrder/Maintain/:id?',
-                    name: 'SalesOrderMaintain',
-                    meta: { 
-                        parent: 'SalesOrder',  breadcrumb: 'Add/Edit Sales Order'
-                      },
-                    component: () => import('@/views/SalesOrder/Maintain.vue'),
-                    props: true,
-                },
-                {
-                    path: '/PurchaseRequest/List/',
-                    name: 'PurchaseRequestList',
-                    meta: { module: 'Purchase Request', breadcrumb: 'Purchase Request List' },
-                    component: () => import('@/views/PurchaseRequest/List.vue'),
-                    props: true,
-                },
-                {
-                    path: '/PurchaseRequest/Detail/:no',
-                    name: 'PurchaseRequestDetail',
-                    meta: { parent: 'PurchaseRequestList', breadcrumb: 'Purchase Request Detail' },
-                    component: () => import('@/views/PurchaseRequest/Detail.vue'),
-                    props: true,
-                },
-                {
-                    path: '/PurchaseRequest/Maintain/',
-                    name: 'PurchaseRequestMaintain',
-                    meta: {  parent: 'PurchaseRequestList', breadcrumb: ' Add/Edit Purchase Request' },
-                    component: () => import('@/views/PurchaseRequest/Maintain.vue'),
-                    props: true,
-                },
-                {
-                    path: '/PurchaseRequest/PRListtest/',
-                    name: 'PurchaseRequestListTest',
-                    meta: { module: 'Purchase', breadcrumb: 'PRListtest' },
-                    component: () => import('@/views/PurchaseRequest/PRListtest.vue'),
-                    props: true,
-                }
+                ...stockTakingRouter,   
+                ...salesOrderRouter,
             ]
         }
     ]

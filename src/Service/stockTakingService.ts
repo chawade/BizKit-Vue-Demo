@@ -1,77 +1,147 @@
 import authService from '@/service/authService';
-const apiUrl = import.meta.env.VITE_API_URL;
+import { HttpStatusCode, type AxiosInstance, type AxiosResponse } from 'axios';
+import { Observable, from } from 'rxjs';
+import { map, catchError, switchMap, tap } from 'rxjs/operators';
+import ErrorService from './errorService';
+import type { Result } from '@/Model/Result';
+import type { stockTakingHeaderList, stockTakingHeader, stockTakingHeaderSave } from '@/Model/stockTaking';
 
+const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/stocktaking`;
 
 class StockTakingService {
-  private axiosInstance : any | undefined ;
+  private axiosInstance$: Observable<AxiosInstance>;
+  private errorService: ErrorService;
 
   constructor() {
-    this.initializeAxiosInstance();
+    this.axiosInstance$ = from(authService.getAuthenticatedAxiosInstance());
+    this.errorService = new ErrorService();
   }
 
-  private async initializeAxiosInstance() {
-    this.axiosInstance = await authService.getAuthenticatedAxiosInstance();
+  private getHttpOptions() {
+    return {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+      },
+    };
   }
 
-  private async request(method: string, endpoint: string, data?: any) {
-    debugger;
-    try {
-      const url = `${baseURL}/${endpoint}`;
-      const config = {
-        headers: { 'Content-Type': 'application/json' },
-      };
-
-      let response;
-      if (method === 'get') {
-        response = await this.axiosInstance.get(url, config);
-      } else if (method === 'put') {
-        response = await this.axiosInstance.put(url, data, config);
-      } else {
-        throw new Error('Unsupported HTTP method');
-      }
-
-      if (!response.data) {
-        throw new Error('Network response was not ok');
-      }
-      return response.data;
-    } catch (error: any) {
-      console.error('API request failed:', error);
-      throw error;
-    }
+  search(endpoint: string): Observable<Result<stockTakingHeaderList[]>> {
+    const url = `${baseURL}/${endpoint}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<stockTakingHeaderList[]>>(url, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeaderList[]>>) => response.data),
+      tap(() => this.errorService.log('Fetched stocktaking list')),
+      catchError(this.errorService.handleError<stockTakingHeaderList[]>('search'))
+    );
   }
 
-  async search(endpoint: string) {
-    return this.request('get', endpoint);
+  get(id: number): Observable<Result<stockTakingHeader>> {
+    const url = `${baseURL}/${id}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<stockTakingHeader>>(url, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log(`Fetched stocktaking with id ${id}`)),
+      catchError(this.errorService.handleError<stockTakingHeader>(`get id=${id}`))
+    );
   }
 
-  async get(id: number) {
-    return this.request('get', `${id}`);
+  getStockItemForTaking(warehouseId?: number, locationId?: number | null): Observable<Result<any>> {
+    const url = `${baseURL}/items/${warehouseId}/${locationId}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<stockTakingHeader>>(url, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log(`Fetched stock items with warehouse id ${warehouseId} and location id ${locationId}`)),
+      catchError(this.errorService.handleError<stockTakingHeader>('get stockI  items for taking'))
+    );
   }
 
-  private async put(action: string, endpoint?: string, docIds?: number[], status?: number) {
+  private put(action: string, docIds?: number[], status?: number): Observable<Result<any>> {
+    const url = `${baseURL}/${action}`;
     const data = { DocId: docIds, Status: status };
-    return this.request('put', `${action}${endpoint}`, data);
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.put<Result<any>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<any>>) => response.data),
+      tap(() => this.errorService.log(`Updated status for action ${action}`)),
+      catchError(this.errorService.handleError<any>(`put action=${action}`))
+    );
   }
 
-  async updateStatus(docId: number[], status?: number ) {
-    return this.put('status', '', docId, status);
+  updateStatus(docIds: number[], status?: number): Observable<Result<any>> {
+    return this.put('status', docIds, status);
   }
 
-  async approve(endpoint: string, docId: number[]) {
-    return this.put('approve', endpoint, docId, undefined);
+  approve(docIds: number[]): Observable<Result<any>> {
+    return this.put('approve', docIds);
+  }
+
+  approves(docId: number[]) {
+    return this.put('approves', docId);
+  }
+  cancelApprove(docIds: number[]): Observable<Result<any>> {
+    return this.put(`cancelApprove/${docIds}`, docIds);
+  }
+
+  cancel(docIds: number[]): Observable<Result<any>> {
+    return this.put('cancel', docIds);
+  }
+
+  // Maintain
+  save(data: stockTakingHeaderSave): Observable<Result<stockTakingHeader>> {
+    const url = `${baseURL}/`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.post<Result<stockTakingHeader>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log('Saved stock taking data')),
+      catchError(this.errorService.handleError<stockTakingHeader>('save'))
+    );
   }
   
-  async approves(docId: number[]) {
-    return this.put('approves', '', docId, undefined);
+  saveAndAdjust(data: stockTakingHeaderSave): Observable<Result<stockTakingHeader>> {
+    const url = `${baseURL}/create/approve`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.post<Result<stockTakingHeader>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log('Saved and adjusted stock taking data')),
+      catchError(this.errorService.handleError<stockTakingHeader>('saveAndAdjust'))
+    );
   }
-
-  async cancelApprove(endpoint: string, docId: number[]) {
-    return this.put('cancelApprove', endpoint, docId, undefined);
+  
+  savePlan(data: stockTakingHeaderSave): Observable<Result<stockTakingHeader>> {
+    const url = `${baseURL}/create/plan`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.post<Result<stockTakingHeader>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log('Saved stock taking plan')),
+      catchError(this.errorService.handleError<stockTakingHeader>('savePlan'))
+    );
   }
-
-  async cancel(endpoint: string, docId: number[]) {
-    return this.put('cancel', endpoint, docId, undefined);
+  
+  update( id: number, data: stockTakingHeaderSave): Observable<Result<stockTakingHeader>> {
+    const url = `${baseURL}/update/${id}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.put<Result<stockTakingHeader>>(url, data, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<stockTakingHeader>>) => response.data),
+      tap(() => this.errorService.log(`Updated stock taking with id ${id}`)),
+      catchError(this.errorService.handleError<stockTakingHeader>('update'))
+    );
   }
 }
 

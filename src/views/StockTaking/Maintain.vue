@@ -1,295 +1,576 @@
 <template>
-  <div v-if="loading">Loading...</div>
+  <div v-if="loading" class="justify-center"
+    style="width: 100%; height: 100%; text-align: center; vertical-align: middle;">
+    <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="8" fill="transparent" animationDuration=".5s"
+      aria-label="Custom ProgressSpinner" />
+  </div>
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
-    <div class="card">
-      <div class="page-content-inner">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="light bordered">
-              <div class="portlet-title">
-                <div class="caption">
-                  <span class="caption-subject font-green bold uppercase">
-                    {{ ('Add/Edit Stock Taking') }}
-                  </span>
-                </div>
-              </div>
-              <div class="portlet-body form">
-                <div class="form-horizontal">
-                  <div class="form-body">
-                    <!-- Alert Message -->
-                    <div v-if="error" class="alert alert-danger">
-                      <button @click="hideError" type="button" class="close" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                      <span>{{ error }}</span>
-                    </div>
-
-                    <!-- Form Fields -->
-                    <div class="form-fields">
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label class="control-label col-sm-4">{{ ('Taking No') }}</label>
-                            <div class="col-sm-7">
-                              <InputText v-model="formData.TakingNo" disabled class="form-control" readonly />
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label class="control-label col-sm-4 require">{{ ('Taking Date') }}</label>
-                            <div class="col-sm-7">
-                              <DatePicker v-model="formData.TakingDate" :format="dateFormat" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div></div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label class="control-label col-sm-4 require">{{ ('Warehouse') }}</label>
-                            <div class="col-sm-7">
-                              <Select v-model="formData.WarehouseId" :options="warehouseList" filter optionLabel="name"
-                                placeholder="Select a Warehouse" class="w-full md:w-56" @change="onWarehouseChange" />
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label class="control-label col-sm-4">{{ ('Location') }}</label>
-                            <div class="col-sm-7">
-                              <Select v-model="formData.LocationId" :options="locationList" filter optionLabel="name"
-                                placeholder="Select a Location" class="w-full md:w-56" @change="onLocationChange" />
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label class="control-label col-sm-4">{{ ('Person In Charge') }}</label>
-                            <div class="col-sm-7">
-                              <Select v-model="selectedCountry" :options="countries" filter optionLabel="name"
-                                placeholder="Select a Person" class="w-full md:w-56" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Stock Items Table -->
-                    <div class="row mb-8">
-                      <div class="table-responsive">
-                        <DataTable :value="formData.stockItems" editMode="cell"
-                          @cell-edit-complete="onCellEditComplete">
-                          <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header"
-                            style="min-width: 130px">
-                            <template #editor="{ data, field }">
-                              <Textarea type="text" v-if="field === 'Notes'" v-model="data.Notes" :disabled="false" />
-                              <InputNumber type="number" v-else-if="field === 'ActualQuantity'"
-                                v-model="data.ActualQuantity" />
-                              <span v-else>{{ data[field] }}</span>
-                            </template>
-                          </Column>
-                        </DataTable>
-                      </div>
-                    </div>
-                    <!-- Remarks -->
-                    <div class="control-label">
-                      <label>{{ ('Remark') }}</label>
-                      <Textarea v-model="formData.Remark" class="form-control"></Textarea>
-                    </div>
-
-                    <!-- Action Buttons -->
-                  </div>
-                </div>
+    <div class="flex flex-col gap-x-20 lg:flex-row w-full">
+      <!-- Left Card -->
+      <div class="flex flex-col w-full">
+        <Card class="w-full">
+          <template #title>
+            <div class="portlet-title">
+              <div class="caption">
+                <span class="uppercase font-bold text-primary" style="font-size: 1.2rem;">Stock Taking</span>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div
-      :class="{ 'layout-sidebar-open': !layoutState.staticMenuDesktopInactive, 'layout-sidebar-closed': layoutState.staticMenuDesktopInactive }">
-      <div class="save-buttons">
-        <Button severity="warn" @click="saveStockTaking('DRAFT')">{{ ('Save Draft') }}</Button>
-        <Button @click="saveStockTaking('PLANNED')">{{
-          ('Save Plan') }}</Button>
-        <Button @click="saveStockTaking('APPROVED')">{{
-          ('Save And Approve') }}</Button>
-        <router-link :to="`/StockTaking/List`" custom v-slot="{ navigate }">
-          <Button label="Cancel" severity="secondary" @click="navigate" />
-        </router-link>
+          </template>
+          <template #content>
+            <form @submit.prevent="">
+              <Fluid>
+                <div class="flex flex-col md:flex-row">
+                  <div class="md:w-2/4">
+                    <div class="card flex flex-col gap-4">
+                      <div class="grid grid-cols-12 gap-2">
+                        <label for="SONo"
+                          class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Taking
+                          No.</label>
+                        <div class="col-span-12 md:col-span-8">
+                          <InputGroup>
+                            <InputText v-model="stockTakingSave.takingNo" variant="filled" readonly="true" />
+                            <Button icon="pi pi-cog" severity="help" @click="" />
+                          </InputGroup>
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-12 gap-2">
+                        <label for="Warehouse"
+                          class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Warehouse</label>
+                        <div class="col-span-12 md:col-span-8">
+                          <SelectCustom v-model="selectWarehouse" :options="warehouse" :loading="fetchLoading"
+                            placeholder="Select a Warehouse" @filter="getWarehouseList" optionLabel="name"
+                            dataKey="code" @change="handleWarehouseChange" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="md:w-2/4">
+                    <div class="card flex flex-col gap-4">
+                      <div class="grid grid-cols-12 gap-2">
+                        <label for="Plan Ship Date"
+                          class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Taking
+                          Date</label>
+                        <div class="col-span-12 md:col-span-8">
+                          <DatePicker v-model="stockTakingSave.takingDate" variant="filled" showButtonBar showIcon fluid
+                            :manual-input="false" />
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-12 gap-2">
+                        <label for="Location"
+                          class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Location</label>
+                        <div class="col-span-12 md:col-span-8">
+                          <SelectCustom v-model="selectLocation" :options="location" :loading="fetchLoading"
+                            placeholder="Select a Location" @filter="getLocationList(Number(selectWarehouse?.code))"
+                            optionLabel="name" dataKey="code" @change="handleLocationChange"
+                            :disabled="!selectWarehouse?.code" :showClear="true" />
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-12 gap-2">
+                        <label for="Ship From"
+                          class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Person
+                          In Charge</label>
+                        <div class="col-span-12 md:col-span-8">
+                          <SelectCustom v-model="selectPIC" :options="personInCharge" :loading="fetchLoading"
+                            placeholder="Select a Person" @filter="getPIC" optionLabel="name" dataKey="code" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <DataTable :value="stockTakingItems" scrollable scrollHeight="400px" tableStyle="min-width: 50rem"
+                  :scrollable="true" columnResizeMode="fit" :rowclass="rowClass" class="mb-10">
+                  <!-- LineNumber -->
+                  <Column field="lineNumber" header="No.">
+                    <template #body="{ index }">
+                      {{ index + 1 }}
+                    </template>
+                  </Column>
+
+                  <!-- Item Code Column -->
+                  <Column field="itemCode" header="Item Code" class="min-w-40">
+                    <template #body="{ data }">
+                      {{ data.itemCode }}
+                    </template>
+                  </Column>
+
+                  <!-- Item Name Column -->
+                  <Column field="itemName" header="Item Name" class="min-w-40">
+                    <template #body="{ data }">
+                      {{ data.itemName }}
+                    </template>
+                  </Column>
+
+                  <!-- Shelf Code Column -->
+                  <Column field="shelfCode" header="Shelf Name" class="min-w-40">
+                    <template #body="{ data }">
+                      {{ data.shelfCode ?? '' }}
+                    </template>
+                  </Column>
+
+                  <!-- Lot No Column -->
+                  <Column field="lotNo" header="Lot/Serial No." class="min-w-40">
+                    <template #body="{ data }">
+                      {{ data.lotNo ?? '' }}
+                    </template>
+                  </Column>
+
+                  <!-- Expiry Date Column -->
+                  <Column field="expiryDate" header="Expiry Date" class="min-w-40">
+                    <template #body="{ data }">
+                      {{ data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : ' ' }}
+                    </template>
+                  </Column>
+
+                  <!-- Stock Quantity Column -->
+                  <Column field="stockQuantity" header="Stock Qty" class="min-w-40">
+                    <template #body="{ data }">
+                      {{ data.stockOnHand ?? 0 }}
+                    </template>
+                  </Column>
+
+                  <!-- Actual Quantity Column (Editable) -->
+                  <Column field="actualQuantity" header="Actual Qty" class="min-w-40">
+                    <template #body="{ data, index }">
+                      <InputNumber v-model="data.actualQuantity" class="min-w-30" @focus="onFieldFocus(index)"
+                        @blur="onFieldBlur" :key="`actualQuantity-${index}`" />
+                    </template>
+                  </Column>
+
+                  <!-- Adjust Quantity Column -->
+                  <Column field="diffQuantity" header="Adjust Qty" class="min-w-40">
+                    <template #body="{ data }">
+                      {{ (data.actualQuantity - (data.stockOnHand ?? 0)).toFixed(2) }}
+                    </template>
+                  </Column>
+
+                  <!-- Unit Column -->
+                  <Column field="unit" header="Unit" class="min-w-10">
+                    <template #body="{ data }">
+                      {{ data.unit }}
+                    </template>
+                  </Column>
+
+                  <!-- Notes Column (Editable) -->
+                  <Column field="notes" header="Notes" class="min-w-40">
+                    <template #body="{ data, index }">
+                      <Textarea v-model="data.notes" rows="2" cols="30" :key="`notes-${index}`" />
+                    </template>
+                  </Column>
+
+                </DataTable>
+                <div class="grid grid-col-12 gap-2">
+                  <label for="Remark"
+                    class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Remark</label>
+                  <div class="col-span-12 md:col-span-8">
+                    <Textarea v-model="stockTakingSave.remark" rows="2" cols="30" :key="`notes`" />
+                  </div>
+                </div>
+              </Fluid>
+            </form>
+          </template>
+        </Card>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import StockTakingService from '@/service/stockTakingService'
-import { ref, reactive, onMounted } from 'vue'
-import { useRoute } from 'vue-router';
-import axios from 'axios'
-import InputText from 'primevue/inputtext';
-import { useLayout } from '@/layout/composables/layout';
+import { ref, onMounted, computed, reactive, onUnmounted, inject } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import type { stockTakingHeaderSave, stockTakingItem } from '@/Model/stockTaking';
+import { useToast } from 'primevue/usetoast';
+import { Subscription } from 'rxjs';
+import SelectCustom from '@/components/SelectCustom.vue';
+import StockTakingService from '@/service/stockTakingService';
+import warehouseService from '@/service/warehouseService';
+import userService from '@/service/userService';
+import type { SelectItem } from '@/Model/BaseResource';
+import router from '@/router';
+import stockTakingService from '@/service/stockTakingService';
 
-interface Warehouse {
-  id: number
-  name: string
-}
+let subscription: Subscription;
+const setStickyButtons = inject<any>('setStickyButtons');
 
-interface Location {
-  id: number
-  name: string
-}
-
-interface StockItem {
-  TakingItemId: number;
-  TakingId: number;
-  CompanyId: number;
-  ItemId: number;
-  ItemCode: string;
-  ItemName: string;
-  ShelfCode: string | null;
-  LotNo: string | null;
-  ExpiryDate: string | null;
-  UnitCost: number;
-  StockQuantity: number;
-  ActualQuantity: number;
-  StockOnHand: number | null;
-  DiffQuantity: number;
-  Unit: string;
-  Notes: string;
-}
-
-interface FormData {
-  TakingNo: string;
-  TakingDate: Date;
-  WarehouseId: number | null;
-  LocationId: number | null;
-  Remark: string;
-  stockItems: StockItem[];
-}
-
-const columns = ref([
-  { field: 'ItemCode', header: 'Item Code' },
-  { field: 'ItemName', header: 'Item Name' },
-  { field: 'LotNo', header: 'Lot/Serial No.' },
-  { field: 'ExpiryDate', header: 'Expiry Date' },
-  { field: 'StockQuantity', header: 'Stock Quantity' },
-  { field: 'ActualQuantity', header: 'Actual Quantity' },
-  { field: 'DiffQuantity', header: 'Adjust Quantity' },
-  { field: 'Unit', header: 'Unit' },
-  { field: 'Notes', header: 'Notes' }
-]);
-
-// Initialize formData as reactive
-const formData = reactive<FormData>({
-  TakingNo: '',
-  TakingDate: new Date(),
-  WarehouseId: null,
-  LocationId: null,
-  Remark: '',
-  stockItems: []
-});
-
-const selectedCountry = ref();
-const countries = ref([ /* your country data */]);
+const toast = useToast();
+const loading = ref(false);
+const error = ref('');
 
 const route = useRoute();
-const warehouseList = ref<Warehouse[]>([]);
-const locationList = ref<Location[]>([]);
-const dateFormat = 'dd/MM/yyyy';
-const hasApprovePermission = ref(false);
-const error = ref();
-const loading = ref(true);
-const TakingId: number = Number(route.params.id);
-const { layoutState } = useLayout();
+const takingId: number = Number(route.params.id);
+const location = ref<SelectItem[]>([]);
+const warehouse = ref<SelectItem[]>([]);
+const personInCharge = ref<SelectItem[]>([]);
 
-const fetchInitialData = async () => {
-  try {
-    const response = await StockTakingService.get(TakingId);
-    if (response.Code === 200 && response.Data) {
-      formData.TakingNo = response.Data.TakingNo;
-      formData.TakingDate = new Date(response.Data.TakingDate);
-      formData.WarehouseId = response.Data.WarehouseId;
-      formData.LocationId = response.Data.LocationId;
-      formData.Remark = response.Data.Remark;
-      formData.stockItems = response.Data.StockTakingItems;
-    } else {
-      error.value = response.Message || 'Error fetching data';
-    }
-  } catch (err) {
-    error.value = `Failed to fetch stock taking data: ${err.message}`;
-  } finally {
-    loading.value = false;
-  }
+const fetchLoading = ref(false);
+
+const selectWarehouse = ref<SelectItem | null>();
+const selectLocation = ref<SelectItem | null>();
+const selectPIC = ref<SelectItem | null>();
+
+const stockTakingItems = ref<stockTakingItem[] | null>([]);
+const stockTakingSave = ref<stockTakingHeaderSave>({
+  takingId: takingId,
+  takingNo: '',
+  takingDate: new Date(),
+  warehouseId: 0,
+  locationId: 0,
+  personInCharge: '',
+  statusCode: 100,
+  remark: '',
+  stockTakingItems: []
+});
+
+const focusedRowIndex = ref<number | null>(null);
+const onFieldFocus = (index: number) => {
+  focusedRowIndex.value = index;
 };
 
-const onWarehouseChange = async () => {
-  try {
-    const response = await axios.get(`/api/stock-taking/locations/${formData.WarehouseId}`);
-    locationList.value = response.data.locationList;
-    formData.LocationId = null; // Reset LocationId
-    await fetchStockItems();
-  } catch (err) {
-    console.error('Failed to fetch locations: ', err);
-    error.value = 'Failed to fetch locations';
-  }
+const onFieldBlur = () => {
+  focusedRowIndex.value = null;
 };
 
-const onLocationChange = async () => {
-  await fetchStockItems();
+const rowClass = (data: stockTakingItem, index: number) => {
+  return {
+    'focused-row': focusedRowIndex.value === index
+  };
 };
 
-const fetchStockItems = async () => {
-  try {
-    const response = await axios.get('/api/stock-taking/stock-items', {
-      params: {
-        warehouseId: formData.WarehouseId,
-        locationId: formData.LocationId
+const getWarehouseList = async () => {
+  fetchLoading.value = true;
+  subscription = warehouseService.getWarehouseList().subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        warehouse.value = CloneWarehouseDDL(result.data || []);
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
-    });
-    formData.stockItems = response.data.stockItems.map((item: StockItem) => ({
-      ...item,
-      DiffQuantity: 0 // Initialize DiffQuantity
-    }));
-  } catch (err) {
-    console.error('Failed to fetch stock items: ', err);
-    error.value = 'Failed to fetch stock items';
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const getLocationList = async (warehouseId: number) => {
+  fetchLoading.value = true;
+  subscription = warehouseService.getLocationByWarehouse(warehouseId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        location.value = CloneLocationDDL(result.data || [])
+        // if (!stockTakingSave.value.locationId) { selectLocation.value = null; }
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const getPIC = async (name: string) => {
+  fetchLoading.value = true;
+  subscription = userService.getUserList(name).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        personInCharge.value = CloneUserDDL(result.data || []);
+        if (stockTakingSave.value.personInCharge) {
+          let selectedOption = personInCharge.value.find(item => item.code === stockTakingSave.value.personInCharge);
+
+          let selectDDLPic: SelectItem = {
+            name: selectedOption ? selectedOption.name : "-",
+            code: stockTakingSave.value.personInCharge
+          };
+
+          selectPIC.value = selectDDLPic ?? {} as SelectItem;
+        }
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  })
+}
+
+const getItems = async (warehouseId?: number, locationId: number | null = null) => {
+  fetchLoading.value = true;
+  subscription = stockTakingService.getStockItemForTaking(warehouseId, locationId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        stockTakingItems.value = result.data;
+        console.log('Items', stockTakingItems.value)
+      } else {
+        stockTakingItems.value = null;
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const handleWarehouseChange = (event: any) => {
+  stockTakingItems.value = [];
+  selectLocation.value = null;
+  location.value = [];
+
+  const warehouseId = Number(event.value.code);
+  if (warehouseId) {
+    getLocationList(warehouseId);
+    getItems(warehouseId);
   }
 };
 
-const onCellEditComplete = (event) => {
-  let { data, newValue, field } = event;
-  if (field === 'DiffQuantity' && !isPositiveInteger(newValue)) {
-    event.preventDefault();
+const handleLocationChange = (event: any) => {
+  const locationId = event.value ? Number(event.value.code) : null;
+  if (selectWarehouse.value) {
+    getItems(Number(selectWarehouse.value.code), locationId);
+  }
+};
+
+const CloneWarehouseDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.warehouseName == "" ? "--All--" : option.warehouseName,
+    code: option.warehouseID == 0 ? "0" : option.warehouseId.toString(),
+  }));
+
+  return data.length > 0 ? data : [];
+}
+
+const CloneLocationDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.locationName == "" ? "--All--" : option.locationName,
+    code: option.locationID == 0 ? "0" : option.locationID,
+  }));
+
+  return data.length > 0 ? data : [];
+}
+
+const CloneUserDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.firstName == "" ? "--All--" : option.firstName + ' ' + option.lastName,
+    code: option.userID == "" ? "0" : option.userID,
+  }));
+  return data.length > 0 ? data : [];
+}
+
+const fetchData = async () => {
+  fetchLoading.value = true;
+  subscription = StockTakingService.get(takingId).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        stockTakingSave.value = result.data;
+
+        if (stockTakingSave.value) {
+          stockTakingItems.value = result.data.stockTakingItems;
+          stockTakingSave.value.takingDate = new Date(stockTakingSave.value.takingDate)
+
+          let selectDDLWarehouse: SelectItem = {
+            code: result.data.warehouseId.toString(),
+            name: result.data.warehouseName
+          };
+          selectWarehouse.value = selectDDLWarehouse ?? {} as SelectItem;
+          debugger
+          if (stockTakingSave.value.warehouseId) {
+            getLocationList(stockTakingSave.value.warehouseId);
+            let selectDDLLocation: SelectItem = {
+              code: result.data.locationId,
+              name: result.data.locationName
+            }
+            selectLocation.value = selectDDLLocation;
+
+            if (result.data.personInCharge) {
+              getPIC('');
+            }
+          }
+        }
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const prepareDataForSave = () => {
+  const dataToSave: stockTakingHeaderSave = {
+    ...stockTakingSave.value,
+    warehouseId: Number(selectWarehouse.value?.code) || 0,
+    locationId: Number(selectLocation.value?.code) || 0,
+    personInCharge: selectPIC.value?.code || '',
+    stockTakingItems: stockTakingItems.value || []
+  };
+  return dataToSave;
+};
+
+const Save = async () => {
+  const dataToSave = prepareDataForSave();
+
+  fetchLoading.value = true;
+  subscription = StockTakingService.save(dataToSave).subscribe({
+    next: async (result) => {
+      if (result.isSuccess) {
+        const takingId = result.data;
+        await router.push(`/StockTaking/Detail/${takingId}`)
+        toast.add({ severity: 'success', summary: 'Saved', detail: 'Stock taking data saved successfully', life: 3000 });
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 3000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error saving data', detail: error, life: 3000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const Update = async () => {
+  const dataToSave = prepareDataForSave();
+
+  fetchLoading.value = true;
+  subscription = StockTakingService.update(takingId, dataToSave).subscribe({
+    next: async (result) => {
+      if (result.isSuccess) {
+        await router.push(`/StockTaking/Detail/${takingId}`)
+        toast.add({ severity: 'success', summary: 'Saved', detail: 'Stock taking data saved successfully', life: 3000 });
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 3000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error saving data', detail: error, life: 3000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const SaveAndAdjust = async () => {
+  const dataToSave = prepareDataForSave();
+
+  fetchLoading.value = true;
+  subscription = StockTakingService.saveAndAdjust(dataToSave).subscribe({
+    next: async (result) => {
+      if (result.isSuccess) {
+        const takingId = result.data;
+        await router.push(`/StockTaking/Detail/${takingId}`)
+        toast.add({ severity: 'success', summary: 'Saved and Adjusted', detail: 'Stock taking data saved and adjusted successfully', life: 3000 });
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 3000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error saving and adjusting data', detail: error, life: 3000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const SavePlan = async () => {
+  const dataToSave = prepareDataForSave();
+
+  fetchLoading.value = true;
+  subscription = StockTakingService.savePlan(dataToSave).subscribe({
+    next: async (result) => {
+      if (result.isSuccess) {
+        const takingId = result.data;
+        await router.push(`/StockTaking/Detail/${takingId}`)
+        toast.add({ severity: 'success', summary: 'Plan Saved', detail: 'Stock taking plan saved successfully', life: 3000 });
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 3000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error saving plan', detail: error, life: 3000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+onUnmounted(() => {
+  if (subscription)
+    subscription.unsubscribe();
+
+  setStickyButtons([]);
+})
+
+onMounted(() => {
+  stockTakingSave.value.takingNo = "-- ออกโดยระบบ --";
+  if (takingId != 0) {
+    fetchData()
+    getWarehouseList();
+    getPIC('')
   } else {
-    data[field] = newValue;
+    getWarehouseList()
+    getPIC('')
   }
-};
 
-const isPositiveInteger = (val) => {
-  let str = String(val).trim();
-  return str !== '' && /^\d+$/.test(str);
-};
+  setStickyButtons([
+    {
+      icon: 'pi pi-cog',
+      label: 'Save',
+      severity: 'info',
+      action: () => {
+        if (takingId <= 0) {
+          Save()
+        } else {
+          Update()
+        }
+      }
+    },
+    {
+      icon: 'pi pi-check',
+      label: 'Save And Adjust',
+      severity: 'info',
+      action: () => {
+        SaveAndAdjust()
+      }
+    },
+    {
+      icon: 'pi pi-check',
+      label: 'Save Plan',
+      severity: 'success',
+      action: () => {
+        SavePlan()
+      }
+    },
+    {
+      icon: 'pi pi-times',
+      label: 'Cancel',
+      severity: 'secondary',
+      action: async () => {
+        await router.push({ name: 'StockTaking' })
+      }
+    }
+  ]);
 
-const saveStockTaking = async (status: 'DRAFT' | 'PLANNED' | 'APPROVED') => {
-  try {
-    await StockTakingService.save({ ...formData, status });
-    // Add success message and redirect logic here
-  } catch (err) {
-    error.value = 'Failed to save stock taking';
-  }
-};
-
-const cancel = () => {
-  // Logic to navigate back or clear the form
-};
-
-onMounted(fetchInitialData);
+})
 </script>
-
-<style scoped>
-/* Add your styles here */
-</style>
