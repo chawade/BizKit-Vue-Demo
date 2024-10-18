@@ -5,7 +5,7 @@ import { Observable, from, of } from "rxjs";
 import { map, catchError, tap, switchMap } from "rxjs/operators";
 import type { PickingSearch } from "@/Model/Picking";
 import ErrorService from "./errorService";
-import type { PRHeaderSearch, PurchaseRequest } from "@/Model/purchaseRequest";
+import type { PRHeaderSearch, PurchaseRequest, PurchaseRequestResource } from "@/Model/purchaseRequest";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/purchaserequest`;
@@ -49,14 +49,14 @@ class PurchaseRequetService {
       catchError(this.errorService.handleError<PurchaseRequest[]>("searchDetail"))
     );
   }
-  get(no: string): Observable<Result<PurchaseRequest>> {
+  get(no: string): Observable<Result<PurchaseRequestResource>> {
     return this.axiosInstance$.pipe(
       switchMap((axiosInstance) =>
-        from(axiosInstance.get<Result<PurchaseRequest>>(`${baseURL}/${no}`, this.getHttpOptions()))
+        from(axiosInstance.get<Result<PurchaseRequestResource>>(`${baseURL}/${no}`, this.getHttpOptions()))
       ),
-      map((response: AxiosResponse<Result<PurchaseRequest>>) => response.data),
+      map((response: AxiosResponse<Result<PurchaseRequestResource>>) => response.data),
       tap(() => this.errorService.log(`Fetched sales order with id ${no}`)),
-      catchError(this.errorService.handleError<PurchaseRequest>(`get id=${no}`))
+      catchError(this.errorService.handleError<PurchaseRequestResource>(`get id=${no}`))
     );
   }
 

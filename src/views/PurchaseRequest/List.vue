@@ -15,7 +15,7 @@
       </div>
 
       <div class="table-scrollable table-list">
-        <ItemTable  :items="sortedItems" :columns="columns" :dataKey="'salesOrderID'" :rows-per-page="pageSize" :pageIdentifier="'salesOrder'"
+        <ItemTable  :items="sortedItems" :columns="columns" :dataKey="'purchaseRequestNo'" :rows-per-page="pageSize" :pageIdentifier="'purchaseRequest'"
                     :rowsPerPageOptions="[5, 10, 25]" :selection="selectedItems" :loading="fetchLoading" :lazy="true"
                     :totalRecords="totalRecords" @page="onPageChange"
                     @update:selection="onRowSelect" @sort="onSort" @search="fetchPurchaseRequests" :menu="menuaa">
@@ -300,22 +300,20 @@ const menuaa = ref([
     ]
   }
 ]);
-const toggleMenu = (event: Event) => {
-  menu.value?.toggle(event);
-};
+
 const onRowSelect = (value: any[]) => {
   selectedItems.value = value;
   isSelectAll.value = selectedItems.value.length === sortedItems.value.length
 };
-const onRowUnselect = (event: any) => {
-  const purchaserequestNo = event.data.TakingId;
-  const index = selectedPurchaseRequestNo.value.indexOf(purchaserequestNo);
-  if (index > -1) {
-    purchaserequestNo.value.splice(index, 1);
-  }
-  console.log('Selected PurchaserequestNo:', purchaserequestNo.value);
-  return purchaserequestNo.value;
-};
+// const onRowUnselect = (event: any) => {
+//   const purchaserequestNo = event.data.TakingId;
+//   const index = selectedPurchaseRequestNo.value.indexOf(purchaserequestNo);
+//   if (index > -1) {
+//     purchaserequestNo.value.splice(index, 1);
+//   }
+//   console.log('Selected PurchaserequestNo:', purchaserequestNo.value);
+//   return purchaserequestNo.value;
+// };
 
 const sortedItems = computed(() => {
   return request.value
@@ -324,37 +322,6 @@ const sortedItems = computed(() => {
 const submitForm = async () => {
 
 }
-const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value) {
-    pageNumber.value = page;
-    fetchPurchaseRequests();
-    console.log(page);
-  }
-};
-
-const NewPR = () => {
-  console.log("New Purchase Request");
-};
-
-const Approve = () => {
-  console.log("Approve action");
-};
-
-const GeneratePO = () => {
-  console.log("Generate Purchase Order");
-};
-
-const PrintList = () => {
-  console.log("Print Purchase Request List");
-};
-
-const exportToCSV = () => {
-  console.log("Export to CSV");
-};
-
-const exportToExcel = () => {
-  console.log("Export to Excel");
-};
 
 const searchList = () => {
   fetchPurchaseRequests();
@@ -379,12 +346,12 @@ const sortData = (column: string) => {
   fetchPurchaseRequests();
 };
 
-const toggleSelectAll = (event: any) => {
-  const checked = event.target.checked;
-  request.value.forEach((request) => {
-    request.selectedItems = checked;
-  });
-};
+// const toggleSelectAll = (event: any) => {
+//   const checked = event.target.checked;
+//   request.value.forEach((request) => {
+//     request.selectedItems = checked;
+//   });
+// };
 
 const onSort = (event: DataTableSortEvent) => {
   debugger
@@ -494,14 +461,13 @@ watch(selectedItems, (newSelectedItems) => {
 </script>
 
 <style scoped>
-.hoverTable {
+/* .hoverTable {
   width: 100%;
   border-collapse: collapse;
 }
 
 .hoverTable tbody td {
   padding: 7px;
-  /*border: #4e95f4 1px solid;*/
 }
 
 .hoverTable tbody tr {
@@ -533,178 +499,5 @@ watch(selectedItems, (newSelectedItems) => {
 .pagination a:hover:not(.active) {
   background-color: #ddd;
   border-radius: 5px;
-}
-
-/* html,
-body {
-  height: 100%;
-  margin: 0;
-}
-
-.container {
-  width: 100vw;
-  height: 100vh;
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  overflow-y: auto;
-}
-
-.breadcrumb {
-  width: 100%;
-  background-color: white;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  color: gray;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.caption-subject {
-  color: rgb(48, 165, 200);
-  font-weight: bolder;
-  font-size: 1.5em;
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  margin: 10px 0;
-}
-
-.btn {
-  padding: 10px 15px;
-  border: none;
-  text-decoration: none;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  transition: background-color 0.3s;
-  border-radius: 5px;
-  margin: 0 5px;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn-success {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-success:hover {
-  background-color: #218838;
-}
-
-.btn-info {
-  background-color: #17a2b8;
-  color: white;
-}
-
-.btn-info:hover {
-  background-color: #138496;
-}
-
-.alert {
-  padding: 15px;
-  border: 1px solid transparent;
-  border-radius: 5px;
-  margin-bottom: 20px;
-}
-
-.alert-danger {
-  color: #721c24;
-  background-color: #f8d7da;
-  border-color: #f5c6cb;
-}
-
-.table-responsive {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.table th,
-.table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-  color: #333;
-}
-
-.table th {
-  background-color: #f2f2f2;
-  color: rgb(24, 108, 164);
-  font-weight: bold;
-}
-
-.table tr {
-  border-bottom: 1px solid #ddd;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.pagination button {
-  background-color: #f2f2f2;
-  border: none;
-  color: black;
-  padding: 8px 16px;
-  margin: 0 5px;
-  cursor: pointer;
-}
-
-.pagination button:hover {
-  background-color: #ddd;
-}
-
-.pagination button:disabled {
-  background-color: #e9ecef;
-  cursor: not-allowed;
-}
-
-.input-group {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.input-group input {
-  width: 200px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
-  font-size: 13px;
-}
-
-.input-group-btn {
-  margin-left: 5px;
-}
-
-.status-badge {
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: white;
 } */
 </style>

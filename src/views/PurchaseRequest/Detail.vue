@@ -25,7 +25,7 @@
         <div class="w-full md:w-1/2 md:flex md:justify-end">
           <InfoBox title="PurchaseRequest Info" :info="{
             'Issue Date': new Date(request.purchaseRequestDate).toLocaleDateString(),
-            'Require Date': new Date(requiredDate).toLocaleDateString(),
+            'Require Date': new Date(request.deliveryDate).toLocaleDateString(),
             'Reference No.': request.referenceNo,
             'PIC': request.personInCharge,
             'Project': request.projectName,
@@ -33,9 +33,23 @@
           }" />
         </div>
       </div>
-      
-      <ItemTable :items="purchase" :columns="columns" :dataKey="'id'" :loading="fetchLoading" :lazy="false"
-        :totalRecords="purchase.length" :menu="menuaa" tableStyle="min-width: 50rem" :pageIdentifier="'PR-Detail'"/>
+      <div class="datatable-container mb-6">
+      <DataTable :value="purchase" tableStyle="min-width: 50rem">
+        <Column field="lineNumber" header="No."></Column>
+        <Column field="itemCode" header="Item Code"></Column>
+        <Column field="itemName" header="Item Name"></Column>
+        <Column field="requiredDate" header="Required Date"></Column>
+        <Column field="poNo" header="PO No"></Column>
+        <Column field="referenceNo" header="Reference No."></Column>
+        <Column field="orderQuantity" header="Order Qty"></Column>
+        <Column field="unit" header="UOM"></Column>
+        <Column field="unitCost" header="Unit Cost"></Column>
+        <Column field="vatAmount" header="VAT"></Column>
+        <Column field="lineTotal" header="Total"></Column>
+      </DataTable>
+      </div>
+      <!-- <ItemTable :items="purchase" :columns="columns" :dataKey="'id'" :loading="fetchLoading" :lazy="false"
+        :totalRecords="purchase.length" :menu="menuaa" tableStyle="min-width: 50rem" :pageIdentifier="'PR-Detail'"/> -->
 
       <div class="flex flex-col md:flex-row w-full">
         <div class="w-full md:w-1/2">
@@ -125,7 +139,7 @@ import Tabs from 'primevue/tabs';
 import TabPanel from 'primevue/tabpanel';
 import { Subscription } from 'rxjs'; // นำเข้า RxJS Subscription
 import toast from 'primevue/toast';
-import type { PurchaseRequest } from '@/Model/purchaseRequest';
+import type { PurchaseRequest, PurchaseRequestResource } from '@/Model/purchaseRequest';
 import type { VendorResource } from '@/Model/vendor';
 
 let subscription: Subscription;
@@ -137,22 +151,6 @@ interface PurchaseRequestStatus {
   CANCELLED: number;
 }
 
-interface Vendor {
-  VendorId: number;
-  VendorCode: string;
-  VendorName: string;
-  Address: string;
-}
-interface Vendorlist {
-  Address1: string;
-  City: string;
-  State: string;
-  ZipCode: number;
-  Country: string;
-  TaxId: number;
-  BranchCode: string;
-  VendorName: string;
-}
 interface Comment {
   text: string;
   date: string;
@@ -179,7 +177,7 @@ const requiredDate = computed(() => {
 });
 const purchase = ref();
 const router = useRouter();
-const request = ref<PurchaseRequest>({} as PurchaseRequest);
+const request = ref<PurchaseRequestResource>({} as PurchaseRequestResource);
 
 const purchaseRequestStatusEnum = ref<PurchaseRequestStatus>({
   APPROVED: 200,
@@ -222,44 +220,44 @@ const vendorId = ref<number>(0);
 const actions = [
   { label: "Edit", severity: "info", event: "edit-purchase" },
   { label: "Print", severity: "info", event: "print-purchase" },
-  { label: "Approve", severity: "info", event: "approve" },
+  { label: "Approve", severity: "succes", event: "approve" },
   { label: "Reject", severity: "danger", event: "reject" },
   { label: "Back", severity: "info", event: "back-to-list" }
 ];
 
-const columns = [
-  { field: "lineNumber", header: "No" },
-  { field: "itemCode", header: "Item Code" },
-  { field: "itemName", header: "Item Name" },
-  { field: "requiredDate", header: "Required Date", },
-  { field: "poNo", header: "PO No" },
-  { field: "referenceNo", header: "Reference No." },
-  { field: "orderQuantity", header: "Qty" },
-  { field: "unit", header: "UOM" },
-  { field: "unitCost", header: "Unit Cost" },
-  { field: "vatCode", header: "VAT" },
-  { field: "lineTotal", header: "Total" }
-];
+// const columns = [
+//   { field: "lineNumber", header: "No" },
+//   { field: "itemCode", header: "Item Code" },
+//   { field: "itemName", header: "Item Name" },
+//   { field: "requiredDate", header: "Required Date", },
+//   { field: "poNo", header: "PO No" },
+//   { field: "referenceNo", header: "Reference No." },
+//   { field: "orderQuantity", header: "Qty" },
+//   { field: "unit", header: "UOM" },
+//   { field: "unitCost", header: "Unit Cost" },
+//   { field: "vatAmount", header: "VAT" },
+//   { field: "lineTotal", header: "Total" }
+// ];
 
-const menuaa = ref([
-  {
-    label: 'Options',
-    items: [
-      {
-        label: 'Detail',
-        icon: 'pi pi-refresh'
-      },
-      {
-        label: 'Export',
-        icon: 'pi pi-upload'
-      },
-      {
-        label: 'Cancel',
-        icon: 'pi pi-trash'
-      }
-    ]
-  }
-]);
+// const menuaa = ref([
+//   {
+//     label: 'Options',
+//     items: [
+//       {
+//         label: 'Detail',
+//         icon: 'pi pi-refresh'
+//       },
+//       {
+//         label: 'Export',
+//         icon: 'pi pi-upload'
+//       },
+//       {
+//         label: 'Cancel',
+//         icon: 'pi pi-trash'
+//       }
+//     ]
+//   }
+// ]);
 const editPR = async () => {
   router.push(`'/PurchaseRequest/PRMaintain/'${prNO}`);
 };
@@ -288,8 +286,8 @@ const fetchPurchaseRequestDetail = () => {
     next: (response) => {
       if (response.isSuccess) {
         request.value = response.data;
-        vendorId.value = response.data.vendor.vendorId; // บันทึกข้อมูลจาก response
-        purchase.value = response.data.purchaseRequestItems; // บันทึกข้อมูลจาก response
+        vendorId.value = response.data.vendor.vendorId; 
+        purchase.value = response.data.purchaseRequestItems; 
         console.log(purchase.value, 'purchase');
 
         fetchVendorData(); // เรียกใช้ฟังก์ชันเพื่อดึงข้อมูล vendor

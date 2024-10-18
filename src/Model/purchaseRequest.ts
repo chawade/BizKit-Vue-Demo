@@ -1,5 +1,8 @@
 import type { BaseResource, SelectItem } from "./BaseResource";
+import type { CustomerResource } from "./Customer";
+import type { DepartmentListResource } from "./department";
 import type { PaymentTermListResource } from "./PaymentTerm";
+import type { ProjectListResource } from "./project";
 import type { StatusResource } from "./Status";
 import type { VendorResource } from "./vendor";
 
@@ -28,7 +31,48 @@ export interface PurchaseRequest {
   subtotal: number;
   taxAmount: number;
   otherCharges: number;
+  purchaseRequestItem: PurchaseRequestItemResource[];
 }
+
+export interface PurchaseRequestResource {
+  purchaseRequestNo: string;
+  companyId: number;
+  purchaseRequestDate: Date;
+  customer: CustomerResource | null;
+  paymentTerm: PaymentTermListResource;
+  referenceNo: string;
+  requiredDate: string;
+  vendor: VendorResource;
+  status: StatusResource;
+  deliveryDate: Date;
+  dueDate: Date;
+  deliveryAddress1: string;
+  deliveryAddress2: string;
+  deliveryCity: string;
+  deliveryState: string;
+  deliveryZipCode: string;
+  deliveryCountry: string;
+  personInCharge: string;
+  currency: string;
+  exchangeRate: number;
+  subtotal: number;
+  taxAmount: number;
+  discountRate?: number;
+  discountAmount?: number;
+  otherCharges: number;
+  totalAmount: number;
+  baseTotalAmount: number;
+  totalReceivedAmount: number;
+  totalReceivedTax: number;
+  totalRemainAmount: number;
+  notes: string;
+  termAndConditions: string;
+  templateId?: number;
+  purchaseRequestItems: PurchaseRequestItemResource[];
+  projectName: '';
+  departmentName: '';
+}
+
 
 export interface Vendor {
   vendorId: number;
@@ -61,8 +105,9 @@ export interface PurchaseRequestSave extends BaseResource{
   purchaseRequestDate: Date;
   termDescription: string;
   referenceNo: string;
+  customer: CustomerResource | null;
   paymentTerm: PaymentTermListResource | null;
-  vendor: Vendor | null;
+  vendor: VendorResource | null;
   statusId: number;
   deliveryDate: Date;
   dueDate: Date;
@@ -84,12 +129,12 @@ export interface PurchaseRequestSave extends BaseResource{
   termAndConditions: string;
   templateId: number;
   totalAmount: number;
-  purchaseRequestItems: PurchaseRequestItemSave[];
+  purchaseRequestItems: PurchaseRequestItemResource[];
   userId: string;
   ipAddress: string;
   url: string;
-  project: string;
-  department: string;
+  project: ProjectListResource | null;
+  department: DepartmentListResource | null;
   ddlItem: SelectItem[];
 }
 
@@ -131,7 +176,8 @@ export interface VendorSave {
   status: Status;
 }
 
-export interface PurchaseRequestItemSave {
+export interface PurchaseRequestItemResource {
+  purchaseRequestItem: any[] | null | undefined;
   purchaseRequestNo: string;
   companyId: number;
   lineNumber: number;

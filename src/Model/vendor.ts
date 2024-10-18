@@ -37,3 +37,14 @@ export interface VendorResource {
     apAccountId: number;
     status: StatusResource;
 }
+
+export interface VendorListResource {
+    vendorId: number;
+    vendorName: string;
+    vendorBalance: number;
+    telephone1: string;
+    currencyCode: string;
+    status: StatusResource;
+    capacity: number;
+    vendorCode: string;
+  }

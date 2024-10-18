@@ -29,7 +29,7 @@
                           No.</label>
                         <div class="col-span-12 md:col-span-8">
                           <InputGroup>
-                            <InputText v-model="purchaseRequestSave.PurchaseRequestNo" variant="filled"
+                            <InputText v-model="purchaseRequestSave.purchaseRequestNo" variant="filled"
                               readonly="true" />
                             <Button icon="pi pi-cog" severity="help" @click="" />
                           </InputGroup>
@@ -39,9 +39,10 @@
                         <label for="Plan Ship Date"
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Vendor</label>
                         <div class="col-span-12 md:col-span-8">
-                          <SelectCustom v-model="selectPaymentTerm" :options="ddlPaymentTerm" :loading="fetchLoading"
-                            placeholder="Select a Vendor" @filter="getPaymentTermList" optionLabel="name"
-                            dataKey="code" />
+                          <SelectCustom v-model="selectVendor" :options="ddlVendor" :loading="fetchLoading"
+                            placeholder="Select a Vendor" @update:model-value="onSelectVendor"
+                            @change="handleVendor"
+                            optionLabel="vendorName" dataKey="termId" />
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
@@ -49,15 +50,22 @@
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Lead
                           Time (Day)</label>
                         <div class="col-span-12 md:col-span-8">
-                          <InputText id="name3" type="text" disabled placeholder="" />
+                          <InputText id="name3" type="text" disabled placeholder="" v-model="selectLeadtime"/>
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
-                        <label for="Sales Person"
+                        <label for="PIC"
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">PIC</label>
-                        <div class="col-span-12 md:col-span-8">
-                          <SelectCustom v-model="selectWarehouse" :options="ddlWarehouse" :loading="fetchLoading"
-                            placeholder="Select a PIC" @filter="getWarehouseList" optionLabel="name" dataKey="code" />
+                          <div class="col-span-12 md:col-span-8">
+                          <SelectCustom v-model="selectPIC" :options="ddlPIC" :loading="fetchLoading"
+                            placeholder="Select a PIC" optionLabel="name" dataKey="code">
+                            <template #option="slotProps">
+                              <div class="flex flex-col gap-2">
+                                <label for="username">{{ slotProps.option.name }}</label>
+                                <!-- <small id="username-help">{{ slotProps.option.code }}</small> -->
+                              </div>
+                            </template>
+                          </SelectCustom>
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
@@ -65,9 +73,15 @@
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Shipping
                           Address</label>
                         <div class="col-span-12 md:col-span-8">
-                          <SelectCustom v-model="selectWarehouse" :options="ddlWarehouse" :loading="fetchLoading"
-                            placeholder="Select a Address" @filter="getWarehouseList" optionLabel="name"
-                            dataKey="code" />
+                          <SelectCustom v-model="selectCompanyAddress" :options="ddlCompanyAddress" :loading="fetchLoading"
+                            placeholder="Select a Address" optionLabel="name" dataKey="code" @update:modelValue="onSelectCompanyAddress">
+                            <template #option="slotProps">
+                              <div class="flex flex-col gap-2">
+                                <label for="Addressname">{{ slotProps.option.name }}</label>
+                                <label for="fullname">{{ slotProps.option.fullAddress }}</label>
+                              </div>
+                            </template>
+                          </SelectCustom>
                         </div>
                       </div>
                     </div>
@@ -79,7 +93,7 @@
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Issue
                           Date</label>
                         <div class="col-span-12 md:col-span-8">
-                          <DatePicker v-model="purchaseRequestSave.DueDate" variant="filled" showButtonBar showIcon
+                          <DatePicker v-model="purchaseRequestSave.dueDate" variant="filled" showButtonBar showIcon
                             fluid :manual-input="false" />
                         </div>
                       </div>
@@ -96,24 +110,36 @@
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Require
                           Date</label>
                         <div class="col-span-12 md:col-span-8">
-                          <DatePicker v-model="purchaseRequestSave.DeliveryDate" variant="filled" showButtonBar showIcon
+                          <DatePicker v-model="purchaseRequestSave.deliveryDate" variant="filled" showButtonBar showIcon
                             fluid :manual-input="false" />
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
-                        <label for="Sales Person"
+                        <label for="Project"
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Project</label>
                         <div class="col-span-12 md:col-span-8">
-                          <Select v-model="purchaseRequestSave.Project" placeholder="Select a Project"
-                            :options="ddlPrice" optionLabel="name" />
+                          <SelectCustom v-model="selectProject" :options="ddlProject" :loading="fetchLoading"
+                            placeholder="Select a Project" optionLabel="name" dataKey="code" @update:model-value="onSelectProject">
+                            <template #option="slotProps">
+                              <div class="flex flex-col gap-2">
+                                <label for="projectname">{{ slotProps.option.name }}</label>
+                              </div>
+                            </template>
+                          </SelectCustom>
                         </div>
                       </div>
                       <div class="grid grid-cols-12 gap-2">
                         <label for="Ship From"
                           class="flex items-center col-span-12 font-semibold text-lg mb-2 md:col-span-4 md:mb-0">Department</label>
                         <div class="col-span-12 md:col-span-8">
-                          <Select v-model="purchaseRequestSave.Department" placeholder="Select a Project"
-                            :options="ddlPrice" optionLabel="name" />
+                          <SelectCustom v-model="selectDepartment" :options="ddlDepartment" :loading="fetchLoading"
+                            placeholder="Select a Department" optionLabel="name" dataKey="code" @update:model-value="onSelectDepartment">
+                            <template #option="slotProps">
+                              <div class="flex flex-col gap-2">
+                                <label for="departname">{{ slotProps.option.name }}</label>
+                              </div>
+                            </template>
+                          </SelectCustom>
                         </div>
                       </div>
                     </div>
@@ -367,7 +393,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, reactive, onUnmounted, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { SalesOrderItemResource as PurchaseRequestItemResource, SalesOrderResource, SalesOrderSaveResource as PurchaseRequestSaveResource, SalesOrderSearch } from '@/Model/SalesOrder';
+import type { SalesOrderItemResource as SalesOrderResource, SalesOrderSaveResource as PurchaseRequestSaveResource, SalesOrderSearch } from '@/Model/SalesOrder';
 import { useToast } from 'primevue/usetoast';
 import { Subscription } from 'rxjs';
 import SelectCustom from '@/components/SelectCustom.vue';
@@ -377,8 +403,17 @@ import warehouseService from '@/service/warehouseService';
 import type { SelectItem } from '@/Model/BaseResource';
 import router from '@/router';
 import ItemService from '@/service/ItemService';
-import type { PurchaseRequestSave as PurchaseRequestItem, PurchaseRequestItemSave, PurchaseRequestSave } from '@/Model/purchaseRequest';
+import type { PurchaseRequestSave as PurchaseRequestItem, PurchaseRequestItemResource, PurchaseRequestSave } from '@/Model/purchaseRequest';
 import PurchaseRequestService from '@/Service/purchaseRequestService';
+import type { VendorListResource, VendorResource } from '@/Model/vendor';
+import vendorService from '@/Service/vendorService';
+import userService from '@/service/userService';
+import projectService from '@/Service/projectService';
+import type { ProjectListResource } from '@/Model/project';
+import departmentService from '@/Service/departmentService';
+import type { DepartmentListResource } from '@/Model/department';
+import customerService from '@/service/customerService';
+import companyProfileService from '@/Service/companyProfileService';
 
 const subtotal = ref(0)
 const vat = ref(0)
@@ -395,67 +430,77 @@ const setStickyButtons = inject<any>('setStickyButtons');
 const toast = useToast();
 const loading = ref(false);
 const error = ref('');
-const SkipPick = ref(false);
 const ddlPrice = new PriceList().getPriceList();
 const pageNumber = ref(1)
-const totalPages = ref(0)
-const pageSize = ref(20)
+const pageSize = ref(0)
 const searchString = ref('')
-const sortBy = ref('PRDate')
 const direction = ref('DESC')
+const sortKey = ref('CustomerName')
 const totalRecords = ref(0)
+const vendorId = ref(0)
+const search = ref('')
+const addressId = ref(0)
 
 const route = useRoute();
 const PurchaseRequestNo: string = String(route.params.no);
-const ddlCustomer = ref<SelectItem[]>([]);
-const ddlPaymentTerm = ref<SelectItem[]>([]);
+const ddlDepartment = ref<SelectItem[]>([]);
+const ddlVendor = ref<VendorResource[]>([]);
 const ddlWarehouse = ref<SelectItem[]>([]);
 const ddlItem = ref<SelectItem[]>([]);
+const ddlPIC = ref<SelectItem[]>([]);
+const ddlProject = ref<SelectItem[]>([]);
+const ddlCompanyAddress = ref<SelectItem[]>([]);
 
-const fetchLoading = ref(false);
+const fetchLoading = ref(false); 
 
-const selectCustomer = ref<SelectItem | null>();
-const selectPaymentTerm = ref<SelectItem | null>();
+const selectLeadtime =ref();
+const selectVendorId = 0;
+const selectCompanyAddress = ref<SelectItem | null>();
+const selectProject = ref<ProjectListResource | null>();
+const selectPIC = ref<SelectItem | null>();
+const selectDepartment = ref<DepartmentListResource | null>();
+const selectVendor = ref<VendorResource | null>();
 const selectWarehouse = ref<SelectItem | null>();
 const selectItem = ref<SelectItem | null>();
 
-const purchaseRequestItem = ref<PurchaseRequestItemSave[]>([]);
+const purchaseRequestItem = ref<PurchaseRequestItemResource[]>([]);
 const purchaseRequestSave = ref<PurchaseRequestSave>({
-  PurchaseRequestNo: '',
-  CompanyId: 0,
-  PurchaseRequestDate: new Date(),
-  PaymentTerm: null,
-  TermDescription: '',
-  ReferenceNo: '',
-  Vendor: null,
-  StatusId: 0,
-  DeliveryDate: new Date(),
-  DueDate: new Date(),
-  DeliveryAddress1: '',
-  DeliveryAddress2: '',
-  DeliveryCity: '',
-  DeliveryState: '',
-  DeliveryZipCode: '',
-  DeliveryCountry: '',
-  PersonInCharge: '',
-  Currency: '',
-  ExchangeRate: 0,
-  TaxAmount: 0,
-  DiscountRate: 0,
-  DiscountAmount: 0,
-  OtherCharges: 0,
-  Subtotal: 0,
-  Notes: '',
-  TermAndConditions: '',
-  TemplateId: 0,
-  TotalAmount: 0,
-  PurchaseRequestItems: [],
-  UserId: '',
-  IpAddress: '',
-  Url: '',
-  Project: '',
-  Department: '',
-  DDLItem: []
+  purchaseRequestNo: '',
+  companyId: 0,
+  purchaseRequestDate: new Date,
+  termDescription: '',
+  referenceNo: '',
+  paymentTerm: null,
+  vendor: null,
+  statusId: 0,
+  deliveryDate: new Date,
+  dueDate: new Date,
+  deliveryAddress1: '',
+  deliveryAddress2: '',
+  deliveryCity: '',
+  deliveryState: '',
+  deliveryZipCode: '',
+  deliveryCountry: '',
+  personInCharge: '',
+  currency: '',
+  exchangeRate: 0,
+  taxAmount: 0,
+  discountRate: 0,
+  discountAmount: 0,
+  otherCharges: 0,
+  subtotal: 0,
+  notes: '',
+  termAndConditions: '',
+  templateId: 0,
+  totalAmount: 0,
+  purchaseRequestItems: [],
+  userId: '',
+  ipAddress: '',
+  url: '',
+  project: null,
+  department: null,
+  customer: null,
+  ddlItem: []
 });
 const remark = ref();
 const cm = ref();
@@ -486,26 +531,88 @@ const menuModel = ref([
   }
 ]);
 
+const onSelectVendor = () => {
+  debugger
+  purchaseRequestSave.value.vendor = selectVendor.value || null;
+  if (purchaseRequestSave.value.vendor) { 
+  }
+}
+const getLeadTimeByVendorId = async () =>{
+  fetchLoading.value = true;
+  const endpoint = vendorId.value;
+  subscription = vendorService.get(endpoint).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        ddlVendor.value = result.data;
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+      console.log(result, 'venlead')
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
+
+const getVendorList = async (vendorName: string) =>{
+  fetchLoading.value = true;
+  const endpoint = `${pageNumber.value}/${pageSize.value}/${direction.value}/${searchString.value}`;
+  subscription = vendorService.getlist(endpoint).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        ddlVendor.value = result.data;
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+      console.log(result, 'result')
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+};
 // Modify the onRowContextMenu function to include index
 const onRowContextMenu = (event: any) => {
   selectedProduct.value = event;
   cm.value.show(event.originalEvent);
 };
 
+const handleVendor = () => {
+  vendorId.value = selectVendor.value ? Number(selectVendor.value.vendorId) : 0;
+  getLeadTimeByVendorId();
+  // console.log('vendor on change: ',selectVendor.value)
+}
 // Modify the deleteProduct function to use the index
 const deleteProduct = (data: PurchaseRequestItem, index: number) => {
-  purchaseRequestSave.value.PurchaseRequestItems.splice(index, 1);
+  purchaseRequestSave.value.purchaseRequestItems.splice(index, 1);
   toast.add({ severity: 'error', summary: 'Row Deleted', detail: `Line ${index + 1}`, life: 3000 });
   selectedProduct.value = null;
 };
 
-
-const getPaymentTermList = async (termId: string) => {
+const fetchData = async () => {
+  debugger
   fetchLoading.value = true;
-  subscription = paymentTermService.getPaymentTermList(parseInt(termId)).subscribe({
+  subscription = PurchaseRequestService.get(PurchaseRequestNo).subscribe({
     next: (result) => {
       if (result.isSuccess) {
-        ddlPaymentTerm.value = ClonePaymentTermDDL(result.data || []);
+        purchaseRequestSave.value = result.data;
+        if (purchaseRequestSave.value) {
+          const vendor = purchaseRequestSave.value.vendor;
+
+          if (vendor) {
+            getVendorList(vendor.vendorName);
+            if (selectVendor.value && vendor.vendorName) {
+              selectVendor.value.vendorName = vendor.vendorName; 
+            }
+          }
+        }
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -519,32 +626,59 @@ const getPaymentTermList = async (termId: string) => {
   });
 };
 
-const fetchData = async () => {
+const getPIC = async (name: string) => {
   fetchLoading.value = true;
-  subscription = PurchaseRequestService.get(PurchaseRequestNo).subscribe({
-    next: (result: any) => {
-      if (result.IsSuccess) {
-        purchaseRequestSave.value = result.Data;
-        if (purchaseRequestSave.value) {
-          const paymentTerm = purchaseRequestSave.value.PaymentTerm
-
-          if (paymentTerm) {
-            getPaymentTermList(paymentTerm.termId.toString());
-
-            let selectDDL: SelectItem = {
-              code: paymentTerm.termId.toString(),
-              name: paymentTerm.description
-            };
-            selectPaymentTerm.value = selectDDL ?? {} as SelectItem;
-          }
-
-        }
-
+  subscription = userService.getUserList(name).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        debugger
+        ddlPIC.value = CloneUserDDL(result.data || []);
       } else {
-        toast.add({ severity: 'error', summary: result.StatusCode.toString(), detail: result.Error?.Message, life: 2000 });
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
     },
-    error: (error: any) => {
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  })
+}
+const onSelectCompanyAddress = (event: SelectItem) => {
+  fetchLoading.value = true;
+  subscription = companyProfileService.getList('').subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        if (purchaseRequestSave.value) {
+          purchaseRequestSave.value.companyId = result.data;
+        }
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  });
+}
+const getCompanyAddressList = async (event: string) => {
+  searchString.value = event;
+  const endpoint = addressId.value;
+  fetchLoading.value = true;
+  subscription = companyProfileService.getList(String(endpoint)).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        ddlCompanyAddress.value = CloneCompanyAddressDDL(result.data || []);
+        console.log(result.data)
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
       toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
     },
     complete: () => {
@@ -552,7 +686,85 @@ const fetchData = async () => {
     }
   });
 };
+const onSelectProject = () => {
+  debugger
+  purchaseRequestSave.value.project = selectProject.value || null;
+  if (purchaseRequestSave.value.project) { 
+  }
+}
+const onSelectDepartment = () => {
+  debugger
+  purchaseRequestSave.value.department = selectDepartment.value || null;
+  if (purchaseRequestSave.value.department) { 
+  }
+}
+const getDepartment = async (name: string) => {
+  fetchLoading.value = true;
+  const endpoint = `${searchString.value}`;
+  subscription = departmentService.getList(endpoint).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        debugger
+        ddlDepartment.value = CloneDepartmentDDL(result.data || []);
 
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  })
+}
+const getProject = async (name: string) => {
+  fetchLoading.value = true;
+  const endpoint = `${searchString.value}`;
+  subscription = projectService.getProjectList(endpoint).subscribe({
+    next: (result) => {
+      if (result.isSuccess) {
+        debugger
+        ddlProject.value = CloneProjectDDL(result.data || []);
+
+      } else {
+        toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
+      }
+    },
+    error: (error) => {
+      toast.add({ severity: 'error', summary: 'Error fetching data', detail: error, life: 2000 });
+    },
+    complete: () => {
+      fetchLoading.value = false;
+    }
+  })
+}
+const CloneDepartmentDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.nameEN,
+    code: option.departmetId == "" ? "0" : option.departmetId,
+  }));
+
+  return data.length > 0 ? data : [];
+}
+const CloneProjectDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.projectNameTh,
+    code: option.projectId == "" ? "0" : option.projectId,
+  }));
+
+  return data.length > 0 ? data : [];
+}
+
+const CloneUserDDL = (options: Array<any>): Array<SelectItem> => {
+  const data = options.map((option) => ({
+    name: option.firstName == "" ? "--All--" : option.firstName + ' ' + option.lastName,
+    code: option.email == "" ? "0" : option.email,
+  }));
+
+  return data.length > 0 ? data : [];
+}
 const getWarehouseList = async () => {
   fetchLoading.value = true;
   subscription = warehouseService.getWarehouseList().subscribe({
@@ -576,11 +788,11 @@ const getWarehouseList = async () => {
 const getItemList = async (event: string, rowIndex: number) => {
   fetchLoading.value = true;
   searchString.value = event;
-  const endpoint = `${pageNumber.value}/${pageSize.value}/${sortBy.value}/${direction.value}/${searchString.value}`;
+  const endpoint = `${pageNumber.value}/${pageSize.value}/${direction.value}/${searchString.value}`;
   subscription = ItemService.getitemList(endpoint).subscribe({
     next: (result) => {
       if (result.isSuccess) {
-        purchaseRequestItem.value[rowIndex].DDLItem = CloneItemDDL(result.data || []);
+        purchaseRequestItem.value[rowIndex].ddlItem = CloneItemDDL(result.data || []);
       } else {
         toast.add({ severity: 'error', summary: result.statusCode.toString(), detail: result.error?.message, life: 2000 });
       }
@@ -621,38 +833,44 @@ const CloneWarehouseDDL = (options: Array<any>): Array<SelectItem> => {
   return data.length > 0 ? data : [];
 }
 
-const CloneCustomerDDL = (options: Array<any>): Array<SelectItem> => {
+const CloneCompanyAddressDDL = (options: Array<any>): Array<SelectItem> => {
   const data = options.map((option) => ({
-    name: option.CustomerName == "" ? "--All--" : option.CustomerName,
-    code: option.CustomerId == 0 ? "0" : option.CustomerID.toString(),
+    name: option.addressLine1 == "" ? "--All--" : (option.addressLine1 || "") + "\n" +
+                 (option.addressLine2 == null ? "" : (option.addressLine2 + "\n")) +
+                 (option.city || "") + " " +
+                 (option.state || "") + " " +
+                 (option.countryName == null ? "" : option.countryName) + " " +
+                 (option.postalCode || ""),
+    code: option.companyAddressID == 0 ? "0" : option.companyAddressID,
   }));
-
+console.log(data, "CloneCompanyAddressDDL");
   return data.length > 0 ? data : [];
 }
 
 const addRow = () => {
-  let prItem: PurchaseRequestItemSave = {
-    PurchaseRequestNo: ' ',
-    CompanyId: 0,
-    LineNumber: 0,
-    ItemId: 0,
-    ItemCode: '',
-    Description: '',
-    RequiredDate: '',
-    OrderQuantity: 0,
-    Unit: '',
-    UnitCost: 0,
-    DiscountRate: 0,
-    DiscountAmount: 0,
-    VatId: 0,
-    VatCode: '',
-    VatRate: 0,
-    VatAmount: 0,
-    LineTotal: 0,
-    PurchaseOrderNo: '',
-    ReferenceNo: '',
-    ReferenceLineNumber: 0,
-    DDLItem: [],
+  let prItem: PurchaseRequestItemResource = {
+    purchaseRequestNo: ' ',
+    companyId: 0,
+    lineNumber: 0,
+    itemId: 0,
+    itemCode: '',
+    description: '',
+    requiredDate: '',
+    orderQuantity: 0,
+    unit: '',
+    unitCost: 0,
+    discountRate: 0,
+    discountAmount: 0,
+    vatId: 0,
+    vatCode: '',
+    vatRate: 0,
+    vatAmount: 0,
+    lineTotal: 0,
+    purchaseOrderNo: '',
+    referenceNo: '',
+    referenceLineNumber: 0,
+    ddlItem: [],
+    purchaseRequestItem: [],
   };
 
   purchaseRequestItem.value.push(prItem);
@@ -670,7 +888,13 @@ onUnmounted(() => {
 
 })
 onMounted(() => {
-  purchaseRequestSave.value.PurchaseRequestNo = "-- Auto Numbering --";
+  purchaseRequestSave.value.purchaseRequestNo = "-- Auto Numbering --";
+    getVendorList('');
+    getPIC('');
+    getProject('');
+    getDepartment('');
+    getCompanyAddressList('');
+    getLeadTimeByVendorId();
   if (PurchaseRequestNo != '') {
     fetchData()
   }

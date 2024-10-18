@@ -5,7 +5,7 @@ import { Observable, from, of } from "rxjs";
 import { map, catchError, tap, switchMap } from "rxjs/operators";
 import type { PickingSearch } from "@/Model/Picking";
 import ErrorService from "./errorService";
-import type { VendorResource } from "@/Model/vendor";
+import type { VendorListResource, VendorResource } from "@/Model/vendor";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const baseURL = `${apiUrl}/v1/vendor`;
@@ -35,6 +35,17 @@ class VendorService {
       map((response: AxiosResponse<Result<VendorResource>>) => response.data),
       tap(() => this.errorService.log(`Fetched sales order with id ${id}`)),
       catchError(this.errorService.handleError<VendorResource>(`get id=${id}`))
+    );
+  }
+  getlist(endpoint: string): Observable<Result<VendorListResource[]>> {
+    const url = `${baseURL}/${endpoint}`;
+    return this.axiosInstance$.pipe(
+      switchMap((axiosInstance) =>
+        from(axiosInstance.get<Result<VendorListResource[]>>(url, this.getHttpOptions()))
+      ),
+      map((response: AxiosResponse<Result<VendorListResource[]>>) => response.data),
+      tap(() => this.errorService.log("Fetched customer list")),
+      catchError(this.errorService.handleError<VendorListResource[]>("getCustomerList"))
     );
   }
 }
